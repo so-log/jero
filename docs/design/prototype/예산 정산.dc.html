@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;color:#1F2430;background:#EEF0F4;}
+  @keyframes scShimmer{0%{background-position:-420px 0;}100%{background-position:420px 0;}}
+  @keyframes scSpin{to{transform:rotate(360deg);}}
+  @keyframes scGrow{from{transform:scaleY(0);}to{transform:scaleY(1);}}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:#D7DBE2;border-radius:99px;border:3px solid transparent;background-clip:content-box;}
+  ::-webkit-scrollbar-thumb:hover{background:#C2C8D0;background-clip:content-box;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+
+<div style="min-width:100%;min-height:100vh;width:max-content;box-sizing:border-box;padding:40px 40px 130px;background:#EEF0F4;">
+  <div style="width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:13px;">
+
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;letter-spacing:-.01em;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#5B8DEF;"></span>
+      예산 / 정산 대시보드 · 여행 워크스페이스 · 데스크톱 1280px
+    </div>
+
+    <!-- ============ APP CARD ============ -->
+    <div style="width:1280px;height:826px;background:#fff;border-radius:22px;border:1px solid #E8EAEF;box-shadow:0 1px 3px rgba(16,24,40,.05),0 24px 60px -26px rgba(16,24,40,.28);overflow:hidden;display:flex;flex-direction:column;">
+
+      <!-- ---- WORKSPACE TOP BAR (shared) ---- -->
+      <div style="position:relative;height:66px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #ECEEF1;background:#fff;">
+        <div style="display:flex;align-items:center;gap:13px;min-width:0;">
+          <button style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 11px 0 8px;border:1px solid #E6E8EC;background:#fff;border-radius:10px;color:#5A606B;font-size:13px;font-weight:600;cursor:pointer;" style-hover="background:#F6F7F9;border-color:#DDE0E5;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            목록
+          </button>
+          <div style="width:1px;height:24px;background:#ECEEF1;"></div>
+          <div style="width:42px;height:42px;border-radius:13px;flex:none;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px -2px rgba(91,141,239,.5);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:17px;font-weight:700;color:#1B2030;letter-spacing:-.02em;">도쿄, 우리끼리 4일</span>
+              <sc-if value="{{ isViewer }}" hint-placeholder-val="{{ false }}">
+                <span style="display:inline-flex;align-items:center;gap:4px;background:#F1F3F6;color:#7A818D;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  보기 전용
+                </span>
+              </sc-if>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;color:#8A909B;font-size:12.5px;font-weight:500;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+              2026.4.18 – 4.21
+              <span style="background:#EEF0F4;color:#6B7280;font-weight:600;font-size:11.5px;padding:1px 7px;border-radius:99px;">3박 4일</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- center segment: 예산 active -->
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:2px;background:#F1F3F6;padding:4px;border-radius:13px;">
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;color:#7B828F;font-size:13.5px;font-weight:600;cursor:pointer;" style-hover="color:#4A4F5A;background:rgba(255,255,255,.6);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.1 5.5a2 2 0 0 0 1.8 0l3.6-1.8A1 1 0 0 1 21 4.6v12.8a1 1 0 0 1-.5.9l-4.6 2.3a2 2 0 0 1-1.8 0l-4.2-2.1a2 2 0 0 0-1.8 0l-3.6 1.8A1 1 0 0 1 3 19.4V6.6a1 1 0 0 1 .5-.9l4.6-2.3a2 2 0 0 1 1.8 0z"/><path d="M15 5.8v15"/><path d="M9 3.2v15"/></svg>
+            플랜
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;color:#7B828F;font-size:13.5px;font-weight:600;cursor:pointer;" style-hover="color:#4A4F5A;background:rgba(255,255,255,.6);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>
+            일정표
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;color:#7B828F;font-size:13.5px;font-weight:600;cursor:pointer;" style-hover="color:#4A4F5A;background:rgba(255,255,255,.6);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            장소
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;background:#fff;color:#2B61C4;font-size:13.5px;font-weight:700;box-shadow:0 1px 3px rgba(16,24,40,.12);cursor:pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+            예산
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:13px;">
+          <div style="display:flex;align-items:center;gap:9px;">
+            <span style="color:#9AA0AB;font-size:12px;font-weight:600;">접속 중</span>
+            {{ membersEl }}
+          </div>
+          <div style="width:1px;height:24px;background:#ECEEF1;"></div>
+          <sc-if value="{{ notViewer }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border:none;border-radius:11px;background:#3B7DF0;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" x2="15.4" y1="13.5" y2="17.5"/><line x1="15.4" x2="8.6" y1="6.5" y2="10.5"/></svg>
+                공유
+              </button>
+              <button style="width:36px;height:36px;border:1px solid #E6E8EC;background:#fff;border-radius:11px;color:#7B828F;display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:#F6F7F9;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isViewer }}" hint-placeholder-val="{{ false }}">
+            <div style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border:1px solid #E6E8EC;background:#F7F8FA;border-radius:11px;color:#7A818D;font-size:13px;font-weight:600;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              공유받은 플랜
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- ---- BODY ---- -->
+      <div style="flex:1;min-height:0;overflow-y:auto;background:#FBFBFC;">
+
+        <!-- LOADING -->
+        <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:22px 24px;display:flex;flex-direction:column;gap:18px;">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+              {{ skelMetrics }}
+            </div>
+            <div style="display:grid;grid-template-columns:420px 1fr;gap:16px;">
+              <div style="height:268px;border-radius:18px;background:linear-gradient(90deg,#EEF0F4 25%,#F7F8FA 37%,#EEF0F4 63%);background-size:840px 100%;animation:scShimmer 1.4s infinite linear;"></div>
+              <div style="height:268px;border-radius:18px;background:linear-gradient(90deg,#EEF0F4 25%,#F7F8FA 37%,#EEF0F4 63%);background-size:840px 100%;animation:scShimmer 1.4s infinite linear;"></div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- EMPTY -->
+        <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="height:680px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:9px;">
+            <div style="width:84px;height:84px;border-radius:26px;background:#E1F6EE;display:flex;align-items:center;justify-content:center;margin-bottom:6px;box-shadow:0 8px 22px -8px rgba(31,160,120,.4);">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1FA078" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+            </div>
+            <div style="font-size:19px;font-weight:800;color:#1B2030;letter-spacing:-.02em;">아직 지출 내역이 없어요</div>
+            <div style="font-size:14px;color:#8A909B;line-height:1.6;max-width:340px;">첫 지출을 추가하면 카테고리별 비중과 더치페이 정산이 자동으로 계산돼요.</div>
+            <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+              <button style="margin-top:14px;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 24px;border:none;border-radius:14px;background:#3B7DF0;color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px -3px rgba(59,125,240,.55);" style-hover="background:#2F6FE0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                지출 추가하기
+              </button>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <!-- DATA -->
+        <sc-if value="{{ showData }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:22px 24px;display:flex;flex-direction:column;gap:16px;">
+
+            <!-- metric cards -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+              <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="4">
+                <div style="background:#fff;border:1px solid #ECEEF1;border-radius:18px;padding:16px 17px;display:flex;flex-direction:column;gap:11px;box-shadow:0 1px 2px rgba(16,24,40,.04);">
+                  <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:12.5px;font-weight:600;color:#8A909B;">{{ m.label }}</span>
+                    {{ m.iconEl }}
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:6px;">
+                    <span style="font-size:23px;font-weight:800;color:#1B2030;letter-spacing:-.03em;">{{ m.value }}</span>
+                    <sc-if value="{{ m.hasUnit }}" hint-placeholder-val="{{ false }}"><span style="font-size:13px;font-weight:600;color:#9AA0AB;">{{ m.unit }}</span></sc-if>
+                  </div>
+                  {{ m.subEl }}
+                </div>
+              </sc-for>
+            </div>
+
+            <!-- charts row -->
+            <div style="display:grid;grid-template-columns:420px 1fr;gap:16px;">
+              <!-- donut -->
+              <div style="background:#fff;border:1px solid #ECEEF1;border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);">
+                <div style="font-size:14px;font-weight:700;color:#1B2030;">카테고리별 지출</div>
+                <div style="display:flex;align-items:center;gap:18px;">
+                  {{ donutEl }}
+                  <div style="flex:1;display:flex;flex-direction:column;gap:9px;">
+                    {{ donutLegendEl }}
+                  </div>
+                </div>
+              </div>
+              <!-- trend -->
+              <div style="background:#fff;border:1px solid #ECEEF1;border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 2px rgba(16,24,40,.04);">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div style="font-size:14px;font-weight:700;color:#1B2030;">일자별 지출 추이</div>
+                  <span style="font-size:12px;font-weight:600;color:#9AA0AB;">하루 평균 ₩321,000</span>
+                </div>
+                {{ trendEl }}
+              </div>
+            </div>
+
+            <!-- settlement + table row -->
+            <div style="display:grid;grid-template-columns:420px 1fr;gap:16px;align-items:start;">
+              <!-- settlement -->
+              <div style="background:#fff;border:1px solid #ECEEF1;border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:0 1px 2px rgba(16,24,40,.04);">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                  <div style="font-size:14px;font-weight:700;color:#1B2030;">정산 요약</div>
+                  <span style="display:inline-flex;align-items:center;gap:5px;background:#E1F6EE;color:#1FA078;font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:99px;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                    3건으로 정산
+                  </span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:9px;">
+                  <sc-for list="{{ settlements }}" as="s" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:#FBFBFC;border:1px solid #F0F1F4;border-radius:13px;">
+                      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;">
+                        {{ s.fromEl }}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C2C8D0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        {{ s.toEl }}
+                      </div>
+                      <span style="font-size:14.5px;font-weight:800;color:#1B2030;letter-spacing:-.02em;flex:none;">{{ s.amount }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+                  <button style="width:100%;height:40px;border:1px solid #E6E8EC;background:#fff;border-radius:12px;color:#3A3F4B;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;" style-hover="background:#F6F7F9;">
+                    정산 완료로 표시
+                  </button>
+                </sc-if>
+              </div>
+
+              <!-- expense table -->
+              <div style="background:#fff;border:1px solid #ECEEF1;border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(16,24,40,.04);display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px;border-bottom:1px solid #F0F1F4;">
+                  <div style="display:flex;align-items:baseline;gap:8px;">
+                    <span style="font-size:14px;font-weight:700;color:#1B2030;">지출 내역</span>
+                    <span style="font-size:12.5px;font-weight:600;color:#9AA0AB;">{{ expenseCount }}건</span>
+                  </div>
+                  <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+                    <button style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 15px 0 12px;border:none;border-radius:11px;background:#3B7DF0;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                      지출 추가
+                    </button>
+                  </sc-if>
+                </div>
+                <!-- column head -->
+                <div style="display:grid;grid-template-columns:78px 1fr 96px 84px 110px;gap:12px;padding:9px 20px;background:#FBFBFC;border-bottom:1px solid #F0F1F4;font-size:11.5px;font-weight:700;color:#9AA0AB;letter-spacing:.01em;">
+                  <span>날짜</span><span>항목</span><span>결제자</span><span style="text-align:center;">분담</span><span style="text-align:right;">금액</span>
+                </div>
+                <div style="max-height:236px;overflow-y:auto;">
+                  <sc-for list="{{ expenses }}" as="e" hint-placeholder-count="6">
+                    <div style="display:grid;grid-template-columns:78px 1fr 96px 84px 110px;gap:12px;padding:12px 20px;align-items:center;border-bottom:1px solid #F4F5F7;" style-hover="background:#FBFBFC;">
+                      <span style="font-size:12.5px;font-weight:600;color:#8A909B;">{{ e.date }}</span>
+                      <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                        {{ e.chipEl }}
+                        <div style="display:flex;flex-direction:column;gap:1px;min-width:0;">
+                          <span style="font-size:13.5px;font-weight:600;color:#1F2430;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ e.name }}</span>
+                          <span style="font-size:11.5px;font-weight:500;color:#A8AEB8;">{{ e.catLabel }}</span>
+                        </div>
+                      </div>
+                      {{ e.payerEl }}
+                      <div style="display:flex;justify-content:center;">{{ e.splitEl }}</div>
+                      <span style="font-size:13.5px;font-weight:700;color:#1B2030;text-align:right;letter-spacing:-.01em;">{{ e.amount }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- ============ DESIGN SYSTEM REFERENCE ============ -->
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;margin-top:24px;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#3FC4A0;"></span>
+      디자인 시스템 — 이 화면에서 새로 추가된 컴포넌트 (기존 토큰 계승)
+    </div>
+    <div style="width:1280px;background:#fff;border:1px solid #E8EAEF;border-radius:20px;box-shadow:0 1px 3px rgba(16,24,40,.05);padding:30px 34px;display:flex;flex-direction:column;gap:30px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="font-size:13px;font-weight:700;color:#1B2030;">요약 지표 카드</div>
+          <div style="display:flex;gap:14px;">{{ dsMetric }}</div>
+          <div style="font-size:13px;font-weight:700;color:#1B2030;margin-top:8px;">정산 행 · 보낸 사람 → 받는 사람</div>
+          {{ dsSettle }}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="font-size:13px;font-weight:700;color:#1B2030;">차트 · 도넛 / 막대 (카테고리 컬러 팔레트)</div>
+          <div style="display:flex;align-items:center;gap:24px;">{{ dsCharts }}</div>
+          <div style="font-size:11.5px;font-weight:600;color:#9AA0AB;margin-top:4px;">차트 데이터 컬러</div>
+          <div style="display:flex;flex-wrap:wrap;gap:14px;">{{ dsChartColors }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- floating state preview switcher -->
+<div style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:3px;background:rgba(27,32,48,.94);backdrop-filter:blur(10px);padding:6px 6px 6px 4px;border-radius:14px;box-shadow:0 10px 30px -6px rgba(0,0,0,.4);">
+  <span style="color:#8B92A0;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:0 9px;text-transform:uppercase;">상태</span>
+  {{ stateSwitchEl }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360,&quot;height&quot;:980},&quot;viewState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;data&quot;,&quot;empty&quot;,&quot;loading&quot;,&quot;viewer&quot;],&quot;default&quot;:&quot;data&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.CAT = {
+      food:    {label:'식비',  icon:'utensils',    bg:'#FFECEB', fg:'#E8615C'},
+      hotel:   {label:'숙소',  icon:'bed',         bg:'#E1F6EE', fg:'#1FA078'},
+      shopping:{label:'쇼핑',  icon:'shopping-bag',bg:'#FCE8F1', fg:'#D9609A'},
+      transport:{label:'교통', icon:'bus',         bg:'#E6F3FA', fg:'#3E97CC'},
+      cafe:    {label:'카페',  icon:'coffee',      bg:'#FBF1E4', fg:'#C5893A'},
+      museum:  {label:'명소',  icon:'landmark',    bg:'#E9F1FE', fg:'#3B7DF0'},
+      gift:    {label:'기념품',icon:'gift',        bg:'#F1ECFD', fg:'#8B6FE0'},
+    };
+    this.MEM = {
+      ji:{initial:'지',color:'#3B7DF0',name:'지현'},
+      min:{initial:'민',color:'#FF8A65',name:'민준'},
+      seo:{initial:'서',color:'#3FC4A0',name:'서윤'},
+      do:{initial:'도',color:'#B07CF0',name:'도윤'},
+    };
+    this.catTotals = [
+      {key:'hotel',   value:420000},
+      {key:'food',    value:412000},
+      {key:'shopping',value:228000},
+      {key:'transport',value:96000},
+      {key:'cafe',    value:68000},
+      {key:'museum',  value:60000},
+    ];
+    this.dayTotals = [
+      {label:'4.18', dow:'금', value:265000},
+      {label:'4.19', dow:'토', value:488000},
+      {label:'4.20', dow:'일', value:312000},
+      {label:'4.21', dow:'월', value:219000},
+    ];
+    this.settle = [
+      {from:'do', to:'ji', amount:96000},
+      {from:'seo',to:'ji', amount:84000},
+      {from:'min',to:'ji', amount:42000},
+    ];
+    this.expenses = [
+      {date:'4.18', name:'츠키지 장외시장 스시', cat:'food',     payer:'min', split:4, amount:68000},
+      {date:'4.18', name:'스이카 교통패스',       cat:'transport',payer:'ji',  split:4, amount:24000},
+      {date:'4.18', name:'긴자 식스 쇼핑',        cat:'shopping', payer:'seo', split:2, amount:152000},
+      {date:'4.18', name:'블루보틀 긴자',         cat:'cafe',     payer:'do',  split:4, amount:21000},
+      {date:'4.19', name:'호텔 2박 숙박비',       cat:'hotel',    payer:'ji',  split:4, amount:420000},
+      {date:'4.19', name:'사라베스 브런치',       cat:'food',     payer:'min', split:4, amount:56000},
+      {date:'4.19', name:'네즈 미술관 입장',      cat:'museum',   payer:'seo', split:3, amount:12000},
+      {date:'4.20', name:'나카미세 기념품',       cat:'gift',     payer:'do',  split:4, amount:38000},
+      {date:'4.20', name:'우에노 점심',           cat:'food',     payer:'min', split:4, amount:44000},
+    ];
+    this.state = { viewState: props.viewState || 'data' };
+  }
+
+  componentDidUpdate(prev){
+    if(prev.viewState !== this.props.viewState && this.props.viewState){
+      this.setState({viewState:this.props.viewState});
+    }
+  }
+
+  won(n){ return '₩'+n.toLocaleString('ko-KR'); }
+  man(n){ return (n/10000).toFixed(n%10000?1:0)+'만'; }
+
+  icon(name,o){
+    o=o||{};
+    const size=o.size||18,color=o.color||'#1F2430',sw=o.sw||2,fill=o.fill||'none';
+    const P={
+      'utensils':[['path',{d:'M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2'}],['path',{d:'M7 2v20'}],['path',{d:'M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7'}]],
+      'coffee':[['path',{d:'M10 2v2'}],['path',{d:'M14 2v2'}],['path',{d:'M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1'}],['path',{d:'M6 2v2'}]],
+      'shopping-bag':[['path',{d:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z'}],['path',{d:'M3 6h18'}],['path',{d:'M16 10a4 4 0 0 1-8 0'}]],
+      'landmark':[['line',{x1:3,x2:21,y1:22,y2:22}],['line',{x1:6,x2:6,y1:18,y2:11}],['line',{x1:10,x2:10,y1:18,y2:11}],['line',{x1:14,x2:14,y1:18,y2:11}],['line',{x1:18,x2:18,y1:18,y2:11}],['polygon',{points:'12 2 20 7 4 7'}]],
+      'bed':[['path',{d:'M2 4v16'}],['path',{d:'M2 8h18a2 2 0 0 1 2 2v10'}],['path',{d:'M2 17h20'}],['path',{d:'M6 8v9'}]],
+      'gift':[['rect',{x:3,y:8,width:18,height:4,rx:1}],['path',{d:'M12 8v13'}],['path',{d:'M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7'}],['path',{d:'M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5'}]],
+      'bus':[['path',{d:'M8 6v6'}],['path',{d:'M15 6v6'}],['path',{d:'M2 12h19.6'}],['path',{d:'M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.6 6.8 19.9 6 19 6H5c-.9 0-1.6.8-1.8 1.6l-1.4 5c-.1.4-.2.8-.2 1.2 0 .4.1.8.2 1.2C2.5 16.3 3 18 3 18h3'}],['circle',{cx:7,cy:18,r:2}],['path',{d:'M9 18h6'}],['circle',{cx:17,cy:18,r:2}]],
+      'wallet':[['path',{d:'M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1'}],['path',{d:'M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4'}]],
+      'users':[['path',{d:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'}],['circle',{cx:9,cy:7,r:4}],['path',{d:'M22 21v-2a4 4 0 0 0-3-3.87'}],['path',{d:'M16 3.13a4 4 0 0 1 0 7.75'}]],
+      'piggy':[['path',{d:'M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z'}],['path',{d:'M2 9v1c0 1.1.9 2 2 2h1'}],['path',{d:'M16 11h.01'}]],
+      'trending-up':[['polyline',{points:'22 7 13.5 15.5 8.5 10.5 2 17'}],['polyline',{points:'16 7 22 7 22 13'}]],
+    };
+    const parts=P[name]||[];
+    return React.createElement('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:fill,stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'},
+      parts.map((el,i)=>React.createElement(el[0],Object.assign({key:i},el[1]))));
+  }
+
+  chip(catKey,size){
+    const c=this.CAT[catKey],s=size||34;
+    return React.createElement('div',{style:{width:s,height:s,borderRadius:Math.round(s*0.3),background:c.bg,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},
+      this.icon(c.icon,{size:Math.round(s*0.52),color:c.fg,sw:2}));
+  }
+
+  iconTile(name,bg,fg){
+    return React.createElement('div',{style:{width:34,height:34,borderRadius:11,background:bg,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},
+      this.icon(name,{size:18,color:fg,sw:2}));
+  }
+
+  avatar(key,size){
+    const m=this.MEM[key],s=size||26;
+    return React.createElement('div',{title:m.name,style:{width:s,height:s,borderRadius:'50%',background:'#fff',border:'2px solid '+m.color,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},
+      React.createElement('span',{style:{fontSize:s*0.42,fontWeight:700,color:m.color}}, m.initial));
+  }
+
+  payerCell(key){
+    const m=this.MEM[key];
+    return React.createElement('div',{style:{display:'flex',alignItems:'center',gap:7,minWidth:0}},
+      this.avatar(key,24),
+      React.createElement('span',{style:{fontSize:12.5,fontWeight:600,color:'#4A4F5A',whiteSpace:'nowrap'}}, m.name));
+  }
+
+  splitCell(n){
+    const h=React.createElement;
+    const keys=Object.keys(this.MEM).slice(0,n);
+    return h('div',{style:{display:'flex',alignItems:'center'}},
+      keys.map((k,i)=>{
+        const m=this.MEM[k];
+        return h('div',{key:k,style:{width:22,height:22,borderRadius:'50%',background:'#fff',border:'2px solid '+m.color,display:'flex',alignItems:'center',justifyContent:'center',marginLeft:i?-7:0,boxShadow:'0 0 0 1.5px #fff'}},
+          h('span',{style:{fontSize:9,fontWeight:700,color:m.color}}, m.initial));
+      }));
+  }
+
+  settleParty(key){
+    const m=this.MEM[key],h=React.createElement;
+    return h('div',{style:{display:'flex',alignItems:'center',gap:6,minWidth:0}},
+      this.avatar(key,26),
+      h('span',{style:{fontSize:13,fontWeight:700,color:'#3A3F4B',whiteSpace:'nowrap'}}, m.name));
+  }
+
+  buildMembers(){
+    const h=React.createElement;
+    const ks=['ji','min','seo','do'];
+    return h('div',{style:{display:'flex',alignItems:'center'}}, ks.map((k,i)=>{
+      const m=this.MEM[k];
+      return h('div',{key:k,title:m.name,style:{width:32,height:32,borderRadius:'50%',background:'#fff',border:'2px solid '+m.color,display:'flex',alignItems:'center',justifyContent:'center',marginLeft:i?-9:0,position:'relative',boxShadow:'0 0 0 2.5px #fff'}},
+        h('span',{style:{fontSize:12.5,fontWeight:700,color:m.color}}, m.initial),
+        i<3?h('span',{style:{position:'absolute',right:-1,bottom:-1,width:9,height:9,borderRadius:'50%',background:'#34C759',border:'2px solid #fff'}}):null);
+    }));
+  }
+
+  donut(){
+    const h=React.createElement;
+    const total=this.catTotals.reduce((a,b)=>a+b.value,0);
+    const r=54, cx=70, cy=70, circ=2*Math.PI*r, sw=22;
+    let off=0;
+    const arcs=this.catTotals.map((c,i)=>{
+      const frac=c.value/total, len=frac*circ;
+      const el=h('circle',{key:i,cx:cx,cy:cy,r:r,fill:'none',stroke:this.CAT[c.key].fg,strokeWidth:sw,
+        strokeDasharray:len+' '+(circ-len),strokeDashoffset:-off,transform:'rotate(-90 '+cx+' '+cy+')',strokeLinecap:'butt'});
+      off+=len; return el;
+    });
+    return h('div',{style:{position:'relative',width:140,height:140,flex:'none'}},
+      h('svg',{width:140,height:140,viewBox:'0 0 140 140'}, arcs),
+      h('div',{style:{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:2}},
+        h('span',{style:{fontSize:11,fontWeight:600,color:'#9AA0AB'}}, '총지출'),
+        h('span',{style:{fontSize:15.5,fontWeight:800,color:'#1B2030',letterSpacing:'-.02em'}}, this.won(total)))
+    );
+  }
+
+  donutLegend(){
+    const h=React.createElement;
+    const total=this.catTotals.reduce((a,b)=>a+b.value,0);
+    return h(React.Fragment,null, this.catTotals.map((c,i)=>{
+      const cat=this.CAT[c.key], pct=Math.round(c.value/total*100);
+      return h('div',{key:i,style:{display:'flex',alignItems:'center',gap:8}},
+        h('span',{style:{width:9,height:9,borderRadius:3,background:cat.fg,flex:'none'}}),
+        h('span',{style:{fontSize:12.5,fontWeight:600,color:'#3A3F4B',flex:1}}, cat.label),
+        h('span',{style:{fontSize:12,fontWeight:700,color:'#1B2030'}}, pct+'%'));
+    }));
+  }
+
+  trend(){
+    const h=React.createElement;
+    const max=Math.max.apply(null,this.dayTotals.map(d=>d.value));
+    return h('div',{style:{display:'flex',alignItems:'flex-end',gap:18,height:180,paddingTop:24}},
+      this.dayTotals.map((d,i)=>{
+        const pct=d.value/max;
+        return h('div',{key:i,style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:9,height:'100%',justifyContent:'flex-end'}},
+          h('span',{style:{fontSize:12,fontWeight:700,color:'#5A606B'}}, this.man(d.value)),
+          h('div',{style:{width:'100%',maxWidth:56,height:Math.round(pct*116)+'px',borderRadius:'10px 10px 4px 4px',background:'linear-gradient(180deg,#7CA8F0,#5B8DEF)',transformOrigin:'bottom',animation:'scGrow .5s ease-out'}}),
+          h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center'}},
+            h('span',{style:{fontSize:12,fontWeight:700,color:'#3A3F4B'}}, d.label),
+            h('span',{style:{fontSize:10.5,fontWeight:600,color:'#A8AEB8'}}, d.dow)));
+      }));
+  }
+
+  buildMetrics(){
+    const total=this.catTotals.reduce((a,b)=>a+b.value,0);
+    const per=Math.round(total/4);
+    const budget=1500000, remain=budget-total, usedPct=Math.round(total/budget*100);
+    const h=React.createElement;
+    const progress=h('div',{style:{display:'flex',flexDirection:'column',gap:5}},
+      h('div',{style:{height:6,borderRadius:99,background:'#F0F1F4',overflow:'hidden'}},
+        h('div',{style:{height:'100%',width:usedPct+'%',borderRadius:99,background:usedPct>90?'#E8615C':'#3B7DF0'}})),
+      h('span',{style:{fontSize:11.5,fontWeight:600,color:'#9AA0AB'}}, '설정 '+this.won(budget)+' · '+usedPct+'% 사용'));
+    return [
+      {label:'총지출', value:this.won(total), iconEl:this.iconTile('wallet','#EAF1FE','#2F6FE0'),
+        subEl:h('span',{style:{fontSize:11.5,fontWeight:600,color:'#9AA0AB'}}, '지출 '+this.expenses.length+'건')},
+      {label:'1인당 금액', value:this.won(per), iconEl:this.iconTile('users','#E1F6EE','#1FA078'),
+        subEl:h('span',{style:{fontSize:11.5,fontWeight:600,color:'#9AA0AB'}}, '멤버 4명 균등 분담')},
+      {label:'남은 예산', value:this.won(remain), iconEl:this.iconTile('piggy','#F1ECFD','#8B6FE0'), subEl:progress},
+      {label:'최다 지출', value:'숙소', iconEl:this.iconTile('trending-up','#FFECEB','#E8615C'),
+        subEl:h('span',{style:{display:'inline-flex',alignItems:'center',gap:5,fontSize:11.5,fontWeight:700,color:'#1FA078',background:'#E1F6EE',padding:'2px 9px',borderRadius:99,width:'max-content'}}, this.won(420000))},
+    ];
+  }
+
+  buildSkelMetrics(){
+    const h=React.createElement;
+    return h(React.Fragment,null,[0,1,2,3].map(i=>
+      h('div',{key:i,style:{height:112,borderRadius:18,border:'1px solid #ECEEF1',background:'#fff',padding:16,display:'flex',flexDirection:'column',gap:12}},
+        h('div',{style:{height:14,width:'50%',borderRadius:6,background:'#EEF0F4'}}),
+        h('div',{style:{height:22,width:'70%',borderRadius:6,background:'#F1F3F6'}}),
+        h('div',{style:{height:10,width:'40%',borderRadius:6,background:'#F4F5F7'}}))));
+  }
+
+  setView(v){ this.setState({viewState:v}); }
+  buildStateSwitch(){
+    const h=React.createElement;
+    const items=[['data','내역 있음'],['empty','빈 상태'],['loading','로딩'],['viewer','보기 전용']];
+    const cur=this.state.viewState;
+    return h('div',{style:{display:'flex',gap:2}}, items.map(([k,label])=>{
+      const on=cur===k;
+      return h('button',{key:k,onClick:()=>this.setView(k),style:{height:32,padding:'0 12px',border:'none',borderRadius:10,cursor:'pointer',fontSize:12.5,fontWeight:700,background:on?'rgba(255,255,255,.16)':'transparent',color:on?'#fff':'#9298A6',transition:'all .12s'}}, label);
+    }));
+  }
+
+  nav(f){ try{ window.location.href = encodeURI(f); }catch(e){} }
+  componentDidMount(){
+    if(this.__navWired) return; this.__navWired=true;
+    var rules = [
+      {label:'플랜',to:'플랜 뷰.dc.html',tag:'DIV',needsSvg:true},
+      {label:'일정표',to:'일정표.dc.html',tag:'DIV',needsSvg:true},
+      {label:'장소',to:'장소.dc.html',tag:'DIV',needsSvg:true},
+      {label:'예산',to:'예산 정산.dc.html',tag:'DIV',needsSvg:true},
+      {label:'목록',to:'내 여행 목록.dc.html',tag:'BUTTON'},
+      {label:'공유',to:'오버레이 3종.dc.html#share',tag:'BUTTON'},
+      {label:'장소 추가',to:'오버레이 3종.dc.html#place',tag:'BUTTON'},
+      {label:'지출 추가',to:'오버레이 3종.dc.html#expense',tag:'BUTTON'}
+    ];
+    var norm=function(s){return (s||'').replace(/\s+/g,' ').trim();};
+    var self=this;
+    document.addEventListener('click', function(e){
+      var el=e.target;
+      for(var i=0; el && i<7; i++, el=el.parentElement){
+        var txt=norm(el.textContent);
+        for(var j=0;j<rules.length;j++){
+          var r=rules[j];
+          var ok = r.mode==='includes' ? (txt.indexOf(r.label)>=0) : (txt===r.label);
+          if(!ok) continue;
+          if(r.tag && el.tagName!==r.tag) continue;
+          if(r.needsSvg && !(el.querySelector && el.querySelector('svg'))) continue;
+          e.preventDefault(); e.stopPropagation(); self.nav(r.to); return;
+        }
+      }
+    }, true);
+  }
+
+  renderVals(){
+    const vs=this.state.viewState;
+    const isLoading=vs==='loading', isEmpty=vs==='empty', isViewer=vs==='viewer';
+    const showData=vs==='data'||vs==='viewer';
+    const canEdit=vs==='data';
+
+    const metrics=this.buildMetrics().map(m=>({label:m.label,value:m.value,iconEl:m.iconEl,subEl:m.subEl,hasUnit:false}));
+    const settlements=this.settle.map(s=>({fromEl:this.settleParty(s.from),toEl:this.settleParty(s.to),amount:this.won(s.amount)}));
+    const expenses=this.expenses.map(e=>({
+      date:e.date, name:e.name, catLabel:this.CAT[e.cat].label, chipEl:this.chip(e.cat,34),
+      payerEl:this.payerCell(e.payer), splitEl:this.splitCell(e.split), amount:this.won(e.amount),
+    }));
+
+    // DS samples
+    const h=React.createElement;
+    const dsMetric=h('div',{style:{width:240,background:'#fff',border:'1px solid #ECEEF1',borderRadius:18,padding:'16px 17px',display:'flex',flexDirection:'column',gap:11}},
+      h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
+        h('span',{style:{fontSize:12.5,fontWeight:600,color:'#8A909B'}}, '총지출'), this.iconTile('wallet','#EAF1FE','#2F6FE0')),
+      h('span',{style:{fontSize:23,fontWeight:800,color:'#1B2030',letterSpacing:'-.03em'}}, '₩1,284,000'),
+      h('span',{style:{fontSize:11.5,fontWeight:600,color:'#9AA0AB'}}, '지출 9건'));
+    const dsSettle=h('div',{style:{width:300,display:'flex',alignItems:'center',gap:10,padding:'11px 13px',background:'#FBFBFC',border:'1px solid #F0F1F4',borderRadius:13}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:8,flex:1}}, this.settleParty('do'),
+        h('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'#C2C8D0',strokeWidth:2.2,strokeLinecap:'round',strokeLinejoin:'round'}, h('path',{d:'M5 12h14'}),h('path',{d:'m12 5 7 7-7 7'})),
+        this.settleParty('ji')),
+      h('span',{style:{fontSize:14.5,fontWeight:800,color:'#1B2030'}}, '₩96,000'));
+    const dsCharts=h('div',{style:{display:'flex',alignItems:'center',gap:24}}, this.donut(),
+      h('div',{style:{display:'flex',alignItems:'flex-end',gap:10,height:90}},
+        [0.55,1,0.64,0.45].map((p,i)=> h('div',{key:i,style:{width:22,height:Math.round(p*78)+'px',borderRadius:'7px 7px 3px 3px',background:'linear-gradient(180deg,#7CA8F0,#5B8DEF)'}}))));
+    const dsChartColors=h('div',{style:{display:'flex',flexWrap:'wrap',gap:14}}, this.catTotals.map(c=>{
+      const cat=this.CAT[c.key];
+      return h('div',{key:c.key,style:{display:'flex',alignItems:'center',gap:7}},
+        h('span',{style:{width:18,height:18,borderRadius:6,background:cat.fg}}),
+        h('span',{style:{fontSize:12,fontWeight:600,color:'#5A606B'}}, cat.label),
+        h('span',{style:{fontSize:11,fontWeight:600,color:'#A8AEB8'}}, cat.fg));
+    }));
+
+    return {
+      isViewer, notViewer:!isViewer, isLoading, isEmpty, showData, canEdit,
+      membersEl:this.buildMembers(),
+      metrics, settlements, expenses, expenseCount:this.expenses.length,
+      donutEl:this.donut(), donutLegendEl:this.donutLegend(), trendEl:this.trend(),
+      skelMetrics:this.buildSkelMetrics(),
+      stateSwitchEl:this.buildStateSwitch(),
+      dsMetric, dsSettle, dsCharts, dsChartColors,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;color:#1F2430;background:#EEF0F4;}
+  @keyframes scPulse{0%{transform:scale(.6);opacity:.5;}80%{opacity:0;}100%{transform:scale(2.4);opacity:0;}}
+  @keyframes scShimmer{0%{background-position:-420px 0;}100%{background-position:420px 0;}}
+  @keyframes scSpin{to{transform:rotate(360deg);}}
+  @keyframes scFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:#D7DBE2;border-radius:99px;border:3px solid transparent;background-clip:content-box;}
+  ::-webkit-scrollbar-thumb:hover{background:#C2C8D0;background-clip:content-box;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+
+<div style="min-width:100%;min-height:100vh;width:max-content;box-sizing:border-box;padding:40px 40px 130px;background:#EEF0F4;">
+  <div style="width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:13px;">
+
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;letter-spacing:-.01em;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#5B8DEF;"></span>
+      플랜 뷰 · 지도 + 일정 · 데스크톱 1280px
+    </div>
+
+    <!-- ============ APP CARD ============ -->
+    <div style="width:1280px;height:826px;background:#fff;border-radius:22px;border:1px solid #E8EAEF;box-shadow:0 1px 3px rgba(16,24,40,.05),0 24px 60px -26px rgba(16,24,40,.28);overflow:hidden;display:flex;flex-direction:column;">
+
+      <!-- ---- TOP BAR ---- -->
+      <div style="position:relative;height:66px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #ECEEF1;background:#fff;">
+        <!-- left cluster -->
+        <div style="display:flex;align-items:center;gap:13px;min-width:0;">
+          <button style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 11px 0 8px;border:1px solid #E6E8EC;background:#fff;border-radius:10px;color:#5A606B;font-size:13px;font-weight:600;cursor:pointer;" style-hover="background:#F6F7F9;border-color:#DDE0E5;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            목록
+          </button>
+          <div style="width:1px;height:24px;background:#ECEEF1;"></div>
+          <div style="width:42px;height:42px;border-radius:13px;flex:none;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px -2px rgba(91,141,239,.5);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:17px;font-weight:700;color:#1B2030;letter-spacing:-.02em;">도쿄, 우리끼리 4일</span>
+              <sc-if value="{{ isViewer }}" hint-placeholder-val="{{ false }}">
+                <span style="display:inline-flex;align-items:center;gap:4px;background:#F1F3F6;color:#7A818D;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  보기 전용
+                </span>
+              </sc-if>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;color:#8A909B;font-size:12.5px;font-weight:500;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+              2026.4.18 – 4.21
+              <span style="background:#EEF0F4;color:#6B7280;font-weight:600;font-size:11.5px;padding:1px 7px;border-radius:99px;">3박 4일</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- center: segmented view toggle -->
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:2px;background:#F1F3F6;padding:4px;border-radius:13px;">
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;background:#fff;color:#2B61C4;font-size:13.5px;font-weight:700;box-shadow:0 1px 3px rgba(16,24,40,.12);cursor:pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.1 5.5a2 2 0 0 0 1.8 0l3.6-1.8A1 1 0 0 1 21 4.6v12.8a1 1 0 0 1-.5.9l-4.6 2.3a2 2 0 0 1-1.8 0l-4.2-2.1a2 2 0 0 0-1.8 0l-3.6 1.8A1 1 0 0 1 3 19.4V6.6a1 1 0 0 1 .5-.9l4.6-2.3a2 2 0 0 1 1.8 0z"/><path d="M15 5.8v15"/><path d="M9 3.2v15"/></svg>
+            플랜
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;color:#7B828F;font-size:13.5px;font-weight:600;cursor:pointer;" style-hover="color:#4A4F5A;background:rgba(255,255,255,.6);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>
+            일정표
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;color:#7B828F;font-size:13.5px;font-weight:600;cursor:pointer;" style-hover="color:#4A4F5A;background:rgba(255,255,255,.6);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            장소
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;color:#7B828F;font-size:13.5px;font-weight:600;cursor:pointer;" style-hover="color:#4A4F5A;background:rgba(255,255,255,.6);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+            예산
+          </div>
+        </div>
+
+        <!-- right cluster -->
+        <div style="display:flex;align-items:center;gap:13px;">
+          <div style="display:flex;align-items:center;gap:9px;">
+            <span style="color:#9AA0AB;font-size:12px;font-weight:600;">접속 중</span>
+            {{ membersEl }}
+          </div>
+          <div style="width:1px;height:24px;background:#ECEEF1;"></div>
+          <sc-if value="{{ notViewer }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border:none;border-radius:11px;background:#3B7DF0;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" x2="15.4" y1="13.5" y2="17.5"/><line x1="15.4" x2="8.6" y1="6.5" y2="10.5"/></svg>
+                공유
+              </button>
+              <button style="width:36px;height:36px;border:1px solid #E6E8EC;background:#fff;border-radius:11px;color:#7B828F;display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:#F6F7F9;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isViewer }}" hint-placeholder-val="{{ false }}">
+            <div style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border:1px solid #E6E8EC;background:#F7F8FA;border-radius:11px;color:#7A818D;font-size:13px;font-weight:600;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              공유받은 플랜
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- ---- BODY ---- -->
+      <div style="flex:1;display:flex;min-height:0;">
+
+        <!-- == ITINERARY PANEL == -->
+        <div style="width:392px;flex:none;display:flex;flex-direction:column;min-height:0;border-right:1px solid #ECEEF1;background:#FBFBFC;">
+
+          <!-- day switcher -->
+          <div style="flex:none;padding:14px 16px;border-bottom:1px solid #ECEEF1;background:#fff;">
+            {{ dayBarEl }}
+          </div>
+
+          <!-- LOADING -->
+          <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;padding:18px 16px;display:flex;flex-direction:column;gap:11px;">
+              <div style="height:30px;border-radius:9px;background:linear-gradient(90deg,#EEF0F4 25%,#F7F8FA 37%,#EEF0F4 63%);background-size:840px 100%;animation:scShimmer 1.4s infinite linear;width:60%;"></div>
+              <div style="height:68px;border-radius:14px;background:linear-gradient(90deg,#EEF0F4 25%,#F7F8FA 37%,#EEF0F4 63%);background-size:840px 100%;animation:scShimmer 1.4s infinite linear;"></div>
+              <div style="height:68px;border-radius:14px;background:linear-gradient(90deg,#EEF0F4 25%,#F7F8FA 37%,#EEF0F4 63%);background-size:840px 100%;animation:scShimmer 1.4s infinite linear;"></div>
+              <div style="height:68px;border-radius:14px;background:linear-gradient(90deg,#EEF0F4 25%,#F7F8FA 37%,#EEF0F4 63%);background-size:840px 100%;animation:scShimmer 1.4s infinite linear;"></div>
+              <div style="height:68px;border-radius:14px;background:linear-gradient(90deg,#EEF0F4 25%,#F7F8FA 37%,#EEF0F4 63%);background-size:840px 100%;animation:scShimmer 1.4s infinite linear;opacity:.6;"></div>
+            </div>
+          </sc-if>
+
+          <!-- EMPTY -->
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 36px;gap:8px;">
+              <div style="width:64px;height:64px;border-radius:20px;background:#EAF1FE;display:flex;align-items:center;justify-content:center;margin-bottom:6px;">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5B8DEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><line x1="12" y1="7" x2="12" y2="13"/><line x1="9" y1="10" x2="15" y2="10"/></svg>
+              </div>
+              <div style="font-size:16px;font-weight:700;color:#1B2030;">아직 등록된 장소가 없어요</div>
+              <div style="font-size:13px;color:#8A909B;line-height:1.55;max-width:230px;">장소를 추가하면 지도에 순서대로 동선이 그려져요. 첫 장소부터 함께 정해볼까요?</div>
+              <button onClick="{{ goEditing }}" style="margin-top:12px;display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 20px;border:none;border-radius:13px;background:#3B7DF0;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 10px -2px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                장소 추가하기
+              </button>
+            </div>
+          </sc-if>
+
+          <!-- MAIN (editing / viewer) -->
+          <sc-if value="{{ showMain }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:none;padding:14px 16px 10px;display:flex;flex-direction:column;gap:11px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:baseline;gap:8px;">
+                  <span style="font-size:15px;font-weight:700;color:#1B2030;">{{ dayMeta.label }} 일정</span>
+                  <span style="font-size:12.5px;color:#9AA0AB;font-weight:600;">{{ dayMeta.count }}곳</span>
+                </div>
+                <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+                  <button style="display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 12px 0 10px;border:none;border-radius:10px;background:#EAF1FE;color:#2F6FE0;font-size:13px;font-weight:700;cursor:pointer;" style-hover="background:#DCE9FD;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    장소 추가
+                  </button>
+                </sc-if>
+              </div>
+              {{ toggleEl }}
+              {{ catBarEl }}
+              <sc-if value="{{ dragHint }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;align-items:center;gap:6px;color:#A2A8B2;font-size:11.5px;font-weight:500;padding:0 2px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg>
+                  드래그해서 순서를 바꾸면 지도 동선도 함께 업데이트돼요
+                </div>
+              </sc-if>
+            </div>
+
+            <div style="flex:1;overflow-y:auto;padding:2px 16px 18px;">
+              <div style="display:flex;flex-direction:column;gap:9px;">
+                <sc-for list="{{ places }}" as="item" hint-placeholder-count="5">
+                  <div data-id="{{ item.id }}" data-idx="{{ item.idx }}" draggable="{{ canDrag }}"
+                       onClick="{{ onSelect }}" onDragStart="{{ onDragStart }}" onDragOver="{{ onDragOver }}" onDragEnter="{{ onDragEnter }}" onDragEnd="{{ onDragEnd }}"
+                       style="position:relative;display:flex;align-items:center;gap:11px;padding:11px 12px 11px 13px;background:#fff;border:1px solid #ECEEF1;border-radius:14px;cursor:pointer;transition:box-shadow .15s,border-color .15s,transform .12s;"
+                       style-hover="box-shadow:0 5px 16px -4px rgba(16,24,40,.14);border-color:#DCE0E6;transform:translateY(-1px);">
+                    <sc-if value="{{ item.selected }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:0 99px 99px 0;background:#3B7DF0;"></div>
+                    </sc-if>
+                    <div style="flex:none;width:25px;height:25px;border-radius:50%;background:#EAF1FE;color:#2F6FE0;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;">{{ item.order }}</div>
+                    <div style="flex:none;">{{ item.chipEl }}</div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                      <span style="font-size:14.5px;font-weight:600;color:#1F2430;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.name }}</span>
+                      <div style="display:flex;align-items:center;gap:7px;color:#9097A1;font-size:12px;">
+                        <span style="display:inline-flex;align-items:center;gap:3px;">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 7 12 12 15 14"/></svg>
+                          {{ item.time }}
+                        </span>
+                        <span style="width:3px;height:3px;border-radius:50%;background:#CDD2DA;"></span>
+                        <span style="background:#F1F3F6;color:#6B7280;font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;">{{ item.catLabel }}</span>
+                      </div>
+                      <sc-if value="{{ item.hasNote }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:12px;color:#A8AEB8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ item.note }}</span>
+                      </sc-if>
+                    </div>
+                    <sc-if value="{{ canDrag }}" hint-placeholder-val="{{ true }}">
+                      <div style="flex:none;color:#C4CAD2;cursor:grab;display:flex;padding:2px;" style-hover="color:#9AA0AB;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="18" r="1"/></svg>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <!-- == MAP PANEL == -->
+        <div style="flex:1;position:relative;min-width:0;background:#EAF0EE;overflow:hidden;">
+          <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;">
+            <rect width="1000" height="700" fill="#EAF0EE"/>
+            <path d="M0 470 C 180 430 320 540 520 500 C 720 460 860 540 1000 500 L1000 700 L0 700 Z" fill="#D9E8F2"/>
+            <path d="M610 0 C 592 120 690 215 652 335 C 632 415 690 475 712 555 L 792 555 C 752 460 734 380 772 280 C 802 180 752 80 792 0 Z" fill="#D9E8F2" opacity=".75"/>
+            <ellipse cx="205" cy="175" rx="118" ry="86" fill="#D8ECD6"/>
+            <rect x="430" y="118" width="148" height="118" rx="26" fill="#D8ECD6"/>
+            <g fill="#F2F5F3">
+              <rect x="58" y="298" width="120" height="92" rx="15"/>
+              <rect x="222" y="318" width="138" height="100" rx="15"/>
+              <rect x="402" y="330" width="118" height="90" rx="15"/>
+              <rect x="556" y="118" width="112" height="80" rx="15"/>
+              <rect x="120" y="500" width="132" height="80" rx="15"/>
+              <rect x="852" y="198" width="118" height="100" rx="15"/>
+              <rect x="840" y="384" width="120" height="120" rx="15"/>
+            </g>
+            <g stroke="#FFFFFF" stroke-width="11" fill="none" stroke-linecap="round">
+              <path d="M0 282 H1000"/><path d="M400 0 V700"/>
+              <path d="M0 120 C 300 162 600 82 1000 138"/><path d="M700 0 V700"/><path d="M0 560 H1000"/>
+            </g>
+            <g stroke="#E4EAE8" stroke-width="3" fill="none">
+              <path d="M200 0 V700"/><path d="M0 420 H1000"/><path d="M860 0 V700"/>
+            </g>
+          </svg>
+
+          <!-- live data overlay (markers, route, cursors) -->
+          <sc-if value="{{ showMain }}" hint-placeholder-val="{{ true }}">
+            {{ mapOverlay }}
+          </sc-if>
+
+          <!-- map empty -->
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+              <div style="background:rgba(255,255,255,.85);backdrop-filter:blur(2px);border:1.5px dashed #BFC6D0;border-radius:16px;padding:18px 26px;text-align:center;color:#7A818D;font-size:13px;font-weight:600;max-width:280px;line-height:1.55;">장소를 추가하면<br>여기에 순서대로 동선이 그려져요</div>
+            </div>
+          </sc-if>
+
+          <!-- map loading -->
+          <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;background:rgba(234,240,238,.55);backdrop-filter:blur(1px);display:flex;align-items:center;justify-content:center;">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+                <div style="width:34px;height:34px;border-radius:50%;border:3px solid #D5DEE4;border-top-color:#5B8DEF;animation:scSpin .8s linear infinite;"></div>
+                <div style="color:#6B7280;font-size:13px;font-weight:600;">지도를 불러오는 중…</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- legend -->
+          <sc-if value="{{ showMain }}" hint-placeholder-val="{{ true }}">
+            <div style="position:absolute;left:16px;bottom:16px;display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid #ECEEF1;border-radius:12px;padding:9px 13px;box-shadow:0 4px 14px -4px rgba(16,24,40,.16);font-size:12px;font-weight:600;color:#5A606B;">
+              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:16px;height:16px;border-radius:50%;background:#3B7DF0;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">1</span>일정 순서</span>
+              <span style="width:1px;height:14px;background:#E6E8EC;"></span>
+              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:13px;height:13px;border-radius:50% 50% 50% 2px;background:#fff;border:1.5px solid #C2C8D0;transform:rotate(45deg);"></span>저장한 장소</span>
+            </div>
+          </sc-if>
+
+          <!-- zoom controls -->
+          <div style="position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;background:#fff;border:1px solid #ECEEF1;border-radius:12px;box-shadow:0 4px 14px -4px rgba(16,24,40,.16);overflow:hidden;">
+            <button style="width:38px;height:38px;border:none;background:#fff;color:#5A606B;display:flex;align-items:center;justify-content:center;cursor:pointer;border-bottom:1px solid #F1F3F6;" style-hover="background:#F6F7F9;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            </button>
+            <button style="width:38px;height:38px;border:none;background:#fff;color:#5A606B;display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:#F6F7F9;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DESIGN SYSTEM REFERENCE ============ -->
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;margin-top:24px;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#3FC4A0;"></span>
+      디자인 시스템 — 이후 화면에서 재사용할 토큰 &amp; 컴포넌트
+    </div>
+    <div style="width:1280px;background:#fff;border:1px solid #E8EAEF;border-radius:20px;box-shadow:0 1px 3px rgba(16,24,40,.05);padding:30px 34px;display:flex;flex-direction:column;gap:30px;">
+
+      <!-- COLORS -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;letter-spacing:-.01em;">컬러</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+          {{ swatchSurface }}
+        </div>
+        <div style="font-size:11.5px;font-weight:600;color:#9AA0AB;margin-top:4px;">카테고리 · 연한 컬러 칩</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+          {{ swatchCats }}
+        </div>
+        <div style="font-size:11.5px;font-weight:600;color:#9AA0AB;margin-top:4px;">멤버 식별 색 · 실시간 커서</div>
+        <div style="display:flex;flex-wrap:wrap;gap:14px;">
+          {{ swatchMembers }}
+        </div>
+      </div>
+
+      <div style="height:1px;background:#F0F1F4;"></div>
+
+      <!-- TYPE + ICONS -->
+      <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:40px;">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="font-size:13px;font-weight:700;color:#1B2030;">타이포그래피 · Pretendard</div>
+          <div style="display:flex;align-items:baseline;gap:12px;"><span style="font-size:24px;font-weight:700;color:#1B2030;letter-spacing:-.02em;">도쿄, 우리끼리 4일</span><span style="font-size:11px;color:#A8AEB8;font-weight:600;">Title · 24 / 700</span></div>
+          <div style="display:flex;align-items:baseline;gap:12px;"><span style="font-size:17px;font-weight:700;color:#1B2030;">일정과 동선을 함께</span><span style="font-size:11px;color:#A8AEB8;font-weight:600;">Heading · 17 / 700</span></div>
+          <div style="display:flex;align-items:baseline;gap:12px;"><span style="font-size:14.5px;font-weight:600;color:#2B313D;">블루보틀 긴자 · 카페</span><span style="font-size:11px;color:#A8AEB8;font-weight:600;">Body · 14.5 / 600</span></div>
+          <div style="display:flex;align-items:baseline;gap:12px;"><span style="font-size:13px;font-weight:500;color:#6B7280;">선택한 날짜의 장소를 순서대로 보여줍니다.</span><span style="font-size:11px;color:#A8AEB8;font-weight:600;">Body · 13 / 500</span></div>
+          <div style="display:flex;align-items:baseline;gap:12px;"><span style="font-size:12px;font-weight:600;color:#9AA0AB;">15:10 · 커피 브레이크</span><span style="font-size:11px;color:#A8AEB8;font-weight:600;">Meta · 12 / 600</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="font-size:13px;font-weight:700;color:#1B2030;">아이콘 · Lucide / 카테고리</div>
+          <div style="display:flex;flex-wrap:wrap;gap:18px;">
+            {{ iconCats }}
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px;background:#F0F1F4;"></div>
+
+      <!-- COMPONENTS -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">컴포넌트</div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:26px;">
+          <div style="display:flex;flex-direction:column;gap:8px;"><span style="font-size:11px;font-weight:600;color:#9AA0AB;">버튼</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:11px;background:#3B7DF0;color:#fff;font-size:13.5px;font-weight:700;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);">기본</span>
+              <span style="display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:11px;background:#EAF1FE;color:#2F6FE0;font-size:13.5px;font-weight:700;">보조</span>
+              <span style="display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:11px;background:#fff;border:1px solid #E6E8EC;color:#5A606B;font-size:13.5px;font-weight:600;">외곽선</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;"><span style="font-size:11px;font-weight:600;color:#9AA0AB;">세그먼트</span>
+            <div style="display:inline-flex;align-items:center;gap:2px;background:#F1F3F6;padding:4px;border-radius:12px;">
+              <span style="height:30px;display:inline-flex;align-items:center;padding:0 14px;border-radius:9px;background:#fff;color:#2B61C4;font-size:13px;font-weight:700;box-shadow:0 1px 3px rgba(16,24,40,.12);">플랜</span>
+              <span style="height:30px;display:inline-flex;align-items:center;padding:0 14px;border-radius:9px;color:#7B828F;font-size:13px;font-weight:600;">장소</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;"><span style="font-size:11px;font-weight:600;color:#9AA0AB;">토글</span>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="width:40px;height:23px;border-radius:99px;background:#3B7DF0;position:relative;display:inline-block;"><span style="position:absolute;top:2px;left:19px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);"></span></span>
+              <span style="width:40px;height:23px;border-radius:99px;background:#D7DBE2;position:relative;display:inline-block;"><span style="position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);"></span></span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;"><span style="font-size:11px;font-weight:600;color:#9AA0AB;">지도 마커</span>
+            <div style="display:flex;align-items:center;gap:14px;">
+              <span style="width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid #3B7DF0;color:#2F6FE0;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(59,125,240,.3);">2</span>
+              <span style="width:30px;height:30px;border-radius:50%;background:#3B7DF0;border:2px solid #3B7DF0;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(59,125,240,.35);">3</span>
+              <span style="width:26px;height:26px;border-radius:50% 50% 50% 2px;background:#fff;border:1.5px solid #D7DBE2;transform:rotate(45deg);box-shadow:0 2px 6px rgba(16,24,40,.12);display:inline-block;"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- floating state preview switcher -->
+<div style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:3px;background:rgba(27,32,48,.94);backdrop-filter:blur(10px);padding:6px 6px 6px 4px;border-radius:14px;box-shadow:0 10px 30px -6px rgba(0,0,0,.4);">
+  <span style="color:#8B92A0;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:0 9px;text-transform:uppercase;">상태</span>
+  {{ stateSwitchEl }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360,&quot;height&quot;:980},&quot;viewState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;editing&quot;,&quot;viewer&quot;,&quot;empty&quot;,&quot;loading&quot;],&quot;default&quot;:&quot;viewer&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;liveCursors&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;routeStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;solid&quot;,&quot;dashed&quot;],&quot;default&quot;:&quot;dashed&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.CAT = {
+      food:    {label:'식당',      icon:'utensils',    bg:'#FFECEB', fg:'#E8615C'},
+      cafe:    {label:'카페',      icon:'coffee',      bg:'#FBF1E4', fg:'#C5893A'},
+      gift:    {label:'기념품',    icon:'gift',        bg:'#F1ECFD', fg:'#8B6FE0'},
+      shopping:{label:'쇼핑',      icon:'shopping-bag',bg:'#FCE8F1', fg:'#D9609A'},
+      museum:  {label:'명소·박물관',icon:'landmark',   bg:'#E9F1FE', fg:'#3B7DF0'},
+      hotel:   {label:'숙소',      icon:'bed',         bg:'#E1F6EE', fg:'#1FA078'},
+      etc:     {label:'기타',      icon:'circle-dot',  bg:'#EEF0F4', fg:'#7B828F'},
+    };
+    this.days = [
+      {label:'Day 1', date:'4.18', dow:'금'},
+      {label:'Day 2', date:'4.19', dow:'토'},
+      {label:'Day 3', date:'4.20', dow:'일'},
+      {label:'Day 4', date:'4.21', dow:'월'},
+    ];
+    this.members = [
+      {id:'me', name:'지현', initial:'지', color:'#3B7DF0', online:true},
+      {id:'m2', name:'민준', initial:'민', color:'#FF8A65', online:true},
+      {id:'m3', name:'서윤', initial:'서', color:'#3FC4A0', online:true},
+      {id:'m4', name:'도윤', initial:'도', color:'#B07CF0', online:false},
+    ];
+    this.cursors = [
+      {name:'민준', color:'#FF8A65', x:47, y:33},
+      {name:'서윤', color:'#3FC4A0', x:63, y:57},
+    ];
+    this.savedPlaces = [
+      {id:'s1', name:'센소지',        category:'museum',   x:75, y:17},
+      {id:'s2', name:'시부야 스크램블', category:'etc',      x:17, y:73},
+      {id:'s3', name:'아키하바라',      category:'shopping', x:82, y:58},
+    ];
+    this.state = {
+      viewState: props.viewState || 'editing',
+      activeDay: 0,
+      filterToday: true,
+      activeCategory: 'all',
+      selectedId: 'd1c',
+      draggingId: null,
+      placesByDay: {
+        0:[
+          {id:'d1a', name:'츠키지 장외시장', category:'food',     time:'09:00', note:'아침 스시 · 오픈런', x:24, y:24},
+          {id:'d1b', name:'하마리큐 정원',   category:'museum',   time:'10:40', note:'정원 산책 · ¥300',   x:33, y:42},
+          {id:'d1c', name:'긴자 식스',       category:'shopping', time:'13:00', note:'점심 + 쇼핑',        x:48, y:37},
+          {id:'d1d', name:'블루보틀 긴자',   category:'cafe',     time:'15:10', note:'커피 브레이크',      x:55, y:53},
+          {id:'d1e', name:'도쿄타워',        category:'museum',   time:'17:30', note:'전망대 · 야경',      x:43, y:71},
+        ],
+        1:[
+          {id:'d2a', name:'시부야 스크램블', category:'etc',      time:'10:00', note:'', x:20, y:70},
+          {id:'d2b', name:'미야시타 파크',   category:'shopping', time:'11:30', note:'', x:31, y:57},
+          {id:'d2c', name:'사라베스 시부야', category:'food',     time:'13:00', note:'브런치 예약 완료', x:40, y:62},
+          {id:'d2d', name:'네즈 미술관',     category:'museum',   time:'15:30', note:'', x:57, y:45},
+        ],
+        2:[
+          {id:'d3a', name:'센소지',          category:'museum',   time:'09:30', note:'', x:72, y:19},
+          {id:'d3b', name:'나카미세 거리',   category:'shopping', time:'10:40', note:'', x:65, y:29},
+          {id:'d3c', name:'카페 무지',       category:'cafe',     time:'12:10', note:'', x:57, y:37},
+          {id:'d3d', name:'우에노 공원',     category:'museum',   time:'14:00', note:'', x:63, y:46},
+          {id:'d3e', name:'아메요코',        category:'gift',     time:'16:00', note:'기념품 쇼핑', x:56, y:54},
+        ],
+        3:[
+          {id:'d4a', name:'호텔 체크아웃',   category:'hotel',    time:'10:00', note:'짐 보관 맡기기', x:50, y:48},
+          {id:'d4b', name:'롯폰기 힐스',     category:'shopping', time:'11:30', note:'', x:43, y:60},
+          {id:'d4c', name:'모리 미술관',     category:'museum',   time:'13:30', note:'', x:49, y:67},
+        ],
+      },
+    };
+    this.select = this.select.bind(this);
+  }
+
+  componentDidUpdate(prev){
+    if(prev.viewState !== this.props.viewState && this.props.viewState){
+      this.setState({viewState:this.props.viewState});
+    }
+  }
+
+  icon(name, o){
+    o = o||{};
+    const size = o.size||18, color = o.color||'#1F2430', sw = o.sw||2;
+    const P = {
+      'utensils':[['path',{d:'M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2'}],['path',{d:'M7 2v20'}],['path',{d:'M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7'}]],
+      'coffee':[['path',{d:'M10 2v2'}],['path',{d:'M14 2v2'}],['path',{d:'M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1'}],['path',{d:'M6 2v2'}]],
+      'gift':[['rect',{x:3,y:8,width:18,height:4,rx:1}],['path',{d:'M12 8v13'}],['path',{d:'M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7'}],['path',{d:'M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5'}]],
+      'shopping-bag':[['path',{d:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z'}],['path',{d:'M3 6h18'}],['path',{d:'M16 10a4 4 0 0 1-8 0'}]],
+      'landmark':[['line',{x1:3,x2:21,y1:22,y2:22}],['line',{x1:6,x2:6,y1:18,y2:11}],['line',{x1:10,x2:10,y1:18,y2:11}],['line',{x1:14,x2:14,y1:18,y2:11}],['line',{x1:18,x2:18,y1:18,y2:11}],['polygon',{points:'12 2 20 7 4 7'}]],
+      'bed':[['path',{d:'M2 4v16'}],['path',{d:'M2 8h18a2 2 0 0 1 2 2v10'}],['path',{d:'M2 17h20'}],['path',{d:'M6 8v9'}]],
+      'circle-dot':[['circle',{cx:12,cy:12,r:10}],['circle',{cx:12,cy:12,r:1}]],
+      'calendar':[['path',{d:'M8 2v4'}],['path',{d:'M16 2v4'}],['rect',{width:18,height:18,x:3,y:4,rx:2}],['path',{d:'M3 10h18'}]],
+      'folder':[['path',{d:'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z'}]],
+      'chevron-down':[['path',{d:'m6 9 6 6 6-6'}]],
+      'chevron-left':[['path',{d:'m15 18-6-6 6-6'}]],
+      'chevron-right':[['path',{d:'m9 18 6-6-6-6'}]],
+    };
+    const parts = P[name]||[];
+    return React.createElement('svg', {width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'},
+      parts.map((el,i)=>React.createElement(el[0], Object.assign({key:i}, el[1]))));
+  }
+
+  chip(catKey, size){
+    const c = this.CAT[catKey], s = size||32;
+    return React.createElement('div', {style:{width:s,height:s,borderRadius:Math.round(s*0.3),background:c.bg,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},
+      this.icon(c.icon, {size:Math.round(s*0.54), color:c.fg, sw:2}));
+  }
+
+  select(e){
+    const id = (typeof e==='string') ? e : e.currentTarget.dataset.id;
+    this.setState(s=>({selectedId: s.selectedId===id ? null : id}));
+  }
+  setDay(i){ this.setState({activeDay:i, selectedId:null}); }
+  setCat(k){ this.setState({activeCategory:k}); }
+  toggleToday(){ this.setState(s=>({filterToday:!s.filterToday})); }
+  goEditing(){ this.setState({viewState:'editing'}); }
+  setView(v){ this.setState({viewState:v}); }
+
+  onDragStart(e){ this._drag = +e.currentTarget.dataset.idx; this.setState({draggingId:e.currentTarget.dataset.id}); if(e.dataTransfer){e.dataTransfer.effectAllowed='move';} }
+  onDragOver(e){ e.preventDefault(); }
+  onDragEnter(e){
+    const over = +e.currentTarget.dataset.idx;
+    const from = this._drag;
+    if(from==null || from===over) return;
+    this.setState(s=>{
+      const arr = s.placesByDay[s.activeDay].slice();
+      const m = arr.splice(from,1)[0];
+      arr.splice(over,0,m);
+      this._drag = over;
+      return {placesByDay: Object.assign({}, s.placesByDay, {[s.activeDay]:arr})};
+    });
+  }
+  onDragEnd(){ this._drag = null; this.setState({draggingId:null}); }
+
+  buildMembers(){
+    const h = React.createElement;
+    const online = this.members.filter(m=>m.online);
+    const off = this.members.length - online.length;
+    const av = online.map((m,i)=> h('div',{key:m.id,title:m.name,style:{width:32,height:32,borderRadius:'50%',background:'#fff',border:'2px solid '+m.color,display:'flex',alignItems:'center',justifyContent:'center',marginLeft:i?-9:0,position:'relative',boxShadow:'0 0 0 2.5px #fff'}},
+      h('span',{style:{fontSize:12.5,fontWeight:700,color:m.color}}, m.initial),
+      h('span',{style:{position:'absolute',right:-1,bottom:-1,width:9,height:9,borderRadius:'50%',background:'#34C759',border:'2px solid #fff'}})
+    ));
+    if(off>0) av.push(h('div',{key:'off',style:{width:32,height:32,borderRadius:'50%',background:'#EEF0F4',border:'2px solid #fff',boxShadow:'0 0 0 2.5px #fff',display:'flex',alignItems:'center',justifyContent:'center',marginLeft:-9,color:'#8A909B',fontSize:11.5,fontWeight:700}}, '+'+off));
+    return h('div',{style:{display:'flex',alignItems:'center'}}, av);
+  }
+
+  buildDayBar(){
+    const h = React.createElement;
+    const active = this.state.activeDay;
+    const pill = (d,i)=>{
+      const on = i===active;
+      return h('button',{key:i,onClick:()=>this.setDay(i),style:{flex:1,minWidth:0,display:'flex',flexDirection:'column',alignItems:'center',gap:1,padding:'7px 4px',border:'none',borderRadius:11,cursor:'pointer',background:on?'#3B7DF0':'transparent',transition:'background .15s'}},
+        h('span',{style:{fontSize:10.5,fontWeight:700,letterSpacing:'.03em',color:on?'rgba(255,255,255,.85)':'#9AA0AB'}}, 'DAY '+(i+1)),
+        h('span',{style:{fontSize:13,fontWeight:700,color:on?'#fff':'#4A4F5A'}}, d.date+' '+d.dow)
+      );
+    };
+    const arrow = (dir)=> h('button',{onClick:()=>this.setDay(Math.min(this.days.length-1,Math.max(0,active+dir))),style:{width:30,height:38,flex:'none',border:'1px solid #ECEEF1',background:'#fff',borderRadius:10,color:'#8A909B',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}, this.icon(dir<0?'chevron-left':'chevron-right',{size:17,color:'#8A909B'}));
+    return h('div',{style:{display:'flex',alignItems:'center',gap:6}},
+      arrow(-1),
+      h('div',{style:{flex:1,display:'flex',gap:3,background:'#F4F6F8',padding:3,borderRadius:13}}, this.days.map(pill)),
+      arrow(1)
+    );
+  }
+
+  buildToggle(){
+    const h = React.createElement;
+    const on = this.state.filterToday;
+    return h('button',{onClick:()=>this.toggleToday(),style:{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',background:'#fff',border:'1px solid #ECEEF1',borderRadius:12,padding:'10px 12px',cursor:'pointer'}},
+      h('span',{style:{display:'flex',alignItems:'center',gap:8,fontSize:13,fontWeight:600,color:'#3A3F4B'}},
+        this.icon('calendar',{size:15,color:'#6B7280'}), '선택한 날짜 일정만 보기'),
+      h('span',{style:{width:40,height:23,borderRadius:99,background:on?'#3B7DF0':'#D7DBE2',position:'relative',transition:'background .2s',flex:'none'}},
+        h('span',{style:{position:'absolute',top:2,left:on?19:2,width:19,height:19,borderRadius:'50%',background:'#fff',boxShadow:'0 1px 3px rgba(0,0,0,.25)',transition:'left .2s'}}))
+    );
+  }
+
+  buildCatBar(){
+    const h = React.createElement;
+    const cur = this.state.activeCategory;
+    const items = [['all','전체']].concat(Object.keys(this.CAT).map(k=>[k,this.CAT[k].label]));
+    const chips = items.map(([k,label])=>{
+      const on = cur===k;
+      const fg = k==='all' ? '#1B2030' : this.CAT[k].fg;
+      return h('button',{key:k,onClick:()=>this.setCat(k),style:{flex:'none',display:'inline-flex',alignItems:'center',gap:5,height:32,padding:k==='all'?'0 13px':'0 12px 0 9px',borderRadius:99,border:'1px solid '+(on?fg:'#E6E8EC'),background:on?fg:'#fff',color:on?'#fff':'#5A606B',fontSize:12.5,fontWeight:600,cursor:'pointer',transition:'all .12s',whiteSpace:'nowrap'}},
+        k==='all'? null : this.icon(this.CAT[k].icon,{size:14,color:on?'#fff':fg,sw:2}),
+        label);
+    });
+    const folder = h('button',{key:'folder',style:{flex:'none',display:'inline-flex',alignItems:'center',gap:5,height:32,padding:'0 9px 0 11px',borderRadius:99,border:'1px solid #E6E8EC',background:'#fff',color:'#5A606B',fontSize:12.5,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}},
+      this.icon('folder',{size:14,color:'#8A909B'}), '전체 폴더', this.icon('chevron-down',{size:14,color:'#A8AEB8'}));
+    return h('div',{style:{display:'flex',gap:7,overflowX:'auto',paddingBottom:2,margin:'0 -2px',scrollbarWidth:'none'}}, [folder].concat(chips));
+  }
+
+  buildOverlay(){
+    const h = React.createElement;
+    const S = this.state;
+    const dayPlaces = S.placesByDay[S.activeDay] || [];
+    const cat = S.activeCategory;
+    const dash = (this.props.routeStyle==='dashed') ? '8 9' : null;
+    const showCursors = this.props.liveCursors !== false;
+    const els = [];
+
+    // route
+    if(dayPlaces.length>1){
+      const d = 'M '+dayPlaces.map(p=>(p.x*10).toFixed(1)+' '+(p.y*10).toFixed(1)).join(' L ');
+      els.push(h('svg',{key:'rt',width:'100%',height:'100%',viewBox:'0 0 1000 1000',preserveAspectRatio:'none',style:{position:'absolute',inset:0,overflow:'visible',pointerEvents:'none'}},
+        h('path',{d:d,fill:'none',stroke:'#3B7DF0',strokeWidth:3,strokeLinecap:'round',strokeLinejoin:'round',strokeDasharray:dash,vectorEffect:'non-scaling-stroke',style:{opacity:.85}})
+      ));
+    }
+
+    // saved markers
+    if(!S.filterToday){
+      this.savedPlaces.forEach(p=> els.push(
+        h('button',{key:p.id,onClick:()=>this.select(p.id),style:{position:'absolute',left:p.x+'%',top:p.y+'%',transform:'translate(-50%,-100%)',background:'none',border:'none',padding:0,cursor:'pointer',zIndex:1}},
+          h('div',{style:{width:27,height:27,borderRadius:'50% 50% 50% 3px',background:'#fff',border:'1.5px solid '+(S.selectedId===p.id?'#8A909B':'#D7DBE2'),boxShadow:'0 2px 7px rgba(16,24,40,.16)',display:'flex',alignItems:'center',justifyContent:'center',transform:'rotate(45deg)'}},
+            h('div',{style:{transform:'rotate(-45deg)',display:'flex'}}, this.icon(this.CAT[p.category].icon,{size:13,color:'#9AA0AB',sw:2})))
+        )
+      ));
+    }
+
+    // scheduled numbered markers
+    dayPlaces.forEach((p,i)=>{
+      const sel = S.selectedId===p.id;
+      const muted = cat!=='all' && p.category!==cat;
+      els.push(h('button',{key:p.id,onClick:()=>this.select(p.id),style:{position:'absolute',left:p.x+'%',top:p.y+'%',transform:'translate(-50%,-50%)',background:'none',border:'none',padding:0,cursor:'pointer',zIndex:sel?6:3,opacity:muted?.32:1,transition:'opacity .2s,transform .12s'}},
+        h('div',{style:{position:'relative',width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}},
+          sel? h('div',{style:{position:'absolute',inset:-5,borderRadius:'50%',background:'rgba(59,125,240,.18)'}}) : null,
+          h('div',{style:{width:30,height:30,borderRadius:'50%',background:sel?'#3B7DF0':'#fff',border:'2px solid #3B7DF0',color:sel?'#fff':'#2F6FE0',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:14,boxShadow:'0 3px 8px rgba(59,125,240,.32)'}}, String(i+1))
+        )
+      ));
+    });
+
+    // live cursors
+    if(showCursors){
+      this.cursors.forEach(c=> els.push(
+        h('div',{key:'c'+c.name,style:{position:'absolute',left:c.x+'%',top:c.y+'%',pointerEvents:'none',zIndex:9,display:'flex',alignItems:'flex-start'}},
+          h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:c.color,style:{filter:'drop-shadow(0 1px 2px rgba(0,0,0,.3))'}}, h('path',{d:'M5 3l14 7-6 1.5-2.5 6z'})),
+          h('div',{style:{marginLeft:-2,marginTop:13,background:c.color,color:'#fff',fontSize:11,fontWeight:700,padding:'2px 7px',borderRadius:99,whiteSpace:'nowrap'}}, c.name)
+        )
+      ));
+    }
+
+    return h('div',{style:{position:'absolute',inset:0}}, els);
+  }
+
+  buildStateSwitch(){
+    const h = React.createElement;
+    const items = [['editing','편집'],['viewer','보기 전용'],['empty','빈 상태'],['loading','로딩']];
+    const cur = this.state.viewState;
+    return h('div',{style:{display:'flex',gap:2}}, items.map(([k,label])=>{
+      const on = cur===k;
+      return h('button',{key:k,onClick:()=>this.setView(k),style:{height:32,padding:'0 13px',border:'none',borderRadius:10,cursor:'pointer',fontSize:12.5,fontWeight:700,background:on?'rgba(255,255,255,.16)':'transparent',color:on?'#fff':'#9298A6',transition:'all .12s'}}, label);
+    }));
+  }
+
+  buildSwatch(label, hex, opts){
+    const h = React.createElement;
+    opts = opts||{};
+    return h('div',{key:label+hex,style:{display:'flex',flexDirection:'column',gap:6,width:opts.w||96}},
+      h('div',{style:{height:opts.h||46,borderRadius:11,background:hex,border:opts.border||'1px solid rgba(16,24,40,.06)'}}),
+      h('div',{style:{display:'flex',flexDirection:'column'}},
+        h('span',{style:{fontSize:11.5,fontWeight:700,color:'#3A3F4B'}}, label),
+        h('span',{style:{fontSize:10.5,fontWeight:600,color:'#A8AEB8'}}, hex)
+      )
+    );
+  }
+
+  buildMemberSwatch(){
+    const h = React.createElement;
+    return h('div',{style:{display:'flex',gap:14}}, this.members.map(m=>
+      h('div',{key:m.id,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:6}},
+        h('div',{style:{width:34,height:34,borderRadius:'50%',background:'#fff',border:'2px solid '+m.color,display:'flex',alignItems:'center',justifyContent:'center'}},
+          h('span',{style:{fontSize:13,fontWeight:700,color:m.color}}, m.initial)),
+        h('span',{style:{fontSize:11,fontWeight:600,color:'#8A909B'}}, m.color)
+      )
+    ));
+  }
+
+  nav(f){ try{ window.location.href = encodeURI(f); }catch(e){} }
+  componentDidMount(){
+    if(this.__navWired) return; this.__navWired=true;
+    var rules = [
+      {label:'플랜',to:'플랜 뷰.dc.html',tag:'DIV',needsSvg:true},
+      {label:'일정표',to:'일정표.dc.html',tag:'DIV',needsSvg:true},
+      {label:'장소',to:'장소.dc.html',tag:'DIV',needsSvg:true},
+      {label:'예산',to:'예산 정산.dc.html',tag:'DIV',needsSvg:true},
+      {label:'목록',to:'내 여행 목록.dc.html',tag:'BUTTON'},
+      {label:'공유',to:'오버레이 3종.dc.html#share',tag:'BUTTON'},
+      {label:'장소 추가',to:'오버레이 3종.dc.html#place',tag:'BUTTON'},
+      {label:'지출 추가',to:'오버레이 3종.dc.html#expense',tag:'BUTTON'}
+    ];
+    var norm=function(s){return (s||'').replace(/\s+/g,' ').trim();};
+    var self=this;
+    document.addEventListener('click', function(e){
+      var el=e.target;
+      for(var i=0; el && i<7; i++, el=el.parentElement){
+        var txt=norm(el.textContent);
+        for(var j=0;j<rules.length;j++){
+          var r=rules[j];
+          var ok = r.mode==='includes' ? (txt.indexOf(r.label)>=0) : (txt===r.label);
+          if(!ok) continue;
+          if(r.tag && el.tagName!==r.tag) continue;
+          if(r.needsSvg && !(el.querySelector && el.querySelector('svg'))) continue;
+          e.preventDefault(); e.stopPropagation(); self.nav(r.to); return;
+        }
+      }
+    }, true);
+  }
+
+  renderVals(){
+    const S = this.state;
+    const vs = S.viewState;
+    const isLoading = vs==='loading';
+    const isEmpty = vs==='empty';
+    const isViewer = vs==='viewer';
+    const isEditing = vs==='editing';
+    const showMain = isEditing || isViewer;
+    const canEdit = isEditing;
+    const canDrag = isEditing && S.activeCategory==='all';
+
+    const dayPlaces = S.placesByDay[S.activeDay] || [];
+    const cat = S.activeCategory;
+    const filtered = cat==='all' ? dayPlaces : dayPlaces.filter(p=>p.category===cat);
+    const places = filtered.map(p=>{
+      const c = this.CAT[p.category];
+      return {
+        id:p.id, idx:dayPlaces.indexOf(p), order:dayPlaces.indexOf(p)+1,
+        name:p.name, time:p.time, note:p.note, hasNote:!!p.note,
+        catLabel:c.label, chipEl:this.chip(p.category,32),
+        selected:S.selectedId===p.id,
+      };
+    });
+    const d = this.days[S.activeDay];
+
+    // DS swatches
+    const surface = [
+      this.buildSwatch('배경','#EEF0F4'),
+      this.buildSwatch('카드','#FFFFFF',{border:'1px solid #E6E8EC'}),
+      this.buildSwatch('보조면','#F7F8FA'),
+      this.buildSwatch('본문','#1B2030'),
+      this.buildSwatch('보조 텍스트','#8A909B'),
+      this.buildSwatch('프라이머리','#3B7DF0'),
+      this.buildSwatch('프라이머리 연','#EAF1FE'),
+      this.buildSwatch('민트','#3FC4A0'),
+    ];
+    const catSw = Object.keys(this.CAT).map(k=> this.buildSwatch(this.CAT[k].label, this.CAT[k].bg, {w:96,h:40,border:'1px solid rgba(16,24,40,.05)'}));
+    const iconCats = Object.keys(this.CAT).map(k=>
+      React.createElement('div',{key:k,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:7,width:74}},
+        this.chip(k,40),
+        React.createElement('span',{style:{fontSize:11.5,fontWeight:600,color:'#6B7280',textAlign:'center'}}, this.CAT[k].label)
+      ));
+
+    return {
+      isLoading, isEmpty, isViewer, notViewer:!isViewer, showMain, canEdit, canDrag,
+      dragHint: canDrag,
+      places,
+      dayMeta: {label:d.label, count:dayPlaces.length},
+      membersEl: this.buildMembers(),
+      dayBarEl: this.buildDayBar(),
+      toggleEl: this.buildToggle(),
+      catBarEl: this.buildCatBar(),
+      mapOverlay: this.buildOverlay(),
+      stateSwitchEl: this.buildStateSwitch(),
+      onSelect: this.select,
+      onDragStart: e=>this.onDragStart(e),
+      onDragOver: e=>this.onDragOver(e),
+      onDragEnter: e=>this.onDragEnter(e),
+      onDragEnd: ()=>this.onDragEnd(),
+      goEditing: ()=>this.goEditing(),
+      swatchSurface: React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:10}}, surface),
+      swatchCats: React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:10}}, catSw),
+      swatchMembers: this.buildMemberSwatch(),
+      iconCats: React.createElement('div',{style:{display:'flex',flexWrap:'wrap',gap:18}}, iconCats),
+    };
+  }
+}
+</script>
+</body>
+</html>

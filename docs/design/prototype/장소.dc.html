@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;color:#1F2430;background:#EEF0F4;}
+  @keyframes scShimmer{0%{background-position:-420px 0;}100%{background-position:420px 0;}}
+  @keyframes scSpin{to{transform:rotate(360deg);}}
+  @keyframes scPop{from{opacity:0;transform:translateY(-4px) scale(.97);}to{opacity:1;transform:none;}}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:#D7DBE2;border-radius:99px;border:3px solid transparent;background-clip:content-box;}
+  ::-webkit-scrollbar-thumb:hover{background:#C2C8D0;background-clip:content-box;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+
+<div style="min-width:100%;min-height:100vh;width:max-content;box-sizing:border-box;padding:40px 40px 130px;background:#EEF0F4;">
+  <div style="width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:13px;">
+
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;letter-spacing:-.01em;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#5B8DEF;"></span>
+      장소 뷰 · 저장 장소 보관함 · 데스크톱 1280px
+    </div>
+
+    <!-- ============ APP CARD ============ -->
+    <div style="width:1280px;height:826px;background:#fff;border-radius:22px;border:1px solid #E8EAEF;box-shadow:0 1px 3px rgba(16,24,40,.05),0 24px 60px -26px rgba(16,24,40,.28);overflow:hidden;display:flex;flex-direction:column;">
+
+      <!-- ---- WORKSPACE TOP BAR (shared) ---- -->
+      <div style="position:relative;height:66px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 18px;border-bottom:1px solid #ECEEF1;background:#fff;">
+        <div style="display:flex;align-items:center;gap:13px;min-width:0;">
+          <button style="display:inline-flex;align-items:center;gap:5px;height:34px;padding:0 11px 0 8px;border:1px solid #E6E8EC;background:#fff;border-radius:10px;color:#5A606B;font-size:13px;font-weight:600;cursor:pointer;" style-hover="background:#F6F7F9;border-color:#DDE0E5;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            목록
+          </button>
+          <div style="width:1px;height:24px;background:#ECEEF1;"></div>
+          <div style="width:42px;height:42px;border-radius:13px;flex:none;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px -2px rgba(91,141,239,.5);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:17px;font-weight:700;color:#1B2030;letter-spacing:-.02em;">도쿄, 우리끼리 4일</span>
+              <sc-if value="{{ isViewer }}" hint-placeholder-val="{{ false }}">
+                <span style="display:inline-flex;align-items:center;gap:4px;background:#F1F3F6;color:#7A818D;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  보기 전용
+                </span>
+              </sc-if>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;color:#8A909B;font-size:12.5px;font-weight:500;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+              2026.4.18 – 4.21
+              <span style="background:#EEF0F4;color:#6B7280;font-weight:600;font-size:11.5px;padding:1px 7px;border-radius:99px;">3박 4일</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- center segment: 장소 active -->
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:2px;background:#F1F3F6;padding:4px;border-radius:13px;">
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;color:#7B828F;font-size:13.5px;font-weight:600;cursor:pointer;" style-hover="color:#4A4F5A;background:rgba(255,255,255,.6);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.1 5.5a2 2 0 0 0 1.8 0l3.6-1.8A1 1 0 0 1 21 4.6v12.8a1 1 0 0 1-.5.9l-4.6 2.3a2 2 0 0 1-1.8 0l-4.2-2.1a2 2 0 0 0-1.8 0l-3.6 1.8A1 1 0 0 1 3 19.4V6.6a1 1 0 0 1 .5-.9l4.6-2.3a2 2 0 0 1 1.8 0z"/><path d="M15 5.8v15"/><path d="M9 3.2v15"/></svg>
+            플랜
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;color:#7B828F;font-size:13.5px;font-weight:600;cursor:pointer;" style-hover="color:#4A4F5A;background:rgba(255,255,255,.6);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg>
+            일정표
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;background:#fff;color:#2B61C4;font-size:13.5px;font-weight:700;box-shadow:0 1px 3px rgba(16,24,40,.12);cursor:pointer;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            장소
+          </div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 15px;border-radius:10px;color:#7B828F;font-size:13.5px;font-weight:600;cursor:pointer;" style-hover="color:#4A4F5A;background:rgba(255,255,255,.6);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+            예산
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:13px;">
+          <div style="display:flex;align-items:center;gap:9px;">
+            <span style="color:#9AA0AB;font-size:12px;font-weight:600;">접속 중</span>
+            {{ membersEl }}
+          </div>
+          <div style="width:1px;height:24px;background:#ECEEF1;"></div>
+          <sc-if value="{{ notViewer }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <button style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border:none;border-radius:11px;background:#3B7DF0;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" x2="15.4" y1="13.5" y2="17.5"/><line x1="15.4" x2="8.6" y1="6.5" y2="10.5"/></svg>
+                공유
+              </button>
+              <button style="width:36px;height:36px;border:1px solid #E6E8EC;background:#fff;border-radius:11px;color:#7B828F;display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:#F6F7F9;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              </button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isViewer }}" hint-placeholder-val="{{ false }}">
+            <div style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border:1px solid #E6E8EC;background:#F7F8FA;border-radius:11px;color:#7A818D;font-size:13px;font-weight:600;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              공유받은 플랜
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <!-- ---- BODY: folders | places | map ---- -->
+      <div style="flex:1;min-height:0;display:flex;">
+
+        <!-- == FOLDER SIDEBAR == -->
+        <div style="width:236px;flex:none;border-right:1px solid #ECEEF1;background:#FBFBFC;display:flex;flex-direction:column;min-height:0;">
+          <div style="flex:none;padding:16px 16px 10px;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:13px;font-weight:700;color:#8A909B;letter-spacing:.01em;">폴더</span>
+            <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+              <button style="width:28px;height:28px;border:1px solid #E6E8EC;background:#fff;border-radius:9px;color:#7B828F;display:flex;align-items:center;justify-content:center;cursor:pointer;" style-hover="background:#F1F3F6;color:#2F6FE0;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              </button>
+            </sc-if>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:0 12px 12px;">{{ folderListEl }}</div>
+          <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:none;padding:12px;border-top:1px solid #ECEEF1;">
+              <button style="width:100%;height:40px;border:1px dashed #D2D8E0;background:#fff;border-radius:12px;color:#7B828F;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;" style-hover="border-color:#3B7DF0;color:#2F6FE0;background:#F7FAFF;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 10v6"/><path d="M9 13h6"/><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>
+                폴더 추가
+              </button>
+            </div>
+          </sc-if>
+        </div>
+
+        <!-- == PLACE LIST == -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;min-height:0;">
+          <!-- list header -->
+          <div style="flex:none;padding:16px 20px 12px;border-bottom:1px solid #ECEEF1;display:flex;flex-direction:column;gap:13px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:9px;min-width:0;">
+                {{ folderHeadIconEl }}
+                <div style="display:flex;align-items:baseline;gap:8px;min-width:0;">
+                  <span style="font-size:17px;font-weight:800;color:#1B2030;letter-spacing:-.02em;white-space:nowrap;">{{ folderName }}</span>
+                  <span style="font-size:13px;font-weight:600;color:#9AA0AB;">{{ placeCount }}곳</span>
+                </div>
+              </div>
+              <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+                <button style="display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 16px 0 13px;border:none;border-radius:11px;background:#3B7DF0;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                  장소 추가
+                </button>
+              </sc-if>
+            </div>
+            <sc-if value="{{ showControls }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="flex:1;display:flex;align-items:center;gap:9px;height:40px;padding:0 13px;background:#F4F6F8;border:1px solid transparent;border-radius:11px;color:#9AA0AB;" style-focus-within="background:#fff;border-color:#C9D6F5;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input placeholder="저장한 장소 검색" style="flex:1;border:none;outline:none;background:none;font-family:inherit;font-size:13.5px;font-weight:500;color:#2B313D;" />
+                </div>
+                <button style="display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 12px 0 14px;border:1px solid #E6E8EC;background:#fff;border-radius:11px;color:#5A606B;font-size:13px;font-weight:600;cursor:pointer;" style-hover="background:#F6F7F9;">
+                  최근 저장순
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#A8AEB8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- LOADING -->
+          <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;gap:14px;">
+              {{ skeletonEl }}
+            </div>
+          </sc-if>
+
+          <!-- EMPTY -->
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:9px;padding:30px;">
+              <div style="width:80px;height:80px;border-radius:25px;background:#EAF1FE;display:flex;align-items:center;justify-content:center;margin-bottom:6px;box-shadow:0 8px 22px -8px rgba(91,141,239,.45);">
+                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#5B8DEF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/><path d="M12 7v6"/><path d="M9 10h6"/></svg>
+              </div>
+              <div style="font-size:18px;font-weight:800;color:#1B2030;letter-spacing:-.02em;">저장한 장소가 없어요</div>
+              <div style="font-size:14px;color:#8A909B;line-height:1.6;max-width:320px;">가고 싶은 곳을 폴더에 모아두세요. 나중에 날짜와 순서를 정해 일정으로 옮길 수 있어요.</div>
+              <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
+                <button style="margin-top:14px;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 22px;border:none;border-radius:13px;background:#3B7DF0;color:#fff;font-size:14.5px;font-weight:700;cursor:pointer;box-shadow:0 5px 14px -3px rgba(59,125,240,.55);" style-hover="background:#2F6FE0;">
+                  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                  장소 추가하기
+                </button>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- PLACE GRID -->
+          <sc-if value="{{ showGrid }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;overflow-y:auto;padding:16px 20px 20px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+                <sc-for list="{{ places }}" as="p" hint-placeholder-count="6">
+                  <div data-id="{{ p.id }}" onClick="{{ onSelect }}" style="position:relative;background:#fff;border:1px solid #ECEEF1;border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:11px;cursor:pointer;transition:box-shadow .15s,border-color .15s,transform .12s;" style-hover="box-shadow:0 8px 22px -8px rgba(16,24,40,.18);border-color:#DDE1E7;transform:translateY(-2px);">
+                    <sc-if value="{{ p.selected }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 99px 99px 0;background:#3B7DF0;"></div>
+                    </sc-if>
+                    <div style="display:flex;align-items:flex-start;gap:11px;">
+                      {{ p.chipEl }}
+                      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                        <span style="font-size:14.5px;font-weight:700;color:#1F2430;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.name }}</span>
+                        <div style="display:flex;align-items:center;gap:5px;color:#9097A1;font-size:12px;font-weight:500;">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                          {{ p.area }}
+                          <span style="width:3px;height:3px;border-radius:50%;background:#CDD2DA;"></span>
+                          <span style="background:#F1F3F6;color:#6B7280;font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;">{{ p.catLabel }}</span>
+                        </div>
+                      </div>
+                      {{ p.savedByEl }}
+                    </div>
+                    <sc-if value="{{ p.hasMemo }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;align-items:flex-start;gap:6px;background:#FBFBFC;border:1px solid #F2F3F6;border-radius:10px;padding:7px 10px;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#B6BCC6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                        <span style="font-size:12px;font-weight:500;color:#7A818D;line-height:1.45;">{{ p.memo }}</span>
+                      </div>
+                    </sc-if>
+                    <div style="display:flex;align-items:center;justify-content:space-between;">
+                      {{ p.actionEl }}
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+
+        <!-- == MAP PANEL == -->
+        <div style="width:356px;flex:none;position:relative;border-left:1px solid #ECEEF1;background:#EAF0EE;overflow:hidden;">
+          <svg viewBox="0 0 500 760" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%;">
+            <rect width="500" height="760" fill="#EAF0EE"/>
+            <path d="M0 520 C 110 490 190 580 300 545 C 400 514 450 560 500 545 L500 760 L0 760 Z" fill="#D9E8F2"/>
+            <ellipse cx="120" cy="180" rx="92" ry="70" fill="#D8ECD6"/>
+            <rect x="300" y="120" width="120" height="100" rx="22" fill="#D8ECD6"/>
+            <g fill="#F2F5F3">
+              <rect x="40" y="300" width="96" height="74" rx="13"/>
+              <rect x="170" y="330" width="110" height="80" rx="13"/>
+              <rect x="320" y="350" width="92" height="72" rx="13"/>
+              <rect x="60" y="560" width="104" height="64" rx="13"/>
+              <rect x="360" y="560" width="96" height="80" rx="13"/>
+            </g>
+            <g stroke="#FFFFFF" stroke-width="10" fill="none" stroke-linecap="round">
+              <path d="M0 280 H500"/><path d="M250 0 V760"/><path d="M0 120 C 160 150 320 90 500 130"/><path d="M0 620 H500"/>
+            </g>
+            <g stroke="#E4EAE8" stroke-width="2.5" fill="none"><path d="M120 0 V760"/><path d="M0 440 H500"/><path d="M380 0 V760"/></g>
+          </svg>
+          <sc-if value="{{ showGrid }}" hint-placeholder-val="{{ true }}">{{ mapPinsEl }}</sc-if>
+          <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;">
+              <div style="background:rgba(255,255,255,.85);border:1.5px dashed #BFC6D0;border-radius:14px;padding:16px 20px;text-align:center;color:#7A818D;font-size:12.5px;font-weight:600;line-height:1.5;">저장한 장소가<br>여기에 표시돼요</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;background:rgba(234,240,238,.5);display:flex;align-items:center;justify-content:center;">
+              <div style="width:32px;height:32px;border-radius:50%;border:3px solid #D5DEE4;border-top-color:#5B8DEF;animation:scSpin .8s linear infinite;"></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ showGrid }}" hint-placeholder-val="{{ true }}">
+            <div style="position:absolute;left:14px;bottom:14px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid #ECEEF1;border-radius:11px;padding:8px 12px;box-shadow:0 4px 14px -4px rgba(16,24,40,.16);font-size:12px;font-weight:600;color:#5A606B;">
+              <span style="width:13px;height:13px;border-radius:50% 50% 50% 2px;background:#fff;border:1.5px solid #C2C8D0;transform:rotate(45deg);"></span>
+              저장한 장소 · 아직 일정 아님
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ DESIGN SYSTEM REFERENCE ============ -->
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;margin-top:24px;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#3FC4A0;"></span>
+      디자인 시스템 — 이 화면에서 새로 추가된 컴포넌트 (기존 토큰 계승)
+    </div>
+    <div style="width:1280px;background:#fff;border:1px solid #E8EAEF;border-radius:20px;box-shadow:0 1px 3px rgba(16,24,40,.05);padding:30px 34px;display:grid;grid-template-columns:300px 1fr;gap:40px;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">폴더 항목 · 기본 / 선택</div>
+        {{ dsFolders }}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">장소 카드 · 카테고리 칩 + 위치 + 메모 + 일정에 추가</div>
+        <div style="display:flex;gap:14px;">{{ dsPlaceCards }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- floating state preview switcher -->
+<div style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:3px;background:rgba(27,32,48,.94);backdrop-filter:blur(10px);padding:6px 6px 6px 4px;border-radius:14px;box-shadow:0 10px 30px -6px rgba(0,0,0,.4);">
+  <span style="color:#8B92A0;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:0 9px;text-transform:uppercase;">상태</span>
+  {{ stateSwitchEl }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360,&quot;height&quot;:980},&quot;viewState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;data&quot;,&quot;empty&quot;,&quot;loading&quot;,&quot;viewer&quot;],&quot;default&quot;:&quot;data&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.CAT={
+      food:{label:'식당',icon:'utensils',bg:'#FFECEB',fg:'#E8615C'},
+      cafe:{label:'카페',icon:'coffee',bg:'#FBF1E4',fg:'#C5893A'},
+      gift:{label:'기념품',icon:'gift',bg:'#F1ECFD',fg:'#8B6FE0'},
+      shopping:{label:'쇼핑',icon:'shopping-bag',bg:'#FCE8F1',fg:'#D9609A'},
+      museum:{label:'명소',icon:'landmark',bg:'#E9F1FE',fg:'#3B7DF0'},
+      hotel:{label:'숙소',icon:'bed',bg:'#E1F6EE',fg:'#1FA078'},
+      etc:{label:'기타',icon:'circle-dot',bg:'#EEF0F4',fg:'#7B828F'},
+    };
+    this.MEM={ji:{initial:'지',color:'#3B7DF0',name:'지현'},min:{initial:'민',color:'#FF8A65',name:'민준'},seo:{initial:'서',color:'#3FC4A0',name:'서윤'},do:{initial:'도',color:'#B07CF0',name:'도윤'}};
+    this.DAYS=[{n:1,date:'4.18'},{n:2,date:'4.19'},{n:3,date:'4.20'},{n:4,date:'4.21'}];
+    this.folders=[
+      {key:'all',name:'전체 장소',icon:'layers',fg:'#5A606B'},
+      {key:'food',name:'맛집',icon:'utensils',fg:'#E8615C'},
+      {key:'cafe',name:'카페',icon:'coffee',fg:'#C5893A'},
+      {key:'shopping',name:'쇼핑',icon:'shopping-bag',fg:'#D9609A'},
+      {key:'museum',name:'명소·뷰',icon:'landmark',fg:'#3B7DF0'},
+      {key:'wish',name:'가보고 싶은',icon:'bookmark',fg:'#8B6FE0'},
+    ];
+    this.places=[
+      {id:'p1',folder:'food',cat:'food',name:'이치란 라멘 시부야',area:'시부야',memo:'돈코츠 · 24시간 영업',by:'min',x:24,y:62},
+      {id:'p2',folder:'food',cat:'food',name:'스시잔마이 츠키지',area:'주오구 츠키지',memo:'오마카세 점심 추천',by:'ji',x:55,y:40},
+      {id:'p3',folder:'food',cat:'food',name:'우동 신',area:'신주쿠',memo:'',by:'seo',x:30,y:30},
+      {id:'p4',folder:'cafe',cat:'cafe',name:'블루보틀 기요스미',area:'기요스미시라카와',memo:'도쿄 1호점',by:'do',x:72,y:48},
+      {id:'p5',folder:'cafe',cat:'cafe',name:'사루타히코 커피',area:'에비스',memo:'',by:'ji',x:40,y:70},
+      {id:'p6',folder:'shopping',cat:'shopping',name:'돈키호테 시부야',area:'시부야',memo:'심야 쇼핑 가능',by:'min',x:26,y:56},
+      {id:'p7',folder:'shopping',cat:'shopping',name:'긴자 식스',area:'긴자',memo:'',by:'seo',x:58,y:46},
+      {id:'p8',folder:'museum',cat:'museum',name:'시부야 스카이',area:'시부야',memo:'선셋 시간대 예약',by:'ji',x:28,y:60},
+      {id:'p9',folder:'museum',cat:'museum',name:'팀랩 플래닛',area:'도요스',memo:'물 들어가는 전시 · 양말 준비',by:'do',x:78,y:64},
+      {id:'p10',folder:'wish',cat:'etc',name:'네즈 신사',area:'분쿄구',memo:'센본도리이 포토스팟',by:'seo',x:46,y:22},
+      {id:'p11',folder:'wish',cat:'gift',name:'나카메구로 빈티지',area:'나카메구로',memo:'',by:'min',x:36,y:74},
+    ];
+    this.state={
+      viewState:props.viewState||'data',
+      folder:'all', selectedId:'p2', openMenuId:null,
+      added:{}, // id -> day number
+    };
+    this.select=this.select.bind(this);
+  }
+  componentDidUpdate(prev){ if(prev.viewState!==this.props.viewState&&this.props.viewState) this.setState({viewState:this.props.viewState}); }
+
+  icon(name,o){
+    o=o||{};const size=o.size||18,color=o.color||'#1F2430',sw=o.sw||2;
+    const P={
+      'utensils':[['path',{d:'M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2'}],['path',{d:'M7 2v20'}],['path',{d:'M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7'}]],
+      'coffee':[['path',{d:'M10 2v2'}],['path',{d:'M14 2v2'}],['path',{d:'M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1'}],['path',{d:'M6 2v2'}]],
+      'gift':[['rect',{x:3,y:8,width:18,height:4,rx:1}],['path',{d:'M12 8v13'}],['path',{d:'M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7'}],['path',{d:'M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5'}]],
+      'shopping-bag':[['path',{d:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z'}],['path',{d:'M3 6h18'}],['path',{d:'M16 10a4 4 0 0 1-8 0'}]],
+      'landmark':[['line',{x1:3,x2:21,y1:22,y2:22}],['line',{x1:6,x2:6,y1:18,y2:11}],['line',{x1:10,x2:10,y1:18,y2:11}],['line',{x1:14,x2:14,y1:18,y2:11}],['line',{x1:18,x2:18,y1:18,y2:11}],['polygon',{points:'12 2 20 7 4 7'}]],
+      'bed':[['path',{d:'M2 4v16'}],['path',{d:'M2 8h18a2 2 0 0 1 2 2v10'}],['path',{d:'M2 17h20'}],['path',{d:'M6 8v9'}]],
+      'circle-dot':[['circle',{cx:12,cy:12,r:10}],['circle',{cx:12,cy:12,r:1}]],
+      'layers':[['path',{d:'M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.84z'}],['path',{d:'M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12'}],['path',{d:'M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17'}]],
+      'bookmark':[['path',{d:'m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z'}]],
+      'plus':[['path',{d:'M5 12h14'}],['path',{d:'M12 5v14'}]],
+      'calendar':[['path',{d:'M8 2v4'}],['path',{d:'M16 2v4'}],['rect',{width:18,height:18,x:3,y:4,rx:2}],['path',{d:'M3 10h18'}]],
+      'check':[['path',{d:'M20 6 9 17l-5-5'}]],
+      'more':[['circle',{cx:12,cy:12,r:1}],['circle',{cx:12,cy:5,r:1}],['circle',{cx:12,cy:19,r:1}]],
+      'chevron-down':[['path',{d:'m6 9 6 6 6-6'}]],
+    };
+    const parts=P[name]||[];
+    return React.createElement('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'},
+      parts.map((el,i)=>React.createElement(el[0],Object.assign({key:i},el[1]))));
+  }
+  chip(cat,size){const c=this.CAT[cat],s=size||40;return React.createElement('div',{style:{width:s,height:s,borderRadius:Math.round(s*0.3),background:c.bg,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon(c.icon,{size:Math.round(s*0.52),color:c.fg,sw:2}));}
+  avatar(key,s){const m=this.MEM[key];s=s||24;return React.createElement('div',{title:'저장: '+m.name,style:{width:s,height:s,borderRadius:'50%',background:'#fff',border:'2px solid '+m.color,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},React.createElement('span',{style:{fontSize:s*0.42,fontWeight:700,color:m.color}},m.initial));}
+
+  buildMembers(){const h=React.createElement;const ks=['ji','min','seo','do'];return h('div',{style:{display:'flex',alignItems:'center'}},ks.map((k,i)=>{const m=this.MEM[k];return h('div',{key:k,title:m.name,style:{width:32,height:32,borderRadius:'50%',background:'#fff',border:'2px solid '+m.color,display:'flex',alignItems:'center',justifyContent:'center',marginLeft:i?-9:0,position:'relative',boxShadow:'0 0 0 2.5px #fff'}},h('span',{style:{fontSize:12.5,fontWeight:700,color:m.color}},m.initial),i<3?h('span',{style:{position:'absolute',right:-1,bottom:-1,width:9,height:9,borderRadius:'50%',background:'#34C759',border:'2px solid #fff'}}):null);}));}
+
+  placesIn(folder){ return folder==='all'?this.places:this.places.filter(p=>p.folder===folder); }
+  countIn(folder){ return this.placesIn(folder).length; }
+
+  setFolder(k){ this.setState({folder:k,selectedId:null,openMenuId:null}); }
+  select(e){ const id=e.currentTarget.dataset.id; this.setState({selectedId:id}); }
+  toggleMenu(id){ this.setState(s=>({openMenuId:s.openMenuId===id?null:id})); }
+  addToDay(id,day){ this.setState(s=>({added:Object.assign({},s.added,{[id]:day}),openMenuId:null})); }
+
+  buildFolders(){
+    const h=React.createElement;const cur=this.state.folder;
+    return h('div',{style:{display:'flex',flexDirection:'column',gap:3}}, this.folders.map(f=>{
+      const on=cur===f.key, cnt=this.countIn(f.key);
+      return h('button',{key:f.key,onClick:()=>this.setFolder(f.key),style:{display:'flex',alignItems:'center',gap:10,height:42,padding:'0 11px',border:'none',borderRadius:11,cursor:'pointer',background:on?'#EAF1FE':'transparent',transition:'background .12s',textAlign:'left'},onMouseEnter:e=>{if(!on)e.currentTarget.style.background='#F1F3F6';},onMouseLeave:e=>{if(!on)e.currentTarget.style.background='transparent';}},
+        h('span',{style:{width:26,height:26,borderRadius:8,background:on?'#fff':'transparent',display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon(f.icon,{size:16,color:on?'#2F6FE0':f.fg,sw:2})),
+        h('span',{style:{flex:1,fontSize:13.5,fontWeight:on?700:600,color:on?'#1B2030':'#4A4F5A'}},f.name),
+        h('span',{style:{fontSize:12,fontWeight:700,color:on?'#2F6FE0':'#A8AEB8'}},cnt));
+    }));
+  }
+
+  buildAction(p){
+    const h=React.createElement;const S=this.state;
+    const added=S.added[p.id];
+    const canEdit=S.viewState==='data';
+    if(added){
+      return h('div',{style:{display:'flex',alignItems:'center',gap:7}},
+        h('span',{style:{display:'inline-flex',alignItems:'center',gap:5,height:30,padding:'0 11px',borderRadius:99,background:'#E1F6EE',color:'#1FA078',fontSize:12.5,fontWeight:700}},this.icon('check',{size:14,color:'#1FA078',sw:2.6}),'Day '+added+'에 추가됨'),
+        canEdit?h('button',{onClick:e=>{e.stopPropagation();this.addToDay(p.id,null);},style:{border:'none',background:'transparent',color:'#A8AEB8',fontSize:12,fontWeight:600,cursor:'pointer',padding:'0 4px'}},'취소'):null);
+    }
+    if(!canEdit){
+      return h('span',{style:{fontSize:12,fontWeight:600,color:'#B6BCC6'}},'저장된 장소');
+    }
+    const open=S.openMenuId===p.id;
+    return h('div',{style:{position:'relative'}},
+      h('button',{onClick:e=>{e.stopPropagation();this.toggleMenu(p.id);},style:{display:'inline-flex',alignItems:'center',gap:6,height:32,padding:'0 13px 0 11px',border:'1px solid '+(open?'#3B7DF0':'#E6E8EC'),background:open?'#F7FAFF':'#fff',borderRadius:10,color:open?'#2F6FE0':'#3A3F4B',fontSize:12.5,fontWeight:700,cursor:'pointer'}},
+        this.icon('calendar',{size:15,color:open?'#2F6FE0':'#7B828F'}),'일정에 추가',this.icon('chevron-down',{size:14,color:open?'#2F6FE0':'#A8AEB8'})),
+      open?h('div',{onClick:e=>e.stopPropagation(),style:{position:'absolute',left:0,bottom:'calc(100% + 6px)',width:188,background:'#fff',border:'1px solid #ECEEF1',borderRadius:13,boxShadow:'0 12px 30px -8px rgba(16,24,40,.28)',padding:6,zIndex:20,animation:'scPop .14s ease-out'}},
+        h('div',{style:{fontSize:11,fontWeight:700,color:'#9AA0AB',padding:'5px 9px 6px'}},'어느 날짜에 추가할까요?'),
+        this.DAYS.map(d=>h('button',{key:d.n,onClick:()=>this.addToDay(p.id,d.n),style:{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',height:38,padding:'0 10px',border:'none',background:'transparent',borderRadius:9,cursor:'pointer'},onMouseEnter:e=>e.currentTarget.style.background='#F4F6F8',onMouseLeave:e=>e.currentTarget.style.background='transparent'},
+          h('span',{style:{display:'flex',alignItems:'center',gap:8}},h('span',{style:{width:22,height:22,borderRadius:7,background:'#EAF1FE',color:'#2F6FE0',fontSize:11,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center'}},d.n),h('span',{style:{fontSize:13,fontWeight:600,color:'#3A3F4B'}},'Day '+d.n)),
+          h('span',{style:{fontSize:12,fontWeight:600,color:'#A8AEB8'}},d.date)))):null);
+  }
+
+  buildMapPins(){
+    const h=React.createElement;const S=this.state;
+    const list=this.placesIn(S.folder);
+    return h('div',{style:{position:'absolute',inset:0}}, list.map(p=>{
+      const sel=S.selectedId===p.id;const c=this.CAT[p.cat];const added=S.added[p.id];
+      return h('button',{key:p.id,onClick:()=>this.setState({selectedId:p.id}),style:{position:'absolute',left:p.x+'%',top:p.y+'%',transform:'translate(-50%,-100%)',background:'none',border:'none',padding:0,cursor:'pointer',zIndex:sel?6:2}},
+        h('div',{style:{position:'relative',display:'flex',flexDirection:'column',alignItems:'center'}},
+          sel?h('div',{style:{position:'absolute',top:-3,width:38,height:38,borderRadius:'50%',background:'rgba(59,125,240,.16)'}}):null,
+          h('div',{style:{width:30,height:30,borderRadius:'50% 50% 50% 3px',background:added?'#3B7DF0':'#fff',border:'1.5px solid '+(added?'#3B7DF0':(sel?'#3B7DF0':'#D2D8E0')),boxShadow:'0 3px 8px rgba(16,24,40,.18)',display:'flex',alignItems:'center',justifyContent:'center',transform:'rotate(45deg)'}},
+            h('div',{style:{transform:'rotate(-45deg)',display:'flex'}}, added?h('span',{style:{fontSize:12,fontWeight:800,color:'#fff'}},'D'+added):this.icon(c.icon,{size:14,color:sel?'#2F6FE0':'#8A909B',sw:2}))),
+          sel?h('div',{style:{marginTop:5,background:'#1B2030',color:'#fff',fontSize:10.5,fontWeight:700,padding:'2px 8px',borderRadius:99,whiteSpace:'nowrap'}},p.name):null));
+    }));
+  }
+
+  buildSkeleton(){
+    const h=React.createElement;
+    return h(React.Fragment,null,[0,1,2,3].map(i=>h('div',{key:i,style:{borderRadius:16,border:'1px solid #ECEEF1',background:'#fff',padding:14,display:'flex',flexDirection:'column',gap:11,opacity:i>1?.6:1}},
+      h('div',{style:{display:'flex',gap:11}},h('div',{style:{width:40,height:40,borderRadius:12,background:'linear-gradient(90deg,#EEF0F4 25%,#F7F8FA 37%,#EEF0F4 63%)',backgroundSize:'840px 100%',animation:'scShimmer 1.4s infinite linear'}}),h('div',{style:{flex:1,display:'flex',flexDirection:'column',gap:7}},h('div',{style:{height:14,width:'70%',borderRadius:6,background:'#EEF0F4'}}),h('div',{style:{height:11,width:'45%',borderRadius:6,background:'#F1F3F6'}}))),
+      h('div',{style:{height:30,borderRadius:9,background:'#F4F5F7'}}))));
+  }
+
+  setView(v){this.setState({viewState:v});}
+  buildStateSwitch(){const h=React.createElement;const items=[['data','장소 있음'],['empty','빈 상태'],['loading','로딩'],['viewer','보기 전용']];const cur=this.state.viewState;return h('div',{style:{display:'flex',gap:2}},items.map(([k,label])=>{const on=cur===k;return h('button',{key:k,onClick:()=>this.setView(k),style:{height:32,padding:'0 12px',border:'none',borderRadius:10,cursor:'pointer',fontSize:12.5,fontWeight:700,background:on?'rgba(255,255,255,.16)':'transparent',color:on?'#fff':'#9298A6',transition:'all .12s'}},label);}));}
+
+  nav(f){ try{ window.location.href = encodeURI(f); }catch(e){} }
+  componentDidMount(){
+    if(this.__navWired) return; this.__navWired=true;
+    var rules = [
+      {label:'플랜',to:'플랜 뷰.dc.html',tag:'DIV',needsSvg:true},
+      {label:'일정표',to:'일정표.dc.html',tag:'DIV',needsSvg:true},
+      {label:'장소',to:'장소.dc.html',tag:'DIV',needsSvg:true},
+      {label:'예산',to:'예산 정산.dc.html',tag:'DIV',needsSvg:true},
+      {label:'목록',to:'내 여행 목록.dc.html',tag:'BUTTON'},
+      {label:'공유',to:'오버레이 3종.dc.html#share',tag:'BUTTON'},
+      {label:'장소 추가',to:'오버레이 3종.dc.html#place',tag:'BUTTON'},
+      {label:'지출 추가',to:'오버레이 3종.dc.html#expense',tag:'BUTTON'}
+    ];
+    var norm=function(s){return (s||'').replace(/\s+/g,' ').trim();};
+    var self=this;
+    document.addEventListener('click', function(e){
+      var el=e.target;
+      for(var i=0; el && i<7; i++, el=el.parentElement){
+        var txt=norm(el.textContent);
+        for(var j=0;j<rules.length;j++){
+          var r=rules[j];
+          var ok = r.mode==='includes' ? (txt.indexOf(r.label)>=0) : (txt===r.label);
+          if(!ok) continue;
+          if(r.tag && el.tagName!==r.tag) continue;
+          if(r.needsSvg && !(el.querySelector && el.querySelector('svg'))) continue;
+          e.preventDefault(); e.stopPropagation(); self.nav(r.to); return;
+        }
+      }
+    }, true);
+  }
+
+  renderVals(){
+    const S=this.state;const vs=S.viewState;
+    const isLoading=vs==='loading',isEmpty=vs==='empty',isViewer=vs==='viewer';
+    const active=vs==='data'||vs==='viewer';
+    const canEdit=vs==='data';
+    const list=this.placesIn(S.folder);
+    const folderMeta=this.folders.find(f=>f.key===S.folder)||this.folders[0];
+    const places=list.map(p=>({
+      id:p.id,name:p.name,area:p.area,catLabel:this.CAT[p.cat].label,memo:p.memo,hasMemo:!!p.memo,
+      chipEl:this.chip(p.cat,40),savedByEl:this.avatar(p.by,24),selected:S.selectedId===p.id,
+      actionEl:this.buildAction(p),
+    }));
+
+    // DS samples
+    const h=React.createElement;
+    const dsFolders=h('div',{style:{display:'flex',flexDirection:'column',gap:3,border:'1px solid #ECEEF1',borderRadius:14,padding:8,background:'#FBFBFC'}},
+      [['utensils','맛집',true,8],['coffee','카페',false,5],['bookmark','가보고 싶은',false,2]].map(([ic,nm,on,c])=>
+        h('div',{key:nm,style:{display:'flex',alignItems:'center',gap:10,height:42,padding:'0 11px',borderRadius:11,background:on?'#EAF1FE':'transparent'}},
+          h('span',{style:{width:26,height:26,borderRadius:8,background:on?'#fff':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon(ic,{size:16,color:on?'#2F6FE0':'#7B828F'})),
+          h('span',{style:{flex:1,fontSize:13.5,fontWeight:on?700:600,color:on?'#1B2030':'#4A4F5A'}},nm),
+          h('span',{style:{fontSize:12,fontWeight:700,color:on?'#2F6FE0':'#A8AEB8'}},c))));
+    const card=(cat,name,area,memo,addedDay)=>h('div',{style:{width:288,background:'#fff',border:'1px solid #ECEEF1',borderRadius:16,padding:14,display:'flex',flexDirection:'column',gap:11}},
+      h('div',{style:{display:'flex',gap:11}},this.chip(cat,40),h('div',{style:{flex:1}},h('div',{style:{fontSize:14.5,fontWeight:700,color:'#1F2430'}},name),h('div',{style:{display:'flex',alignItems:'center',gap:5,marginTop:3,color:'#9097A1',fontSize:12}},this.icon('landmark',{size:0}),area,h('span',{style:{background:'#F1F3F6',color:'#6B7280',fontSize:11,fontWeight:600,padding:'1px 7px',borderRadius:99}},this.CAT[cat].label))),this.avatar('ji',24)),
+      memo?h('div',{style:{background:'#FBFBFC',border:'1px solid #F2F3F6',borderRadius:10,padding:'7px 10px',fontSize:12,fontWeight:500,color:'#7A818D'}},memo):null,
+      addedDay?h('span',{style:{display:'inline-flex',alignItems:'center',gap:5,height:30,padding:'0 11px',borderRadius:99,background:'#E1F6EE',color:'#1FA078',fontSize:12.5,fontWeight:700,width:'max-content'}},this.icon('check',{size:14,color:'#1FA078',sw:2.6}),'Day '+addedDay+'에 추가됨')
+        :h('span',{style:{display:'inline-flex',alignItems:'center',gap:6,height:32,padding:'0 13px 0 11px',border:'1px solid #E6E8EC',borderRadius:10,color:'#3A3F4B',fontSize:12.5,fontWeight:700,width:'max-content'}},this.icon('calendar',{size:15,color:'#7B828F'}),'일정에 추가',this.icon('chevron-down',{size:14,color:'#A8AEB8'})));
+    const dsPlaceCards=h('div',{style:{display:'flex',gap:14}},card('cafe','블루보틀 기요스미','기요스미시라카와','도쿄 1호점'),card('museum','시부야 스카이','시부야',null,2));
+
+    return {
+      isViewer,notViewer:!isViewer,isLoading,isEmpty,canEdit,
+      showGrid:active&&list.length>0||(active&&false), showControls:active,
+      places, placeCount:list.length, folderName:folderMeta.name,
+      folderHeadIconEl:h('span',{style:{width:30,height:30,borderRadius:9,background:folderMeta.key==='all'?'#F1F3F6':this.CAT[folderMeta.key]?this.CAT[folderMeta.key].bg:'#F1ECFD',display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon(folderMeta.icon,{size:17,color:folderMeta.fg,sw:2})),
+      membersEl:this.buildMembers(),
+      folderListEl:this.buildFolders(),
+      mapPinsEl:this.buildMapPins(),
+      skeletonEl:this.buildSkeleton(),
+      stateSwitchEl:this.buildStateSwitch(),
+      onSelect:this.select,
+      dsFolders,dsPlaceCards,
+    };
+  }
+}
+</script>
+</body>
+</html>

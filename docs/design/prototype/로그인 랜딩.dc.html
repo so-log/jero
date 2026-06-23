@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;color:#1F2430;background:#EEF0F4;}
+  @keyframes scSpin{to{transform:rotate(360deg);}}
+  @keyframes scFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-thumb{background:#D7DBE2;border-radius:99px;border:3px solid transparent;background-clip:content-box;}
+  ::-webkit-scrollbar-thumb:hover{background:#C2C8D0;background-clip:content-box;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+
+<div style="min-width:100%;min-height:100vh;width:max-content;box-sizing:border-box;padding:40px 40px 130px;background:#EEF0F4;">
+  <div style="width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:13px;">
+
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;letter-spacing:-.01em;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#5B8DEF;"></span>
+      로그인 / 랜딩 · 데스크톱 1280px
+    </div>
+
+    <!-- ============ STAGE ============ -->
+    <div style="width:1280px;height:792px;border-radius:22px;border:1px solid #E8EAEF;box-shadow:0 1px 3px rgba(16,24,40,.05),0 24px 60px -26px rgba(16,24,40,.28);overflow:hidden;display:flex;background:#fff;">
+
+      <!-- == LEFT: brand / value / features == -->
+      <div style="width:660px;flex:none;position:relative;overflow:hidden;background:radial-gradient(125% 100% at 12% 8%,#EAF1FE 0%,#EEF1FB 40%,#E6F5EF 100%);padding:48px 52px;display:flex;flex-direction:column;">
+        <div style="position:absolute;top:-70px;right:-50px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(124,168,240,.32),transparent 68%);"></div>
+        <div style="position:absolute;bottom:-80px;left:-40px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(63,196,160,.22),transparent 68%);"></div>
+
+        <!-- logo -->
+        <div style="position:relative;display:flex;align-items:center;gap:11px;">
+          <div style="width:38px;height:38px;border-radius:12px;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px -2px rgba(91,141,239,.5);">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <span style="font-size:21px;font-weight:800;color:#1B2030;letter-spacing:-.03em;">동행</span>
+        </div>
+
+        <!-- value prop -->
+        <div style="position:relative;margin-top:64px;display:flex;flex-direction:column;gap:18px;">
+          <span style="display:inline-flex;align-items:center;gap:6px;width:max-content;background:rgba(255,255,255,.7);border:1px solid #DCE9FD;border-radius:99px;padding:6px 13px;font-size:12.5px;font-weight:700;color:#2F6FE0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="m6.34 6.34 2.83 2.83"/><path d="M2 12h4"/><path d="M9.17 14.83 6.34 17.66"/><path d="M12 18v4"/></svg>
+            함께 만드는 여행
+          </span>
+          <h1 style="margin:0;font-size:44px;line-height:1.18;font-weight:800;color:#161B28;letter-spacing:-.035em;">친구들과 함께 짜는<br>여행 계획, 한 곳에서.</h1>
+          <p style="margin:0;font-size:16.5px;line-height:1.65;font-weight:500;color:#5A6270;max-width:430px;text-wrap:pretty;">가고 싶은 곳을 모으고, 순서와 동선을 함께 정하고, 예산까지 한 번에. 실시간으로 같이 만드는 여행 플래너예요.</p>
+        </div>
+
+        <!-- feature highlights -->
+        <div style="position:relative;margin-top:auto;display:flex;flex-direction:column;gap:11px;">
+          {{ featuresEl }}
+        </div>
+      </div>
+
+      <!-- == RIGHT: auth == -->
+      <div style="flex:1;min-width:0;display:flex;align-items:center;justify-content:center;padding:40px;position:relative;">
+        <div style="width:380px;display:flex;flex-direction:column;">
+          <!-- header -->
+          <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:24px;">
+            <span style="font-size:25px;font-weight:800;color:#161B28;letter-spacing:-.03em;">{{ titleText }}</span>
+            <span style="font-size:14px;font-weight:500;color:#8A909B;">{{ subtitleText }}</span>
+          </div>
+
+          <!-- google -->
+          <button style="height:50px;border:1px solid #E2E5EA;background:#fff;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:10px;font-size:14.5px;font-weight:700;color:#3A3F4B;cursor:pointer;" style-hover="background:#F8F9FB;border-color:#D7DBE2;">
+            <svg width="19" height="19" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1Z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z"/></svg>
+            Google로 계속하기
+          </button>
+
+          <!-- divider -->
+          <div style="display:flex;align-items:center;gap:12px;margin:20px 0;">
+            <div style="flex:1;height:1px;background:#ECEEF1;"></div>
+            <span style="font-size:12px;font-weight:600;color:#A8AEB8;">또는 이메일로</span>
+            <div style="flex:1;height:1px;background:#ECEEF1;"></div>
+          </div>
+
+          <!-- form -->
+          {{ formEl }}
+
+          <!-- toggle login/signup -->
+          <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:22px;font-size:13.5px;">
+            <span style="color:#8A909B;font-weight:500;">{{ toggleHint }}</span>
+            <button onClick="{{ onToggle }}" style="border:none;background:none;color:#2F6FE0;font-size:13.5px;font-weight:700;cursor:pointer;padding:0;">{{ toggleAction }}</button>
+          </div>
+
+          <!-- browse without login -->
+          <div style="margin-top:26px;padding-top:22px;border-top:1px solid #F0F1F4;display:flex;justify-content:center;">
+            <button style="display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 18px;border:1px solid #E6E8EC;background:#fff;border-radius:12px;color:#5A606B;font-size:13.5px;font-weight:700;cursor:pointer;" style-hover="background:#F6F7F9;border-color:#DDE0E5;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              공유 링크로 둘러보기
+            </button>
+          </div>
+        </div>
+
+        <!-- loading overlay -->
+        <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;inset:0;background:rgba(255,255,255,.9);backdrop-filter:blur(3px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
+            <div style="width:38px;height:38px;border-radius:50%;border:3.5px solid #DCE6F8;border-top-color:#3B7DF0;animation:scSpin .8s linear infinite;"></div>
+            <span style="font-size:14px;font-weight:700;color:#1B2030;">{{ loadingText }}</span>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- ============ DESIGN SYSTEM REFERENCE ============ -->
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;margin-top:24px;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#3FC4A0;"></span>
+      디자인 시스템 — 이 화면에서 새로 추가된 컴포넌트 (기존 토큰 계승)
+    </div>
+    <div style="width:1280px;background:#fff;border:1px solid #E8EAEF;border-radius:20px;box-shadow:0 1px 3px rgba(16,24,40,.05);padding:30px 34px;display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">소셜 / 인증 버튼</div>
+        {{ dsAuthBtns }}
+        <div style="font-size:13px;font-weight:700;color:#1B2030;margin-top:8px;">입력 + 오류</div>
+        {{ dsAuthInput }}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">기능 소개 항목</div>
+        {{ dsFeatures }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- floating state preview switcher -->
+<div style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:10px;background:rgba(27,32,48,.94);backdrop-filter:blur(10px);padding:6px 10px 6px 4px;border-radius:14px;box-shadow:0 10px 30px -6px rgba(0,0,0,.4);">
+  <span style="color:#8B92A0;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:0 4px 0 9px;text-transform:uppercase;">화면</span>
+  {{ modeSwitchEl }}
+  <span style="width:1px;height:22px;background:rgba(255,255,255,.16);"></span>
+  <span style="color:#8B92A0;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:0 4px;text-transform:uppercase;">상태</span>
+  {{ stateSwitchEl }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360,&quot;height&quot;:980},&quot;mode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;login&quot;,&quot;signup&quot;],&quot;default&quot;:&quot;login&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;viewState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;idle&quot;,&quot;error&quot;,&quot;loading&quot;],&quot;default&quot;:&quot;idle&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.FEATURES=[
+      {icon:'users',bg:'#EAF1FE',fg:'#2F6FE0',title:'실시간 협업',desc:'친구들과 동시에 편집하고 커서까지 함께 봐요'},
+      {icon:'route',bg:'#E1F6EE',fg:'#1FA078',title:'순서 · 동선 정리',desc:'장소를 순서대로 잇고 지도에 동선을 그려요'},
+      {icon:'wallet',bg:'#FBF1E4',fg:'#C5893A',title:'예산 · 더치페이',desc:'지출을 모으고 누가 누구에게 줄지 자동 정산'},
+    ];
+    this.state={ mode:props.mode||'login', view:props.viewState||'idle', form:{name:'',email:'jihyun@trip.co',pw:''} };
+  }
+  componentDidUpdate(prev){
+    if(prev.mode!==this.props.mode&&this.props.mode) this.setState({mode:this.props.mode});
+    if(prev.viewState!==this.props.viewState&&this.props.viewState) this.setState({view:this.props.viewState});
+  }
+
+  icon(name,o){
+    o=o||{};const size=o.size||18,color=o.color||'#1F2430',sw=o.sw||2;
+    const P={
+      'users':[['path',{d:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'}],['circle',{cx:9,cy:7,r:4}],['path',{d:'M22 21v-2a4 4 0 0 0-3-3.87'}],['path',{d:'M16 3.13a4 4 0 0 1 0 7.75'}]],
+      'route':[['circle',{cx:6,cy:19,r:3}],['path',{d:'M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15'}],['circle',{cx:18,cy:5,r:3}]],
+      'wallet':[['path',{d:'M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1'}],['path',{d:'M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4'}]],
+      'mail':[['rect',{x:2,y:4,width:20,height:16,rx:2}],['path',{d:'m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7'}]],
+      'lock':[['rect',{x:3,y:11,width:18,height:11,rx:2}],['path',{d:'M7 11V7a5 5 0 0 1 10 0v4'}]],
+      'user':[['path',{d:'M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'}],['circle',{cx:12,cy:7,r:4}]],
+      'eye':[['path',{d:'M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z'}],['circle',{cx:12,cy:12,r:3}]],
+      'arrow-right':[['path',{d:'M5 12h14'}],['path',{d:'m12 5 7 7-7 7'}]],
+      'check':[['path',{d:'M20 6 9 17l-5-5'}]],
+    };
+    const parts=P[name]||[];
+    return React.createElement('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'},parts.map((el,i)=>React.createElement(el[0],Object.assign({key:i},el[1]))));
+  }
+
+  setF(p){this.setState(s=>({form:Object.assign({},s.form,p)}));}
+  toggle(){this.setState(s=>({mode:s.mode==='login'?'signup':'login',view:'idle'}));}
+  submit(){ this.setState({view:'loading'}); setTimeout(function(){ window.location.href=encodeURI('내 여행 목록.dc.html'); },1000); }
+  setMode(m){this.setState({mode:m,view:'idle'});}
+  setView(v){this.setState({view:v});}
+
+  authInput(label,value,onChange,opts){
+    opts=opts||{};const h=React.createElement;const err=opts.error;
+    return h('div',{style:{display:'flex',flexDirection:'column',gap:7}},
+      h('label',{style:{fontSize:12.5,fontWeight:700,color:'#3A3F4B'}},label),
+      h('div',{style:{position:'relative',display:'flex',alignItems:'center'}},
+        h('div',{style:{position:'absolute',left:13,pointerEvents:'none'}},this.icon(opts.icon,{size:16,color:err?'#E8615C':'#9AA0AB'})),
+        h('input',{type:opts.type||'text',value:value,placeholder:opts.placeholder||'',onChange:e=>onChange(e.target.value),
+          style:{width:'100%',height:48,padding:'0 14px 0 38px',border:'1.5px solid '+(err?'#E8615C':'#E2E5EA'),borderRadius:13,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none',background:err?'#FFFafA':'#fff'},
+          onFocus:e=>{if(!err){e.target.style.borderColor='#3B7DF0';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:e=>{e.target.style.borderColor=err?'#E8615C':'#E2E5EA';e.target.style.boxShadow='none';}}),
+        opts.type==='password'?h('div',{style:{position:'absolute',right:13,color:'#B6BCC6',display:'flex'}},this.icon('eye',{size:16,color:'#B6BCC6'})):null),
+      err?h('span',{style:{fontSize:11.5,fontWeight:600,color:'#E8615C'}},err):null);
+  }
+
+  buildForm(){
+    const h=React.createElement;const f=this.state.form;const signup=this.state.mode==='signup';const se=this.state.view==='error';
+    const emailErr=se&&!/.+@.+\..+/.test(f.email)?'올바른 이메일 주소를 입력해 주세요':null;
+    const pwErr=se&&f.pw.length<6?'비밀번호는 6자 이상이어야 해요':null;
+    const fields=[];
+    if(signup) fields.push(this.authInput('이름',f.name,v=>this.setF({name:v}),{icon:'user',placeholder:'홍길동'}));
+    fields.push(this.authInput('이메일',f.email,v=>this.setF({email:v}),{icon:'mail',placeholder:'you@email.com',error:emailErr}));
+    fields.push(this.authInput('비밀번호',f.pw,v=>this.setF({pw:v}),{icon:'lock',type:'password',placeholder:signup?'6자 이상':'비밀번호',error:pwErr}));
+    return h('div',{style:{display:'flex',flexDirection:'column',gap:14}},
+      fields,
+      !signup?h('div',{style:{display:'flex',justifyContent:'flex-end',marginTop:-4}},h('button',{style:{border:'none',background:'none',color:'#8A909B',fontSize:12.5,fontWeight:600,cursor:'pointer',padding:0}},'비밀번호를 잊으셨나요?')):null,
+      h('button',{onClick:()=>this.submit(),style:{height:50,border:'none',borderRadius:13,background:'#3B7DF0',color:'#fff',fontSize:15,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:8,boxShadow:'0 5px 14px -3px rgba(59,125,240,.55)',marginTop:4}},
+        signup?'가입하고 시작하기':'로그인',this.icon('arrow-right',{size:18,color:'#fff',sw:2.3})));
+  }
+
+  buildFeatures(){
+    const h=React.createElement;
+    return h(React.Fragment,null,this.FEATURES.map((f,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:13,background:'rgba(255,255,255,.62)',backdropFilter:'blur(6px)',border:'1px solid rgba(255,255,255,.7)',borderRadius:15,padding:'13px 15px'}},
+      h('div',{style:{width:42,height:42,borderRadius:12,background:f.bg,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon(f.icon,{size:21,color:f.fg,sw:2})),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:2}},h('span',{style:{fontSize:14.5,fontWeight:700,color:'#1B2030'}},f.title),h('span',{style:{fontSize:12.5,fontWeight:500,color:'#6B7280'}},f.desc)))));
+  }
+
+  buildModeSwitch(){const h=React.createElement;const items=[['login','로그인'],['signup','회원가입']];const cur=this.state.mode;return h('div',{style:{display:'flex',gap:2}},items.map(([k,label])=>{const on=cur===k;return h('button',{key:k,onClick:()=>this.setMode(k),style:{height:32,padding:'0 12px',border:'none',borderRadius:10,cursor:'pointer',fontSize:12.5,fontWeight:700,background:on?'rgba(255,255,255,.16)':'transparent',color:on?'#fff':'#9298A6',transition:'all .12s'}},label);}));}
+  buildStateSwitch(){const h=React.createElement;const items=[['idle','기본'],['error','오류 안내'],['loading','처리 중']];const cur=this.state.view;return h('div',{style:{display:'flex',gap:2}},items.map(([k,label])=>{const on=cur===k;return h('button',{key:k,onClick:()=>this.setView(k),style:{height:32,padding:'0 12px',border:'none',borderRadius:10,cursor:'pointer',fontSize:12.5,fontWeight:700,background:on?'rgba(255,255,255,.16)':'transparent',color:on?'#fff':'#9298A6',transition:'all .12s'}},label);}));}
+
+  nav(f){ try{ window.location.href = encodeURI(f); }catch(e){} }
+  componentDidMount(){
+    if(this.__navWired) return; this.__navWired=true;
+    var rules = [
+      {label:'Google로 계속하기',to:'내 여행 목록.dc.html',tag:'BUTTON'},
+      {label:'공유 링크로 둘러보기',to:'뷰어 공유.dc.html',tag:'BUTTON'}
+    ];
+    var norm=function(s){return (s||'').replace(/\s+/g,' ').trim();};
+    var self=this;
+    document.addEventListener('click', function(e){
+      var el=e.target;
+      for(var i=0; el && i<7; i++, el=el.parentElement){
+        var txt=norm(el.textContent);
+        for(var j=0;j<rules.length;j++){
+          var r=rules[j];
+          var ok = r.mode==='includes' ? (txt.indexOf(r.label)>=0) : (txt===r.label);
+          if(!ok) continue;
+          if(r.tag && el.tagName!==r.tag) continue;
+          if(r.needsSvg && !(el.querySelector && el.querySelector('svg'))) continue;
+          e.preventDefault(); e.stopPropagation(); self.nav(r.to); return;
+        }
+      }
+    }, true);
+  }
+
+  renderVals(){
+    const signup=this.state.mode==='signup';
+    const h=React.createElement;
+    const dsAuthBtns=h('div',{style:{display:'flex',flexDirection:'column',gap:10,maxWidth:320}},
+      h('div',{style:{height:50,border:'1px solid #E2E5EA',borderRadius:13,display:'flex',alignItems:'center',justifyContent:'center',gap:10,fontSize:14.5,fontWeight:700,color:'#3A3F4B'}},
+        h('svg',{width:19,height:19,viewBox:'0 0 24 24'},h('path',{fill:'#4285F4',d:'M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1Z'}),h('path',{fill:'#34A853',d:'M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z'}),h('path',{fill:'#FBBC05',d:'M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z'}),h('path',{fill:'#EA4335',d:'M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z'})),'Google로 계속하기'),
+      h('div',{style:{height:50,borderRadius:13,background:'#3B7DF0',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontSize:15,fontWeight:700,boxShadow:'0 5px 14px -3px rgba(59,125,240,.55)'}},'로그인',this.icon('arrow-right',{size:18,color:'#fff',sw:2.3})));
+    const dsAuthInput=h('div',{style:{display:'flex',flexDirection:'column',gap:5,maxWidth:320}},
+      h('div',{style:{position:'relative',display:'flex',alignItems:'center'}},h('div',{style:{position:'absolute',left:13}},this.icon('mail',{size:16,color:'#E8615C'})),h('div',{style:{width:'100%',height:48,padding:'0 14px 0 38px',border:'1.5px solid #E8615C',borderRadius:13,background:'#FFFafA',display:'flex',alignItems:'center',fontSize:14,color:'#1F2430'}},'you@email')),
+      h('span',{style:{fontSize:11.5,fontWeight:600,color:'#E8615C'}},'올바른 이메일 주소를 입력해 주세요'));
+    const dsFeatures=this.buildFeatures();
+
+    return {
+      titleText: signup?'동행 계정 만들기':'다시 오신 걸 환영해요',
+      subtitleText: signup?'몇 초면 끝나요. 바로 여행을 시작할 수 있어요.':'로그인하고 함께 만들던 여행을 이어가세요.',
+      toggleHint: signup?'이미 계정이 있으신가요?':'아직 계정이 없으신가요?',
+      toggleAction: signup?'로그인':'회원가입',
+      onToggle:()=>this.toggle(),
+      formEl:this.buildForm(),
+      featuresEl:this.buildFeatures(),
+      isLoading:this.state.view==='loading',
+      loadingText: signup?'계정을 만드는 중…':'로그인하는 중…',
+      modeSwitchEl:this.buildModeSwitch(),
+      stateSwitchEl:this.buildStateSwitch(),
+      dsAuthBtns, dsAuthInput, dsFeatures,
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;color:#1F2430;background:#E7E5DF;}
+  @keyframes scSpin{to{transform:rotate(360deg);}}
+  ::-webkit-scrollbar{width:9px;height:9px;}
+  ::-webkit-scrollbar-thumb{background:#D7DBE2;border-radius:99px;border:2.5px solid transparent;background-clip:content-box;}
+  ::-webkit-scrollbar-thumb:hover{background:#C2C8D0;background-clip:content-box;}
+  ::-webkit-scrollbar-track{background:transparent;}
+</style>
+</helmet>
+
+<div style="min-width:100%;min-height:100vh;width:max-content;box-sizing:border-box;padding:48px;background:#E7E5DF;">
+  <div style="display:flex;flex-direction:column;gap:40px;">
+
+    <div style="display:flex;align-items:center;gap:9px;color:#6B6F77;font-size:12.5px;font-weight:600;letter-spacing:-.01em;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#5B8DEF;"></span>
+      오버레이 3종 · 워크스페이스 위 모달 / 패널 · 데스크톱 1280px
+    </div>
+
+    <!-- ===== ROW OF 3 OVERLAY FRAMES ===== -->
+    <div style="display:flex;gap:44px;align-items:flex-start;">
+
+      <!-- FRAME 1: 장소 상세 (right panel) -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:12px;">
+        <span style="font-size:13px;font-weight:700;color:#3A3F4B;">① 장소 상세 · 우측 패널</span>
+        <div style="position:relative;width:1280px;height:760px;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.08),0 30px 60px -30px rgba(16,24,40,.35);background:#EEF0F4;">
+          <div style="position:absolute;inset:0;filter:blur(2px);opacity:.65;">
+            <div style="height:66px;background:#fff;border-bottom:1px solid #ECEEF1;display:flex;align-items:center;gap:14px;padding:0 22px;">
+              <div style="width:42px;height:42px;border-radius:13px;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);"></div>
+              <div style="width:180px;height:16px;border-radius:6px;background:#E6E8EC;"></div>
+              <div style="margin-left:auto;width:220px;height:34px;border-radius:11px;background:#F1F3F6;"></div>
+            </div>
+            <div style="display:flex;height:calc(100% - 66px);">
+              <div style="width:392px;border-right:1px solid #ECEEF1;background:#FBFBFC;padding:18px;display:flex;flex-direction:column;gap:11px;">
+                <div style="height:64px;border-radius:14px;background:#fff;border:1px solid #ECEEF1;"></div>
+                <div style="height:64px;border-radius:14px;background:#fff;border:1px solid #ECEEF1;"></div>
+                <div style="height:64px;border-radius:14px;background:#fff;border:1px solid #ECEEF1;"></div>
+              </div>
+              <div style="flex:1;background:#EAF0EE;"></div>
+            </div>
+          </div>
+          <div style="position:absolute;inset:0;background:rgba(20,24,35,.4);"></div>
+          <div style="position:absolute;right:0;top:0;bottom:0;">{{ placeDetailEl }}</div>
+        </div>
+      </div>
+
+      <!-- FRAME 2: 공유 관리 (center modal) -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:12px;">
+        <span style="font-size:13px;font-weight:700;color:#3A3F4B;">② 멤버 · 공유 관리 · 중앙 모달</span>
+        <div style="position:relative;width:1280px;height:760px;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.08),0 30px 60px -30px rgba(16,24,40,.35);background:#EEF0F4;">
+          <div style="position:absolute;inset:0;filter:blur(2px);opacity:.65;">
+            <div style="height:66px;background:#fff;border-bottom:1px solid #ECEEF1;display:flex;align-items:center;gap:14px;padding:0 22px;">
+              <div style="width:42px;height:42px;border-radius:13px;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);"></div>
+              <div style="width:180px;height:16px;border-radius:6px;background:#E6E8EC;"></div>
+            </div>
+            <div style="padding:24px;display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+              <div style="height:108px;border-radius:18px;background:#fff;border:1px solid #ECEEF1;"></div>
+              <div style="height:108px;border-radius:18px;background:#fff;border:1px solid #ECEEF1;"></div>
+              <div style="height:108px;border-radius:18px;background:#fff;border:1px solid #ECEEF1;"></div>
+              <div style="height:108px;border-radius:18px;background:#fff;border:1px solid #ECEEF1;"></div>
+            </div>
+          </div>
+          <div style="position:absolute;inset:0;background:rgba(20,24,35,.45);"></div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;">{{ shareModalEl }}</div>
+        </div>
+      </div>
+
+      <!-- FRAME 3: 지출 추가 (center modal) -->
+      <div style="flex:none;display:flex;flex-direction:column;gap:12px;">
+        <span style="font-size:13px;font-weight:700;color:#3A3F4B;">③ 지출 추가 · 중앙 모달</span>
+        <div style="position:relative;width:1280px;height:760px;border-radius:4px;overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.08),0 30px 60px -30px rgba(16,24,40,.35);background:#EEF0F4;">
+          <div style="position:absolute;inset:0;filter:blur(2px);opacity:.65;">
+            <div style="height:66px;background:#fff;border-bottom:1px solid #ECEEF1;display:flex;align-items:center;gap:14px;padding:0 22px;">
+              <div style="width:42px;height:42px;border-radius:13px;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);"></div>
+              <div style="width:180px;height:16px;border-radius:6px;background:#E6E8EC;"></div>
+            </div>
+            <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;"><div style="height:104px;border-radius:18px;background:#fff;border:1px solid #ECEEF1;"></div><div style="height:104px;border-radius:18px;background:#fff;border:1px solid #ECEEF1;"></div><div style="height:104px;border-radius:18px;background:#fff;border:1px solid #ECEEF1;"></div><div style="height:104px;border-radius:18px;background:#fff;border:1px solid #ECEEF1;"></div></div>
+              <div style="height:240px;border-radius:18px;background:#fff;border:1px solid #ECEEF1;"></div>
+            </div>
+          </div>
+          <div style="position:absolute;inset:0;background:rgba(20,24,35,.45);"></div>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;">{{ expenseModalEl }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DESIGN SYSTEM REFERENCE ===== -->
+    <div style="display:flex;align-items:center;gap:9px;color:#6B6F77;font-size:12.5px;font-weight:600;margin-top:8px;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#3FC4A0;"></span>
+      디자인 시스템 — 공통 모달/패널 셸 &amp; 폼 컨트롤 (기존 토큰 계승)
+    </div>
+    <div style="width:1280px;background:#fff;border:1px solid #E8EAEF;border-radius:20px;box-shadow:0 1px 3px rgba(16,24,40,.05);padding:30px 34px;display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">모달 셸 · 헤더 / 본문 / 푸터</div>
+        {{ dsModalShell }}
+        <div style="font-size:13px;font-weight:700;color:#1B2030;margin-top:8px;">금액 입력 · 통화</div>
+        {{ dsAmount }}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">카테고리 칩 선택 (단일)</div>
+        {{ dsCatChips }}
+        <div style="font-size:13px;font-weight:700;color:#1B2030;margin-top:8px;">결제자 라디오 / 분담 체크 (아바타)</div>
+        {{ dsAvatarPick }}
+        <div style="font-size:13px;font-weight:700;color:#1B2030;margin-top:8px;">역할 배지 · 변경 메뉴</div>
+        {{ dsRole }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- floating controls: state + permission -->
+<div style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:10px;background:rgba(27,32,48,.94);backdrop-filter:blur(10px);padding:6px 10px 6px 4px;border-radius:14px;box-shadow:0 10px 30px -6px rgba(0,0,0,.4);">
+  <span style="color:#8B92A0;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:0 4px 0 9px;text-transform:uppercase;">상태</span>
+  {{ stateSwitchEl }}
+  <span style="width:1px;height:22px;background:rgba(255,255,255,.16);"></span>
+  <span style="color:#8B92A0;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:0 4px;text-transform:uppercase;">내 권한</span>
+  {{ roleSwitchEl }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1480,&quot;height&quot;:1000},&quot;viewState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;normal&quot;,&quot;error&quot;,&quot;loading&quot;],&quot;default&quot;:&quot;normal&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;owner&quot;,&quot;editor&quot;],&quot;default&quot;:&quot;owner&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.CAT={
+      food:{label:'식비',icon:'utensils',bg:'#FFECEB',fg:'#E8615C'},
+      cafe:{label:'카페',icon:'coffee',bg:'#FBF1E4',fg:'#C5893A'},
+      shopping:{label:'쇼핑',icon:'shopping-bag',bg:'#FCE8F1',fg:'#D9609A'},
+      transport:{label:'교통',icon:'bus',bg:'#E6F3FA',fg:'#3E97CC'},
+      museum:{label:'명소',icon:'landmark',bg:'#E9F1FE',fg:'#3B7DF0'},
+      hotel:{label:'숙소',icon:'bed',bg:'#E1F6EE',fg:'#1FA078'},
+      gift:{label:'기념품',icon:'gift',bg:'#F1ECFD',fg:'#8B6FE0'},
+      etc:{label:'기타',icon:'circle-dot',bg:'#EEF0F4',fg:'#7B828F'},
+    };
+    this.FOLDERS=[{k:'food',label:'맛집'},{k:'cafe',label:'카페'},{k:'shopping',label:'쇼핑'},{k:'museum',label:'명소·뷰'},{k:'wish',label:'가보고 싶은'}];
+    this.MEM=[
+      {id:'ji',initial:'지',color:'#3B7DF0',name:'지현',email:'jihyun@trip.co',role:'owner'},
+      {id:'min',initial:'민',color:'#FF8A65',name:'민준',email:'minjun@gmail.com',role:'editor'},
+      {id:'seo',initial:'서',color:'#3FC4A0',name:'서윤',email:'seoyoon@gmail.com',role:'editor'},
+      {id:'do',initial:'도',color:'#B07CF0',name:'도윤',email:'doyoon@gmail.com',role:'viewer'},
+    ];
+    this.DAYS=[{n:1,date:'4.18'},{n:2,date:'4.19'},{n:3,date:'4.20'},{n:4,date:'4.21'}];
+    this.ROLE={owner:{label:'소유자',icon:'crown',bg:'#EAF1FE',fg:'#2F6FE0'},editor:{label:'편집자',icon:'pencil',bg:'#E1F6EE',fg:'#1FA078'},viewer:{label:'뷰어',icon:'eye',bg:'#F1F3F6',fg:'#7A818D'}};
+    this.state={
+      view:props.viewState||'normal', role:props.role||'owner',
+      detail:{name:'블루보틀 기요스미',address:'도쿄도 고토구 히라노 1-4-8',cat:'cafe',folder:'cafe',memo:'도쿄 1호점 · 오픈런 추천'},
+      expense:{title:'',amount:152000,currency:'KRW',cat:'shopping',payer:'ji',split:['ji','min','seo','do'],day:1},
+      share:{linkRole:'viewer',emailDraft:'',members:this.MEM.map(m=>Object.assign({},m)),roleMenuId:null},
+    };
+  }
+  componentDidUpdate(prev){
+    if(prev.viewState!==this.props.viewState&&this.props.viewState) this.setState({view:this.props.viewState});
+    if(prev.role!==this.props.role&&this.props.role) this.setState({role:this.props.role});
+  }
+
+  icon(name,o){
+    o=o||{};const size=o.size||18,color=o.color||'#1F2430',sw=o.sw||2;
+    const P={
+      'utensils':[['path',{d:'M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2'}],['path',{d:'M7 2v20'}],['path',{d:'M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7'}]],
+      'coffee':[['path',{d:'M10 2v2'}],['path',{d:'M14 2v2'}],['path',{d:'M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1'}],['path',{d:'M6 2v2'}]],
+      'shopping-bag':[['path',{d:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z'}],['path',{d:'M3 6h18'}],['path',{d:'M16 10a4 4 0 0 1-8 0'}]],
+      'bus':[['path',{d:'M8 6v6'}],['path',{d:'M15 6v6'}],['path',{d:'M2 12h19.6'}],['path',{d:'M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.6 6.8 19.9 6 19 6H5c-.9 0-1.6.8-1.8 1.6l-1.4 5c-.1.4-.2.8-.2 1.2 0 .4.1.8.2 1.2C2.5 16.3 3 18 3 18h3'}],['circle',{cx:7,cy:18,r:2}],['path',{d:'M9 18h6'}],['circle',{cx:17,cy:18,r:2}]],
+      'landmark':[['line',{x1:3,x2:21,y1:22,y2:22}],['line',{x1:6,x2:6,y1:18,y2:11}],['line',{x1:10,x2:10,y1:18,y2:11}],['line',{x1:14,x2:14,y1:18,y2:11}],['line',{x1:18,x2:18,y1:18,y2:11}],['polygon',{points:'12 2 20 7 4 7'}]],
+      'bed':[['path',{d:'M2 4v16'}],['path',{d:'M2 8h18a2 2 0 0 1 2 2v10'}],['path',{d:'M2 17h20'}],['path',{d:'M6 8v9'}]],
+      'gift':[['rect',{x:3,y:8,width:18,height:4,rx:1}],['path',{d:'M12 8v13'}],['path',{d:'M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7'}],['path',{d:'M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5'}]],
+      'circle-dot':[['circle',{cx:12,cy:12,r:10}],['circle',{cx:12,cy:12,r:1}]],
+      'x':[['path',{d:'M18 6 6 18'}],['path',{d:'m6 6 12 12'}]],
+      'check':[['path',{d:'M20 6 9 17l-5-5'}]],
+      'plus':[['path',{d:'M5 12h14'}],['path',{d:'M12 5v14'}]],
+      'map-pin':[['path',{d:'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'}],['circle',{cx:12,cy:10,r:3}]],
+      'calendar':[['path',{d:'M8 2v4'}],['path',{d:'M16 2v4'}],['rect',{width:18,height:18,x:3,y:4,rx:2}],['path',{d:'M3 10h18'}]],
+      'trash':[['path',{d:'M3 6h18'}],['path',{d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'}],['line',{x1:10,x2:10,y1:11,y2:17}],['line',{x1:14,x2:14,y1:11,y2:17}]],
+      'crown':[['path',{d:'M11.6 3.8a.5.5 0 0 1 .8 0l2.5 3.5a1 1 0 0 0 1.4.2l3.1-2.3a.5.5 0 0 1 .8.5l-1.6 8a1 1 0 0 1-1 .8H6.4a1 1 0 0 1-1-.8l-1.6-8a.5.5 0 0 1 .8-.5l3.1 2.3a1 1 0 0 0 1.4-.2z'}],['path',{d:'M5 21h14'}]],
+      'pencil':[['path',{d:'M21.2 6.4 17.6 2.8a1.6 1.6 0 0 0-2.3 0L4 14v6h6L21.2 8.7a1.6 1.6 0 0 0 0-2.3z'}],['path',{d:'M15 5 19 9'}]],
+      'eye':[['path',{d:'M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z'}],['circle',{cx:12,cy:12,r:3}]],
+      'copy':[['rect',{x:9,y:9,width:13,height:13,rx:2}],['path',{d:'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'}]],
+      'link':[['path',{d:'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'}],['path',{d:'M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'}]],
+      'mail':[['rect',{x:2,y:4,width:20,height:16,rx:2}],['path',{d:'m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7'}]],
+      'users':[['path',{d:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'}],['circle',{cx:9,cy:7,r:4}],['path',{d:'M22 21v-2a4 4 0 0 0-3-3.87'}],['path',{d:'M16 3.13a4 4 0 0 1 0 7.75'}]],
+      'wallet':[['path',{d:'M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1'}],['path',{d:'M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4'}]],
+      'chevron-down':[['path',{d:'m6 9 6 6 6-6'}]],
+      'lock':[['rect',{x:3,y:11,width:18,height:11,rx:2}],['path',{d:'M7 11V7a5 5 0 0 1 10 0v4'}]],
+      'alert':[['circle',{cx:12,cy:12,r:10}],['line',{x1:12,x2:12,y1:8,y2:12}],['line',{x1:12,x2:12.01,y1:16,y2:16}]],
+    };
+    const parts=P[name]||[];
+    return React.createElement('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'},parts.map((el,i)=>React.createElement(el[0],Object.assign({key:i},el[1]))));
+  }
+  chip(cat,size){const c=this.CAT[cat],s=size||40;return React.createElement('div',{style:{width:s,height:s,borderRadius:Math.round(s*0.3),background:c.bg,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon(c.icon,{size:Math.round(s*0.52),color:c.fg,sw:2}));}
+  avatar(m,s){s=s||30;return React.createElement('div',{title:m.name,style:{width:s,height:s,borderRadius:'50%',background:'#fff',border:'2px solid '+m.color,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},React.createElement('span',{style:{fontSize:s*0.42,fontWeight:700,color:m.color}},m.initial));}
+  won(n,cur){const sym=cur==='JPY'?'¥':'₩';return sym+Number(n||0).toLocaleString('ko-KR');}
+
+  // shared modal shell
+  shell(opts){
+    const h=React.createElement;
+    const {title,sub,icon,iconBg,iconFg,bodyEl,footerEl,width,height,banner,loading,loadingText}=opts;
+    return h('div',{style:{width:width,maxHeight:height||'min(680px, 88%)',background:'#fff',borderRadius:opts.panel?'20px 0 0 20px':20,boxShadow:'0 24px 60px -16px rgba(16,24,40,.4)',display:'flex',flexDirection:'column',overflow:'hidden',position:'relative',height:opts.panel?'100%':'auto'}},
+      // header
+      h('div',{style:{flex:'none',display:'flex',alignItems:'center',justifyContent:'space-between',padding:'18px 20px',borderBottom:'1px solid #F0F1F4'}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:11,minWidth:0}},
+          icon?h('div',{style:{width:36,height:36,borderRadius:11,background:iconBg||'#EAF1FE',display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon(icon,{size:19,color:iconFg||'#2F6FE0'})):null,
+          h('div',{style:{display:'flex',flexDirection:'column',gap:1,minWidth:0}},
+            h('span',{style:{fontSize:16,fontWeight:800,color:'#1B2030',letterSpacing:'-.02em'}},title),
+            sub?h('span',{style:{fontSize:12.5,fontWeight:500,color:'#9097A1',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},sub):null)),
+        h('button',{style:{width:34,height:34,border:'none',background:'#F4F6F8',borderRadius:10,color:'#8A909B',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flex:'none'},onMouseEnter:e=>{e.currentTarget.style.background='#ECEEF1';e.currentTarget.style.color='#5A606B';},onMouseLeave:e=>{e.currentTarget.style.background='#F4F6F8';e.currentTarget.style.color='#8A909B';}},this.icon('x',{size:18,color:'currentColor',sw:2.2}))),
+      // body
+      h('div',{style:{flex:1,overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:16}},
+        banner?h('div',{style:{display:'flex',alignItems:'center',gap:9,background:'#FFECEB',border:'1px solid #F8D5D2',borderRadius:12,padding:'11px 13px'}},this.icon('alert',{size:17,color:'#E8615C',sw:2.2}),h('span',{style:{fontSize:13,fontWeight:600,color:'#C0463F'}},banner)):null,
+        bodyEl),
+      // footer
+      footerEl?h('div',{style:{flex:'none',padding:'14px 20px',borderTop:'1px solid #F0F1F4',display:'flex',alignItems:'center',gap:10}},footerEl):null,
+      // loading overlay
+      loading?h('div',{style:{position:'absolute',inset:0,background:'rgba(255,255,255,.9)',backdropFilter:'blur(3px)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:13,zIndex:10}},
+        h('div',{style:{width:38,height:38,borderRadius:'50%',border:'3.5px solid #DCE6F8',borderTopColor:'#3B7DF0',animation:'scSpin .8s linear infinite'}}),
+        h('span',{style:{fontSize:14,fontWeight:700,color:'#1B2030'}},loadingText||'저장하는 중…')):null);
+  }
+
+  // labeled field wrapper
+  fieldWrap(label,childEl,opts){opts=opts||{};const h=React.createElement;
+    return h('div',{style:{display:'flex',flexDirection:'column',gap:7}},
+      h('label',{style:{fontSize:12.5,fontWeight:700,color:'#3A3F4B'}},label,opts.required?h('span',{style:{color:'#E8615C',marginLeft:3}},'*'):null),
+      childEl,
+      opts.error?h('span',{style:{fontSize:11.5,fontWeight:600,color:'#E8615C'}},opts.error):null);
+  }
+  textInput(value,onChange,opts){opts=opts||{};const h=React.createElement;const err=opts.error;
+    return h('input',{value:value,placeholder:opts.placeholder||'',onChange:e=>onChange(e.target.value),
+      style:{width:'100%',height:opts.h||46,padding:'0 14px',border:'1.5px solid '+(err?'#E8615C':'#E2E5EA'),borderRadius:12,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none',background:err?'#FFFafA':'#fff'},
+      onFocus:e=>{if(!err){e.target.style.borderColor='#3B7DF0';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:e=>{e.target.style.borderColor=err?'#E8615C':'#E2E5EA';e.target.style.boxShadow='none';}});
+  }
+  catChips(value,onChange,keys){const h=React.createElement;keys=keys||Object.keys(this.CAT);
+    return h('div',{style:{display:'flex',flexWrap:'wrap',gap:7}},keys.map(k=>{const c=this.CAT[k],on=value===k;
+      return h('button',{key:k,onClick:()=>onChange(k),style:{display:'inline-flex',alignItems:'center',gap:5,height:34,padding:'0 12px 0 9px',borderRadius:99,border:'1.5px solid '+(on?c.fg:'#E6E8EC'),background:on?c.bg:'#fff',color:on?c.fg:'#5A606B',fontSize:12.5,fontWeight:on?700:600,cursor:'pointer',transition:'all .12s'}},this.icon(c.icon,{size:14,color:on?c.fg:'#9AA0AB'}),c.label);}));
+  }
+
+  // ---------- overlay 1: place detail panel ----------
+  setD(p){this.setState(s=>({detail:Object.assign({},s.detail,p)}));}
+  placeDetail(){
+    const h=React.createElement;const d=this.state.detail;const se=this.state.view==='error';
+    const nameErr=se&&!d.name.trim()?'장소명을 입력해 주세요':null;
+    const c=this.CAT[d.cat];
+    const mapStrip=h('div',{style:{position:'relative',height:104,borderRadius:14,overflow:'hidden',background:'#EAF0EE',flex:'none'}},
+      h('svg',{width:'100%',height:'100%',viewBox:'0 0 400 104',preserveAspectRatio:'none'},
+        h('rect',{width:400,height:104,fill:'#EAF0EE'}),h('path',{d:'M0 70 C 120 56 240 84 400 64 L400 104 L0 104Z',fill:'#D9E8F2'}),
+        h('g',{stroke:'#fff',strokeWidth:7,fill:'none'},h('path',{d:'M0 44 H400'}),h('path',{d:'M210 0 V104'}))),
+      h('div',{style:{position:'absolute',left:'50%',top:'46%',transform:'translate(-50%,-100%)'}},
+        h('div',{style:{width:30,height:30,borderRadius:'50% 50% 50% 3px',background:'#fff',border:'1.5px solid '+c.fg,boxShadow:'0 3px 8px rgba(16,24,40,.2)',display:'flex',alignItems:'center',justifyContent:'center',transform:'rotate(45deg)'}},h('div',{style:{transform:'rotate(-45deg)',display:'flex'}},this.icon(c.icon,{size:14,color:c.fg})))));
+    const folderSel=h('div',{style:{display:'flex',flexWrap:'wrap',gap:7}},this.FOLDERS.map(f=>{const on=d.folder===f.k;
+      return h('button',{key:f.k,onClick:()=>this.setD({folder:f.k}),style:{height:34,padding:'0 13px',borderRadius:99,border:'1.5px solid '+(on?'#3B7DF0':'#E6E8EC'),background:on?'#EAF1FE':'#fff',color:on?'#2F6FE0':'#5A606B',fontSize:12.5,fontWeight:on?700:600,cursor:'pointer'}},f.label);}));
+    const memo=h('textarea',{value:d.memo,onChange:e=>this.setD({memo:e.target.value}),placeholder:'함께 보면 좋은 메모를 남겨보세요',rows:3,
+      style:{width:'100%',padding:'11px 14px',border:'1.5px solid #E2E5EA',borderRadius:12,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none',resize:'none',lineHeight:1.5},
+      onFocus:e=>{e.target.style.borderColor='#3B7DF0';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';},onBlur:e=>{e.target.style.borderColor='#E2E5EA';e.target.style.boxShadow='none';}});
+    const body=h('div',{style:{display:'flex',flexDirection:'column',gap:16}},
+      mapStrip,
+      this.fieldWrap('장소명',this.textInput(d.name,v=>this.setD({name:v}),{placeholder:'장소 이름',error:nameErr}),{required:true,error:nameErr}),
+      this.fieldWrap('위치 · 주소',this.textInput(d.address,v=>this.setD({address:v}),{placeholder:'주소 입력'})),
+      this.fieldWrap('카테고리',this.catChips(d.cat,v=>this.setD({cat:v}))),
+      this.fieldWrap('저장 폴더',folderSel),
+      this.fieldWrap('메모',memo));
+    const footer=h('div',{style:{display:'flex',alignItems:'center',gap:10,width:'100%'}},
+      h('button',{style:{width:44,height:44,border:'1px solid #F2D5D2',background:'#fff',borderRadius:13,color:'#E8615C',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flex:'none'},onMouseEnter:e=>e.currentTarget.style.background='#FFF5F4',onMouseLeave:e=>e.currentTarget.style.background='#fff'},this.icon('trash',{size:18,color:'#E8615C'})),
+      h('button',{style:{flex:1,height:44,border:'none',borderRadius:13,background:'#3B7DF0',color:'#fff',fontSize:14.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:7,boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'}},this.icon('calendar',{size:17,color:'#fff'}),'일정에 추가'));
+    return this.shell({title:'장소 상세',sub:'저장한 장소 편집',icon:'map-pin',panel:true,width:432,bodyEl:body,footerEl:footer,banner:nameErr?'입력값을 확인해 주세요.':null,loading:this.state.view==='loading',loadingText:'저장하는 중…'});
+  }
+
+  // ---------- overlay 2: share / members ----------
+  setRoleMenu(id){this.setState(s=>({share:Object.assign({},s.share,{roleMenuId:s.share.roleMenuId===id?null:id})}));}
+  changeRole(id,role){this.setState(s=>({share:Object.assign({},s.share,{roleMenuId:null,members:s.share.members.map(m=>m.id===id?Object.assign({},m,{role}):m)})}));}
+  removeMem(id){this.setState(s=>({share:Object.assign({},s.share,{members:s.share.members.filter(m=>m.id!==id)})}));}
+  setShare(p){this.setState(s=>({share:Object.assign({},s.share,p)}));}
+  roleBadge(role){const r=this.ROLE[role];return React.createElement('span',{style:{display:'inline-flex',alignItems:'center',gap:4,height:26,padding:'0 9px 0 7px',borderRadius:99,background:r.bg,color:r.fg,fontSize:11.5,fontWeight:700}},this.icon(r.icon,{size:13,color:r.fg,sw:2.1}),r.label);}
+  shareModal(){
+    const h=React.createElement;const sh=this.state.share;const isOwner=this.state.role==='owner';
+    const linkSeg=(k,label)=>{const on=sh.linkRole===k;return h('button',{key:k,onClick:()=>this.setShare({linkRole:k}),style:{height:30,padding:'0 12px',border:'none',borderRadius:8,cursor:'pointer',fontSize:12,fontWeight:on?700:600,background:on?'#fff':'transparent',color:on?'#2B61C4':'#7B828F',boxShadow:on?'0 1px 2px rgba(16,24,40,.12)':'none'}},label);};
+    const linkRow=h('div',{style:{display:'flex',flexDirection:'column',gap:9}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:9,padding:'10px 12px',background:'#F7FAFF',border:'1px solid #DCE9FD',borderRadius:13}},
+        h('div',{style:{width:32,height:32,borderRadius:9,background:'#EAF1FE',display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon('link',{size:16,color:'#2F6FE0'})),
+        h('span',{style:{flex:1,fontSize:13,fontWeight:600,color:'#3A3F4B',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'donghaeng.app/i/tokyo-4d92x'),
+        h('button',{style:{height:34,padding:'0 13px 0 11px',border:'1px solid #E6E8EC',background:'#fff',borderRadius:10,color:'#3A3F4B',fontSize:12.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:5,flex:'none'}},this.icon('copy',{size:14,color:'#7B828F'}),'복사')),
+      h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
+        h('span',{style:{fontSize:12.5,fontWeight:600,color:'#8A909B'}},'링크로 들어온 사람의 권한'),
+        isOwner?h('div',{style:{display:'inline-flex',gap:2,background:'#F1F3F6',padding:3,borderRadius:9}},linkSeg('editor','편집 가능'),linkSeg('viewer','읽기 전용')):this.roleBadge(sh.linkRole)));
+    // invite
+    const invite=isOwner?h('div',{style:{display:'flex',gap:9}},
+      h('div',{style:{position:'relative',flex:1,display:'flex',alignItems:'center'}},h('div',{style:{position:'absolute',left:13,pointerEvents:'none'}},this.icon('mail',{size:16,color:'#9AA0AB'})),
+        h('input',{value:sh.emailDraft,onChange:e=>this.setShare({emailDraft:e.target.value}),placeholder:'friend@email.com',style:{width:'100%',height:46,padding:'0 14px 0 38px',border:'1.5px solid '+(this.state.view==='error'&&!sh.emailDraft?'#E8615C':'#E2E5EA'),borderRadius:12,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none'},onFocus:e=>{e.target.style.borderColor='#3B7DF0';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';},onBlur:e=>{e.target.style.borderColor='#E2E5EA';e.target.style.boxShadow='none';}})),
+      h('button',{style:{height:46,padding:'0 18px',border:'none',borderRadius:12,background:'#3B7DF0',color:'#fff',fontSize:13.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:6,flex:'none',boxShadow:'0 3px 8px -1px rgba(59,125,240,.5)'}},this.icon('plus',{size:17,color:'#fff',sw:2.4}),'초대')):null;
+    // member rows
+    const rows=sh.members.map(m=>{const menuOpen=sh.roleMenuId===m.id;
+      return h('div',{key:m.id,style:{display:'flex',alignItems:'center',gap:11,padding:'9px 4px'}},
+        this.avatar(m,36),
+        h('div',{style:{flex:1,minWidth:0}},h('div',{style:{fontSize:13.5,fontWeight:700,color:'#1F2430'}},m.name,m.id==='ji'?h('span',{style:{fontSize:11.5,fontWeight:600,color:'#9AA0AB',marginLeft:6}},'(나)'):null),h('div',{style:{fontSize:12,fontWeight:500,color:'#9097A1',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},m.email)),
+        (isOwner&&m.role!=='owner')?h('div',{style:{position:'relative'}},
+          h('button',{onClick:()=>this.setRoleMenu(m.id),style:{display:'inline-flex',alignItems:'center',gap:5,height:32,padding:'0 9px 0 11px',border:'1px solid '+(menuOpen?'#3B7DF0':'#E6E8EC'),background:menuOpen?'#F7FAFF':'#fff',borderRadius:9,color:'#3A3F4B',fontSize:12.5,fontWeight:700,cursor:'pointer'}},this.ROLE[m.role].label,this.icon('chevron-down',{size:14,color:'#A8AEB8'})),
+          menuOpen?h('div',{style:{position:'absolute',right:0,top:'calc(100% + 5px)',width:168,background:'#fff',border:'1px solid #ECEEF1',borderRadius:12,boxShadow:'0 12px 30px -8px rgba(16,24,40,.28)',padding:6,zIndex:20}},
+            [['editor','편집자','편집 및 추가 가능'],['viewer','뷰어','보기만 가능']].map(([k,t,desc])=>h('button',{key:k,onClick:()=>this.changeRole(m.id,k),style:{display:'flex',flexDirection:'column',gap:1,width:'100%',padding:'8px 10px',border:'none',background:m.role===k?'#F4F6F8':'transparent',borderRadius:8,cursor:'pointer',textAlign:'left'}},h('span',{style:{fontSize:13,fontWeight:700,color:'#1F2430'}},t),h('span',{style:{fontSize:11,fontWeight:500,color:'#9097A1'}},desc))),
+            h('div',{style:{height:1,background:'#F0F1F4',margin:'5px 4px'}}),
+            h('button',{onClick:()=>this.removeMem(m.id),style:{display:'flex',alignItems:'center',gap:7,width:'100%',padding:'8px 10px',border:'none',background:'transparent',borderRadius:8,cursor:'pointer',color:'#E8615C',fontSize:13,fontWeight:700}},this.icon('trash',{size:14,color:'#E8615C'}),'내보내기')):null)
+          :this.roleBadge(m.role));
+    });
+    const ownerNotice=!isOwner?h('div',{style:{display:'flex',alignItems:'center',gap:8,background:'#F4F6F8',border:'1px solid #ECEEF1',borderRadius:12,padding:'11px 13px'}},this.icon('lock',{size:15,color:'#8A909B'}),h('span',{style:{fontSize:12.5,fontWeight:600,color:'#7A818D'}},'멤버 초대·권한 변경은 소유자만 할 수 있어요')):null;
+    const body=h('div',{style:{display:'flex',flexDirection:'column',gap:16}},
+      linkRow,
+      h('div',{style:{height:1,background:'#F0F1F4'}}),
+      ownerNotice,
+      invite,
+      h('div',{style:{display:'flex',flexDirection:'column',gap:2}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:7,marginBottom:4}},h('span',{style:{fontSize:12.5,fontWeight:700,color:'#3A3F4B'}},'멤버'),h('span',{style:{fontSize:12,fontWeight:700,color:'#9AA0AB'}},sh.members.length+'명')),
+        rows));
+    const footer=h('div',{style:{display:'flex',justifyContent:'flex-end',width:'100%'}},h('button',{style:{height:44,padding:'0 22px',border:'none',borderRadius:13,background:'#3B7DF0',color:'#fff',fontSize:14.5,fontWeight:700,cursor:'pointer',boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'}},'완료'));
+    return this.shell({title:'멤버 · 공유 관리',sub:'도쿄, 우리끼리 4일',icon:'users',width:516,height:'min(640px,86%)',bodyEl:body,footerEl:footer,loading:this.state.view==='loading',loadingText:'초대 메일을 보내는 중…'});
+  }
+
+  // ---------- overlay 3: add expense ----------
+  setE(p){this.setState(s=>({expense:Object.assign({},s.expense,p)}));}
+  toggleSplit(id){this.setState(s=>{const sp=s.expense.split.slice();const i=sp.indexOf(id);if(i>=0)sp.splice(i,1);else sp.push(id);return {expense:Object.assign({},s.expense,{split:sp})};});}
+  expenseModal(){
+    const h=React.createElement;const e=this.state.expense;const se=this.state.view==='error';
+    const amtErr=se&&!(e.amount>0)?'금액을 입력해 주세요':null;
+    const splitErr=se&&e.split.length===0?'분담 인원을 한 명 이상 선택해 주세요':null;
+    const cur=e.currency;
+    // amount field
+    const amountField=h('div',{style:{display:'flex',gap:9}},
+      h('div',{style:{flex:1,position:'relative',display:'flex',alignItems:'center'}},
+        h('span',{style:{position:'absolute',left:16,fontSize:22,fontWeight:800,color:amtErr?'#E8615C':'#1B2030'}},cur==='JPY'?'¥':'₩'),
+        h('input',{value:Number(e.amount||0).toLocaleString('ko-KR'),onChange:ev=>{const n=parseInt(ev.target.value.replace(/[^0-9]/g,''))||0;this.setE({amount:n});},inputMode:'numeric',
+          style:{width:'100%',height:58,padding:'0 16px 0 40px',border:'1.5px solid '+(amtErr?'#E8615C':'#E2E5EA'),borderRadius:14,fontFamily:'inherit',fontSize:22,fontWeight:800,letterSpacing:'-.02em',color:'#1B2030',outline:'none',background:amtErr?'#FFFafA':'#fff'},
+          onFocus:ev=>{if(!amtErr){ev.target.style.borderColor='#3B7DF0';ev.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:ev=>{ev.target.style.borderColor=amtErr?'#E8615C':'#E2E5EA';ev.target.style.boxShadow='none';}})),
+      h('div',{style:{display:'inline-flex',gap:2,background:'#F1F3F6',padding:4,borderRadius:13,alignItems:'center'}},
+        ['KRW','JPY'].map(k=>{const on=cur===k;return h('button',{key:k,onClick:()=>this.setE({currency:k}),style:{height:50,padding:'0 15px',border:'none',borderRadius:10,cursor:'pointer',fontSize:13.5,fontWeight:on?700:600,background:on?'#fff':'transparent',color:on?'#2B61C4':'#7B828F',boxShadow:on?'0 1px 3px rgba(16,24,40,.12)':'none'}},k);})));
+    // payer radio
+    const payer=h('div',{style:{display:'flex',gap:9}},this.MEM.map(m=>{const on=e.payer===m.id;
+      return h('button',{key:m.id,onClick:()=>this.setE({payer:m.id}),style:{display:'flex',alignItems:'center',gap:7,height:42,padding:'0 13px 0 7px',borderRadius:99,border:'1.5px solid '+(on?m.color:'#E6E8EC'),background:on?'#fff':'#fff',cursor:'pointer',boxShadow:on?'0 0 0 2px '+m.color+'22':'none'}},this.avatar(m,28),h('span',{style:{fontSize:13,fontWeight:on?700:600,color:on?'#1B2030':'#5A606B'}},m.name));}));
+    // split checks
+    const perAmt=e.split.length?Math.round(e.amount/e.split.length):0;
+    const split=h('div',{style:{display:'flex',flexWrap:'wrap',gap:9}},this.MEM.map(m=>{const on=e.split.indexOf(m.id)>=0;
+      return h('button',{key:m.id,onClick:()=>this.toggleSplit(m.id),style:{display:'flex',alignItems:'center',gap:8,height:42,padding:'0 13px 0 8px',borderRadius:12,border:'1.5px solid '+(on?'#3B7DF0':'#E6E8EC'),background:on?'#F7FAFF':'#fff',cursor:'pointer'}},
+        h('div',{style:{position:'relative'}},this.avatar(m,28),on?h('div',{style:{position:'absolute',right:-3,bottom:-3,width:15,height:15,borderRadius:'50%',background:'#3B7DF0',border:'1.5px solid #fff',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon('check',{size:9,color:'#fff',sw:3.2})):null),
+        h('span',{style:{fontSize:13,fontWeight:on?700:600,color:on?'#1B2030':'#5A606B'}},m.name));}));
+    // day chips
+    const days=h('div',{style:{display:'flex',gap:8}},this.DAYS.map(d=>{const on=e.day===d.n;
+      return h('button',{key:d.n,onClick:()=>this.setE({day:d.n}),style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:1,padding:'8px 0',borderRadius:12,border:'1.5px solid '+(on?'#3B7DF0':'#E6E8EC'),background:on?'#EAF1FE':'#fff',cursor:'pointer'}},h('span',{style:{fontSize:11,fontWeight:700,color:on?'#2F6FE0':'#9AA0AB'}},'DAY '+d.n),h('span',{style:{fontSize:13,fontWeight:700,color:on?'#1B2030':'#5A606B'}},d.date));}));
+    const body=h('div',{style:{display:'flex',flexDirection:'column',gap:16}},
+      this.fieldWrap('금액',amountField,{required:true,error:amtErr}),
+      this.fieldWrap('항목명',this.textInput(e.title,v=>this.setE({title:v}),{placeholder:'예: 긴자 식스 쇼핑'})),
+      this.fieldWrap('카테고리',this.catChips(e.cat,v=>this.setE({cat:v}),['food','cafe','shopping','transport','museum','hotel'])),
+      this.fieldWrap('결제자',payer),
+      this.fieldWrap('분담 인원',h('div',{style:{display:'flex',flexDirection:'column',gap:8}},split,h('span',{style:{fontSize:12,fontWeight:600,color:'#8A909B'}},e.split.length?('1인당 '+this.won(perAmt,cur)+' · '+e.split.length+'명'):' ')),{error:splitErr}),
+      this.fieldWrap('날짜',days));
+    const footer=h('div',{style:{display:'flex',gap:10,width:'100%'}},
+      h('button',{style:{flex:'none',height:44,padding:'0 20px',border:'1px solid #E6E8EC',background:'#fff',borderRadius:13,color:'#5A606B',fontSize:14,fontWeight:700,cursor:'pointer'}},'취소'),
+      h('button',{style:{flex:1,height:44,border:'none',borderRadius:13,background:'#3B7DF0',color:'#fff',fontSize:14.5,fontWeight:700,cursor:'pointer',boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'}},'저장'));
+    return this.shell({title:'지출 추가',sub:'도쿄, 우리끼리 4일',icon:'wallet',iconBg:'#E1F6EE',iconFg:'#1FA078',width:480,height:'min(660px,88%)',bodyEl:body,footerEl:footer,banner:(amtErr||splitErr)?'입력값을 확인해 주세요.':null,loading:this.state.view==='loading',loadingText:'지출을 저장하는 중…'});
+  }
+  // wallet icon (defined separately because long)
+  walletIcon(){return null;}
+
+  setView(v){this.setState({view:v});}
+  setRole(r){this.setState({role:r});}
+  buildStateSwitch(){const h=React.createElement;const items=[['normal','기본'],['error','오류 안내'],['loading','저장 중']];const cur=this.state.view;return h('div',{style:{display:'flex',gap:2}},items.map(([k,label])=>{const on=cur===k;return h('button',{key:k,onClick:()=>this.setView(k),style:{height:32,padding:'0 12px',border:'none',borderRadius:10,cursor:'pointer',fontSize:12.5,fontWeight:700,background:on?'rgba(255,255,255,.16)':'transparent',color:on?'#fff':'#9298A6',transition:'all .12s'}},label);}));}
+  buildRoleSwitch(){const h=React.createElement;const items=[['owner','소유자'],['editor','편집자']];const cur=this.state.role;return h('div',{style:{display:'flex',gap:2}},items.map(([k,label])=>{const on=cur===k;return h('button',{key:k,onClick:()=>this.setRole(k),style:{height:32,padding:'0 12px',border:'none',borderRadius:10,cursor:'pointer',fontSize:12.5,fontWeight:700,background:on?'rgba(255,255,255,.16)':'transparent',color:on?'#fff':'#9298A6',transition:'all .12s'}},label);}));}
+
+  nav(f){ try{ window.location.href = encodeURI(f); }catch(e){} }
+  componentDidMount(){
+    if(this.__navWired) return; this.__navWired=true;
+    var rules = [
+      {label:'donghaeng.app',mode:'includes',to:'뷰어 공유.dc.html'},
+      {label:'완료',to:'플랜 뷰.dc.html',tag:'BUTTON'},
+      {label:'저장',to:'플랜 뷰.dc.html',tag:'BUTTON'},
+      {label:'취소',to:'플랜 뷰.dc.html',tag:'BUTTON'},
+      {label:'일정에 추가',to:'플랜 뷰.dc.html',tag:'BUTTON'}
+    ];
+    var norm=function(s){return (s||'').replace(/\s+/g,' ').trim();};
+    var self=this;
+    document.addEventListener('click', function(e){
+      var el=e.target;
+      for(var i=0; el && i<7; i++, el=el.parentElement){
+        var txt=norm(el.textContent);
+        for(var j=0;j<rules.length;j++){
+          var r=rules[j];
+          var ok = r.mode==='includes' ? (txt.indexOf(r.label)>=0) : (txt===r.label);
+          if(!ok) continue;
+          if(r.tag && el.tagName!==r.tag) continue;
+          if(r.needsSvg && !(el.querySelector && el.querySelector('svg'))) continue;
+          e.preventDefault(); e.stopPropagation(); self.nav(r.to); return;
+        }
+      }
+    }, true);
+    try{
+      var hash=(location.hash||'').replace('#','');
+      var key={place:'장소 상세',share:'공유 관리',expense:'지출 추가'}[hash];
+      if(key){
+        var sp=document.querySelectorAll('span');
+        for(var k=0;k<sp.length;k++){
+          if(norm(sp[k].textContent).indexOf(key)>=0){
+            var rect=sp[k].getBoundingClientRect();
+            window.scrollTo({left:Math.max(0,rect.left+window.pageXOffset-48),top:0});
+            break;
+          }
+        }
+      }
+    }catch(e){}
+  }
+
+  renderVals(){
+    const h=React.createElement;
+    // patch wallet into icon map usage via inline (icon() lacks wallet) -> add quickly
+    // DS samples
+    const dsModalShell=h('div',{style:{border:'1px solid #ECEEF1',borderRadius:16,overflow:'hidden',width:300}},
+      h('div',{style:{padding:'12px 14px',borderBottom:'1px solid #F0F1F4',display:'flex',alignItems:'center',justifyContent:'space-between'}},h('span',{style:{fontSize:13.5,fontWeight:800,color:'#1B2030'}},'헤더 · 제목'),h('div',{style:{width:28,height:28,borderRadius:8,background:'#F4F6F8',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon('x',{size:15,color:'#8A909B'}))),
+      h('div',{style:{padding:14,display:'flex',flexDirection:'column',gap:8}},h('div',{style:{height:34,borderRadius:10,background:'#F4F6F8'}}),h('div',{style:{height:34,borderRadius:10,background:'#F4F6F8'}})),
+      h('div',{style:{padding:'12px 14px',borderTop:'1px solid #F0F1F4',display:'flex',gap:8,justifyContent:'flex-end'}},h('div',{style:{height:36,width:64,borderRadius:11,border:'1px solid #E6E8EC'}}),h('div',{style:{height:36,width:64,borderRadius:11,background:'#3B7DF0'}})));
+    const dsAmount=h('div',{style:{display:'flex',gap:9}},h('div',{style:{flex:1,position:'relative',display:'flex',alignItems:'center'}},h('span',{style:{position:'absolute',left:16,fontSize:22,fontWeight:800,color:'#1B2030'}},'₩'),h('div',{style:{width:'100%',height:58,padding:'0 16px 0 40px',border:'1.5px solid #E2E5EA',borderRadius:14,display:'flex',alignItems:'center',fontSize:22,fontWeight:800,color:'#1B2030'}},'152,000')),h('div',{style:{display:'inline-flex',gap:2,background:'#F1F3F6',padding:4,borderRadius:13}},h('span',{style:{height:50,padding:'0 15px',display:'inline-flex',alignItems:'center',borderRadius:10,background:'#fff',color:'#2B61C4',fontSize:13.5,fontWeight:700,boxShadow:'0 1px 3px rgba(16,24,40,.12)'}},'KRW'),h('span',{style:{height:50,padding:'0 15px',display:'inline-flex',alignItems:'center',borderRadius:10,color:'#7B828F',fontSize:13.5,fontWeight:600}},'JPY')));
+    const dsCatChips=this.catChips('shopping',()=>{},['food','cafe','shopping','transport','museum']);
+    const dsAvatarPick=h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
+      h('div',{style:{display:'flex',gap:9}},this.MEM.slice(0,2).map((m,i)=>h('div',{key:m.id,style:{display:'flex',alignItems:'center',gap:7,height:42,padding:'0 13px 0 7px',borderRadius:99,border:'1.5px solid '+(i===0?m.color:'#E6E8EC'),background:'#fff',boxShadow:i===0?'0 0 0 2px '+m.color+'22':'none'}},this.avatar(m,28),h('span',{style:{fontSize:13,fontWeight:i===0?700:600,color:i===0?'#1B2030':'#5A606B'}},m.name)))),
+      h('div',{style:{display:'flex',gap:9}},this.MEM.slice(0,2).map(m=>h('div',{key:m.id,style:{display:'flex',alignItems:'center',gap:8,height:42,padding:'0 13px 0 8px',borderRadius:12,border:'1.5px solid #3B7DF0',background:'#F7FAFF'}},h('div',{style:{position:'relative'}},this.avatar(m,28),h('div',{style:{position:'absolute',right:-3,bottom:-3,width:15,height:15,borderRadius:'50%',background:'#3B7DF0',border:'1.5px solid #fff',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon('check',{size:9,color:'#fff',sw:3.2}))),h('span',{style:{fontSize:13,fontWeight:700,color:'#1B2030'}},m.name)))));
+    const dsRole=h('div',{style:{display:'flex',gap:10,alignItems:'center'}},this.roleBadge('owner'),this.roleBadge('editor'),this.roleBadge('viewer'));
+
+    return {
+      placeDetailEl:this.placeDetail(),
+      shareModalEl:this.shareModal(),
+      expenseModalEl:this.expenseModal(),
+      stateSwitchEl:this.buildStateSwitch(),
+      roleSwitchEl:this.buildRoleSwitch(),
+      dsModalShell,dsAmount,dsCatChips,dsAvatarPick,dsRole,
+    };
+  }
+}
+</script>
+</body>
+</html>
