@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;color:#1F2430;background:#EEF0F4;}
+  @keyframes scSpin{to{transform:rotate(360deg);}}
+  @keyframes scFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+</style>
+</helmet>
+
+<div style="min-width:100%;width:max-content;padding:40px 40px 130px;background:#EEF0F4;">
+  <div style="width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:13px;">
+
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;letter-spacing:-.01em;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#5B8DEF;"></span>
+      초대 수락 · 편집 초대 링크 · 데스크톱 1280px
+    </div>
+
+    <!-- ===== APP CARD ===== -->
+    <div style="width:1280px;height:760px;background:#fff;border-radius:22px;border:1px solid #E8EAEF;box-shadow:0 1px 3px rgba(16,24,40,.05),0 24px 60px -26px rgba(16,24,40,.28);overflow:hidden;position:relative;display:flex;flex-direction:column;">
+
+      <!-- top bar: logo only -->
+      <div style="position:absolute;top:0;left:0;right:0;height:66px;display:flex;align-items:center;padding:0 26px;z-index:3;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:34px;height:34px;border-radius:11px;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px -2px rgba(91,141,239,.5);">
+            <svg width="19" height="19" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="9" r="5"/><circle cx="24" cy="9" r="1.9" fill="#fff" stroke="none"/><path d="M24 14V25a5.5 5.5 0 0 1-11 0"/></svg>
+          </div>
+          <span style="font-size:18px;font-weight:800;color:#1B2030;letter-spacing:-.04em;">jero</span>
+        </div>
+      </div>
+
+      <!-- ambient backdrop -->
+      <div style="position:absolute;top:-130px;right:-110px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,{{ glow }},transparent 68%);transition:background .4s;"></div>
+      <div style="position:absolute;bottom:-160px;left:-90px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(63,196,160,.07),transparent 70%);"></div>
+
+      <!-- centered slot -->
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px;position:relative;z-index:1;">
+        {{ bodyEl }}
+      </div>
+    </div>
+
+    <!-- ===== DS REFERENCE ===== -->
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;margin-top:24px;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#3FC4A0;"></span>
+      디자인 시스템 — 초대 카드 · 역할 배지 · 멤버 스택
+    </div>
+    <div style="width:1280px;background:#fff;border:1px solid #E8EAEF;border-radius:20px;box-shadow:0 1px 3px rgba(16,24,40,.05);padding:30px 34px;display:grid;grid-template-columns:1fr 1fr;gap:40px;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">초대 카드 헤더 · 여행 아이콘 + 기간</div>
+        {{ dsHeaderEl }}
+        <div style="font-size:13px;font-weight:700;color:#1B2030;margin-top:8px;">멤버 스택 · 초대자</div>
+        {{ dsStackEl }}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">역할 배지</div>
+        {{ dsRoleEl }}
+        <div style="font-size:13px;font-weight:700;color:#1B2030;margin-top:8px;">상태 분기</div>
+        {{ dsStateEl }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- floating state switcher -->
+<div style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:3px;background:rgba(27,32,48,.94);backdrop-filter:blur(10px);padding:6px 6px 6px 4px;border-radius:14px;box-shadow:0 10px 30px -6px rgba(0,0,0,.4);">
+  <span style="color:#8B92A0;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:0 9px;text-transform:uppercase;">상태</span>
+  {{ switchEl }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360,&quot;height&quot;:980},&quot;viewState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auth&quot;,&quot;guest&quot;,&quot;expired&quot;,&quot;already&quot;],&quot;default&quot;:&quot;auth&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.ICN={
+      'map-pin':'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+      calendar:'<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/>',
+      pencil:'<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+      eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+      check:'<path d="M20 6 9 17l-5-5"/>',
+      'arrow-right':'<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>',
+      google:'',
+      users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      home:'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+      lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+      clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+      compass:'<circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/>',
+      'log-in':'<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/>',
+    };
+    this.TRIP={title:'도쿄, 우리끼리 4일',dates:'2026.7.18 – 7.21 · 3박 4일',place:'일본 · 도쿄',emoji:'map-pin'};
+    this.INVITER={initial:'지',color:'#3B7DF0',name:'김지현'};
+    this.MEM=[
+      {initial:'지',color:'#3B7DF0'},
+      {initial:'민',color:'#FF8A65'},
+      {initial:'서',color:'#3FC4A0'},
+      {initial:'도',color:'#B07CF0'},
+    ];
+    this.ROLE={editor:{label:'편집자',icon:'pencil',bg:'#E1F6EE',fg:'#1FA078',desc:'일정·장소·예산을 함께 편집할 수 있어요'},viewer:{label:'뷰어',icon:'eye',bg:'#F1F3F6',fg:'#7A818D',desc:'여행 내용을 열람만 할 수 있어요'}};
+    this.ERR={
+      expired:{tint:'#FBF1E4',glow:'rgba(197,137,58,.15)',accent:'#C5893A',icon:'clock',title:'만료된 초대예요',desc:'이 초대 링크는 더 이상 사용할 수 없어요. 초대한 분께 새 링크를 요청해 주세요.'},
+      already:{tint:'#E1F6EE',glow:'rgba(31,160,120,.14)',accent:'#1FA078',icon:'check',title:'이미 참여 중인 여행이에요',desc:'이 여행에는 이미 멤버로 등록되어 있어요. 바로 열어볼까요?'},
+    };
+    this.ORDER=['auth','guest','expired','already'];
+    this.state={view:this.props.viewState&&this._valid(this.props.viewState)?this.props.viewState:'auth',loading:false};
+  }
+  _valid(v){return ['auth','guest','expired','already'].indexOf(v)>=0;}
+  componentDidUpdate(prev){ if(prev.viewState!==this.props.viewState && this._valid(this.props.viewState)) this.setState({view:this.props.viewState,loading:false}); }
+
+  icon(name,size,color,sw){
+    const inner=this.ICN[name]||'';
+    const svg='<svg width="'+(size||20)+'" height="'+(size||20)+'" viewBox="0 0 24 24" fill="none" stroke="'+(color||'#1F2430')+'" stroke-width="'+(sw||2)+'" stroke-linecap="round" stroke-linejoin="round">'+inner+'</svg>';
+    return React.createElement('span',{style:{display:'inline-flex',lineHeight:0},dangerouslySetInnerHTML:{__html:svg}});
+  }
+  googleG(size){
+    const s=size||18;
+    const svg='<svg width="'+s+'" height="'+s+'" viewBox="0 0 48 48"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24s.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>';
+    return React.createElement('span',{style:{display:'inline-flex',lineHeight:0},dangerouslySetInnerHTML:{__html:svg}});
+  }
+  tripBox(size,mark){return React.createElement('div',{style:{width:size,height:size,borderRadius:size*0.28,background:'linear-gradient(140deg,#6E9CF2,#8FBCF7)',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 8px 20px -5px rgba(91,141,239,.55)',flex:'none'}},this.icon(this.TRIP.emoji,mark,'#fff',2));}
+  avatar(m,size,ring){return React.createElement('div',{key:m.initial+size,style:{width:size,height:size,borderRadius:'50%',background:m.color,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:ring?'0 0 0 2.5px #fff':'0 2px 6px -1px '+m.color+'66',flex:'none'}},React.createElement('span',{style:{fontSize:size*0.42,fontWeight:800,color:'#fff'}},m.initial));}
+  roleBadge(r,big){const x=this.ROLE[r];const h=React.createElement;return h('span',{style:{display:'inline-flex',alignItems:'center',gap:6,height:big?30:26,padding:big?'0 13px 0 10px':'0 10px 0 8px',borderRadius:99,background:x.bg,color:x.fg,fontSize:big?13:12,fontWeight:700}},this.icon(x.icon,big?15:13,x.fg,2.2),x.label);}
+  memberStack(size){const h=React.createElement;return h('div',{style:{display:'flex',alignItems:'center'}},this.MEM.map((m,i)=>h('div',{key:i,style:{marginLeft:i===0?0:-9,borderRadius:'50%',boxShadow:'0 0 0 2.5px #fff'}},this.avatar(m,size,0))));}
+
+  primaryBtn(label,icon,accent,onClick,gIcon){
+    const h=React.createElement;const loading=this.state.loading;
+    return h('button',{onClick:onClick,disabled:loading,style:{width:'100%',height:52,border:'none',borderRadius:14,background:loading?'#9DBEF6':(accent||'#3B7DF0'),color:'#fff',fontSize:15,fontWeight:700,cursor:loading?'default':'pointer',boxShadow:'0 6px 16px -4px '+(accent||'#3B7DF0')+'99',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:9,fontFamily:'inherit'}},
+      loading?h('span',{style:{width:18,height:18,borderRadius:'50%',border:'2.5px solid rgba(255,255,255,.45)',borderTopColor:'#fff',display:'inline-block',animation:'scSpin .8s linear infinite'}}):(gIcon?this.googleG(18):(icon?this.icon(icon,18,'#fff',2.3):null)),
+      loading?'참여하는 중…':label);
+  }
+  secondaryBtn(label,onClick){const h=React.createElement;return h('button',{onClick:onClick,style:{width:'100%',height:48,border:'1px solid #E6E8EC',borderRadius:13,background:'#fff',color:'#5A606B',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit'}},label);}
+
+  inviteHeader(){
+    const h=React.createElement;const T=this.TRIP;
+    return h('div',{style:{display:'flex',alignItems:'center',gap:16}},this.tripBox(66,30),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:6,minWidth:0}},
+        h('span',{style:{fontSize:21,fontWeight:800,color:'#1B2030',letterSpacing:'-.03em'}},T.title),
+        h('div',{style:{display:'flex',alignItems:'center',gap:14}},
+          h('span',{style:{display:'inline-flex',alignItems:'center',gap:5,fontSize:12.5,fontWeight:600,color:'#7A818D'}},this.icon('calendar',14,'#A2A8B2',2),T.dates),
+          h('span',{style:{display:'inline-flex',alignItems:'center',gap:5,fontSize:12.5,fontWeight:600,color:'#7A818D'}},this.icon('map-pin',14,'#A2A8B2',2),T.place))));
+  }
+
+  // invite card shared by auth + guest
+  inviteCard(mode){
+    const h=React.createElement;const inv=this.INVITER;
+    return h('div',{key:mode,style:{width:460,background:'#fff',border:'1px solid #ECEEF1',borderRadius:22,boxShadow:'0 12px 40px -18px rgba(16,24,40,.30)',overflow:'hidden',animation:'scFade .35s ease-out'}},
+      // top: inviter line
+      h('div',{style:{padding:'22px 26px 0',display:'flex',alignItems:'center',gap:10}},
+        this.avatar(inv,32,0),
+        h('span',{style:{fontSize:13.5,fontWeight:500,color:'#7A818D'}},h('b',{style:{color:'#2B313D',fontWeight:700}},inv.name),'님이 함께하자고 초대했어요')),
+      // trip header
+      h('div',{style:{padding:'18px 26px 22px'}},this.inviteHeader()),
+      // role + members block
+      h('div',{style:{margin:'0 26px',padding:'16px 18px',background:'#FBFBFC',border:'1px solid #F0F2F5',borderRadius:15,display:'flex',flexDirection:'column',gap:14}},
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}},
+          h('div',{style:{display:'flex',flexDirection:'column',gap:3}},h('span',{style:{fontSize:12,fontWeight:600,color:'#9AA0AB'}},'부여될 역할'),h('span',{style:{fontSize:13.5,fontWeight:600,color:'#5A606B'}},this.ROLE.editor.desc)),
+          this.roleBadge('editor',true)),
+        h('div',{style:{height:1,background:'#EEF0F3'}}),
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}},
+          h('div',{style:{display:'flex',alignItems:'center',gap:10}},this.memberStack(30),h('span',{style:{fontSize:13,fontWeight:600,color:'#5A606B'}},'멤버 4명과 함께해요')),
+          h('span',{style:{display:'inline-flex',alignItems:'center',gap:5,fontSize:12,fontWeight:700,color:'#1FA078',background:'#E1F6EE',padding:'4px 10px',borderRadius:99}},h('span',{style:{width:6,height:6,borderRadius:'50%',background:'#1FA078'}}),'2명 접속'))),
+      // guest notice
+      mode==='guest'?h('div',{style:{margin:'14px 26px 0',padding:'11px 14px',background:'#EAF1FE',borderRadius:12,display:'flex',alignItems:'center',gap:9}},this.icon('lock',15,'#2F6FE0',2),h('span',{style:{fontSize:12.5,fontWeight:600,color:'#2F6FE0'}},'참여하려면 먼저 로그인이 필요해요')):null,
+      // actions
+      h('div',{style:{padding:'18px 26px 24px',display:'flex',flexDirection:'column',gap:10}},
+        mode==='auth'
+          ? this.primaryBtn('수락하고 참여하기','check','#3B7DF0',()=>this.doAccept(),false)
+          : this.primaryBtn('Google로 로그인하고 수락','',	'#3B7DF0',()=>this.doAccept(),true),
+        mode==='guest'?h('button',{onClick:()=>this.doAccept(),style:{width:'100%',height:48,border:'1px solid #E6E8EC',borderRadius:13,background:'#fff',color:'#3A3F4B',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'inherit',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:8}},this.icon('log-in',16,'#5A606B',2.2),'이메일로 로그인'):null,
+        this.secondaryBtn('나중에 할게요',()=>{})),
+      mode==='auth'?h('div',{style:{padding:'0 26px 22px',textAlign:'center'}},h('span',{style:{fontSize:12,fontWeight:500,color:'#B0B6C0'}},'jihyun@trip.co 로 로그인됨 · 다른 계정')):null);
+  }
+
+  // error card shared style
+  errorCard(kind){
+    const h=React.createElement;const e=this.ERR[kind];
+    return h('div',{key:kind,style:{width:440,display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',animation:'scFade .35s ease-out'}},
+      h('div',{style:{position:'relative',width:140,height:140,display:'flex',alignItems:'center',justifyContent:'center'}},
+        h('div',{style:{position:'absolute',inset:0,borderRadius:'50%',background:e.tint}}),
+        h('div',{style:{position:'absolute',inset:16,borderRadius:'50%',background:'#fff',boxShadow:'inset 0 0 0 1px rgba(16,24,40,.04)'}}),
+        h('div',{style:{position:'relative'}},this.icon(e.icon,48,e.accent,1.9))),
+      h('h1',{style:{margin:'26px 0 0',fontSize:24,fontWeight:800,color:'#1B2030',letterSpacing:'-.03em'}},e.title),
+      h('p',{style:{margin:'11px 0 0',maxWidth:380,fontSize:14.5,fontWeight:500,color:'#7A818D',lineHeight:1.6}},e.desc),
+      h('div',{style:{marginTop:26,width:300,display:'flex',flexDirection:'column',gap:10}},
+        kind==='already'
+          ? this.primaryBtn('여행 열기','arrow-right',e.accent,()=>{},false)
+          : this.primaryBtn('내 여행 목록으로','home',e.accent,()=>{},false),
+        kind==='already'?null:this.secondaryBtn('홈으로',()=>{})));
+  }
+
+  doAccept(){ this.setState({loading:true}); }
+
+  buildSwitch(){
+    const h=React.createElement;const cur=this.state.view;const labels={auth:'로그인됨',guest:'비로그인',expired:'만료',already:'이미 멤버'};
+    return h('div',{style:{display:'flex',gap:2}},this.ORDER.map(k=>{const on=cur===k;return h('button',{key:k,onClick:()=>this.setState({view:k,loading:false}),style:{height:32,padding:'0 13px',border:'none',borderRadius:10,cursor:'pointer',fontSize:12.5,fontWeight:700,background:on?'rgba(255,255,255,.16)':'transparent',color:on?'#fff':'#9298A6',transition:'all .12s'}},labels[k]);}));
+  }
+
+  renderVals(){
+    const h=React.createElement;const v=this.state.view;
+    let bodyEl, glow;
+    if(v==='auth'){bodyEl=this.inviteCard('auth');glow='rgba(59,125,240,.14)';}
+    else if(v==='guest'){bodyEl=this.inviteCard('guest');glow='rgba(59,125,240,.14)';}
+    else {bodyEl=this.errorCard(v);glow=this.ERR[v].glow;}
+
+    // DS refs
+    const dsHeaderEl=h('div',{style:{border:'1px solid #ECEEF1',borderRadius:15,padding:'16px 18px'}},this.inviteHeader());
+    const dsStackEl=h('div',{style:{display:'flex',alignItems:'center',gap:12}},this.memberStack(34),h('span',{style:{fontSize:13,fontWeight:600,color:'#5A606B'}},'아바타 스택 + 초대자 아바타'));
+    const dsRoleEl=h('div',{style:{display:'flex',gap:10,alignItems:'center'}},this.roleBadge('editor',true),this.roleBadge('viewer',true));
+    const smap=[['로그인됨','바로 수락','check','#3B7DF0'],['비로그인','로그인하고 수락','lock','#2F6FE0'],['만료·취소','일반화 안내','clock','#C5893A'],['이미 멤버','여행 열기','users','#1FA078']];
+    const dsStateEl=h('div',{style:{border:'1px solid #ECEEF1',borderRadius:14,overflow:'hidden'}},smap.map((m,i)=>h('div',{key:m[0],style:{display:'flex',alignItems:'center',gap:12,padding:'12px 15px',borderBottom:i===3?'none':'1px solid #F2F3F6'}},
+      h('span',{style:{width:30,height:30,borderRadius:9,background:'#F1F3F6',display:'inline-flex',alignItems:'center',justifyContent:'center'}},this.icon(m[2],16,m[3],2)),
+      h('span',{style:{fontSize:13,fontWeight:700,color:'#1B2030',width:70}},m[0]),
+      h('span',{style:{fontSize:12.5,fontWeight:500,color:'#7A818D'}},m[1]))));
+
+    return { bodyEl, glow, switchEl:this.buildSwitch(), dsHeaderEl, dsStackEl, dsRoleEl, dsStateEl };
+  }
+}
+</script>
+</body>
+</html>
