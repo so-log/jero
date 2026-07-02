@@ -23,6 +23,11 @@ yarn-error.log*
 # env files
 .env*
 
+# testing (Playwright 생성 산출물 — 커밋하지 않음)
+/playwright-report/
+/test-results/
+/playwright/.cache/
+
 # misc
 .DS_Store
 *.pem
