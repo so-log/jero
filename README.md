@@ -3,8 +3,9 @@
 > **jero** is a collaborative travel planner for friends who plan trips *together* — not just saving pins, but managing the **order, route, budget, and roles** as a team.
 > Built as a portfolio piece: it applies 4 years of data-dense admin-UI experience (tables, filters, charts, workflows, permissions) to a modern consumer collaboration product.
 > Stack: Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · TanStack Query · Google Maps. Backend is intentionally a contract-first **seam** (stubbed), ready to swap to Supabase.
+> **Live demo → https://jero-travel.vercel.app**
 
-**라이브 데모:** _(배포 후 채움)_ · **문서:** [`docs/`](./docs)
+**라이브 데모:** https://jero-travel.vercel.app · **문서:** [`docs/`](./docs)
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-000?logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React-19-087EA4?logo=react&logoColor=white)
