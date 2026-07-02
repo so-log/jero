@@ -157,7 +157,7 @@ class Component extends DCLogic {
       view:props.viewState||'normal', role:props.role||'owner',
       detail:{name:'블루보틀 기요스미',address:'도쿄도 고토구 히라노 1-4-8',cat:'cafe',folder:'cafe',memo:'도쿄 1호점 · 오픈런 추천'},
       expense:{title:'',amount:152000,currency:'KRW',cat:'shopping',payer:'ji',split:['ji','min','seo','do'],day:1},
-      share:{linkRole:'viewer',emailDraft:'',members:this.MEM.map(m=>Object.assign({},m)),roleMenuId:null},
+      share:{linkRole:'viewer',inviteRole:'editor',emailDraft:'',members:this.MEM.map(m=>Object.assign({},m)),roleMenuId:null},
     };
   }
   componentDidUpdate(prev){
@@ -285,7 +285,7 @@ class Component extends DCLogic {
     const linkRow=h('div',{style:{display:'flex',flexDirection:'column',gap:9}},
       h('div',{style:{display:'flex',alignItems:'center',gap:9,padding:'10px 12px',background:'#F7FAFF',border:'1px solid #DCE9FD',borderRadius:13}},
         h('div',{style:{width:32,height:32,borderRadius:9,background:'#EAF1FE',display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon('link',{size:16,color:'#2F6FE0'})),
-        h('span',{style:{flex:1,fontSize:13,fontWeight:600,color:'#3A3F4B',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'donghaeng.app/i/tokyo-4d92x'),
+        h('span',{style:{flex:1,fontSize:13,fontWeight:600,color:'#3A3F4B',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'jero.app/i/tokyo-4d92x'),
         h('button',{style:{height:34,padding:'0 13px 0 11px',border:'1px solid #E6E8EC',background:'#fff',borderRadius:10,color:'#3A3F4B',fontSize:12.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:5,flex:'none'}},this.icon('copy',{size:14,color:'#7B828F'}),'복사')),
       h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
         h('span',{style:{fontSize:12.5,fontWeight:600,color:'#8A909B'}},'링크로 들어온 사람의 권한'),
@@ -294,6 +294,7 @@ class Component extends DCLogic {
     const invite=isOwner?h('div',{style:{display:'flex',gap:9}},
       h('div',{style:{position:'relative',flex:1,display:'flex',alignItems:'center'}},h('div',{style:{position:'absolute',left:13,pointerEvents:'none'}},this.icon('mail',{size:16,color:'#9AA0AB'})),
         h('input',{value:sh.emailDraft,onChange:e=>this.setShare({emailDraft:e.target.value}),placeholder:'friend@email.com',style:{width:'100%',height:46,padding:'0 14px 0 38px',border:'1.5px solid '+(this.state.view==='error'&&!sh.emailDraft?'#E8615C':'#E2E5EA'),borderRadius:12,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none'},onFocus:e=>{e.target.style.borderColor='#3B7DF0';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';},onBlur:e=>{e.target.style.borderColor='#E2E5EA';e.target.style.boxShadow='none';}})),
+      h('div',{style:{display:'inline-flex',gap:2,background:'#F1F3F6',padding:3,borderRadius:11,alignItems:'center',flex:'none'}},[['editor','편집 가능'],['viewer','읽기 전용']].map(([k,label])=>{const on=sh.inviteRole===k;return h('button',{key:k,onClick:()=>this.setShare({inviteRole:k}),style:{height:40,padding:'0 11px',border:'none',borderRadius:9,cursor:'pointer',fontSize:12,fontWeight:on?700:600,background:on?'#fff':'transparent',color:on?'#2B61C4':'#7B828F',boxShadow:on?'0 1px 2px rgba(16,24,40,.12)':'none'}},label);})),
       h('button',{style:{height:46,padding:'0 18px',border:'none',borderRadius:12,background:'#3B7DF0',color:'#fff',fontSize:13.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:6,flex:'none',boxShadow:'0 3px 8px -1px rgba(59,125,240,.5)'}},this.icon('plus',{size:17,color:'#fff',sw:2.4}),'초대')):null;
     // member rows
     const rows=sh.members.map(m=>{const menuOpen=sh.roleMenuId===m.id;
@@ -330,7 +331,7 @@ class Component extends DCLogic {
     const splitErr=se&&e.split.length===0?'분담 인원을 한 명 이상 선택해 주세요':null;
     const cur=e.currency;
     // amount field
-    const amountField=h('div',{style:{display:'flex',gap:9}},
+    const amountRow=h('div',{style:{display:'flex',gap:9}},
       h('div',{style:{flex:1,position:'relative',display:'flex',alignItems:'center'}},
         h('span',{style:{position:'absolute',left:16,fontSize:22,fontWeight:800,color:amtErr?'#E8615C':'#1B2030'}},cur==='JPY'?'¥':'₩'),
         h('input',{value:Number(e.amount||0).toLocaleString('ko-KR'),onChange:ev=>{const n=parseInt(ev.target.value.replace(/[^0-9]/g,''))||0;this.setE({amount:n});},inputMode:'numeric',
@@ -338,6 +339,10 @@ class Component extends DCLogic {
           onFocus:ev=>{if(!amtErr){ev.target.style.borderColor='#3B7DF0';ev.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:ev=>{ev.target.style.borderColor=amtErr?'#E8615C':'#E2E5EA';ev.target.style.boxShadow='none';}})),
       h('div',{style:{display:'inline-flex',gap:2,background:'#F1F3F6',padding:4,borderRadius:13,alignItems:'center'}},
         ['KRW','JPY'].map(k=>{const on=cur===k;return h('button',{key:k,onClick:()=>this.setE({currency:k}),style:{height:50,padding:'0 15px',border:'none',borderRadius:10,cursor:'pointer',fontSize:13.5,fontWeight:on?700:600,background:on?'#fff':'transparent',color:on?'#2B61C4':'#7B828F',boxShadow:on?'0 1px 3px rgba(16,24,40,.12)':'none'}},k);})));
+    // amount + 기본통화(₩) 고정환율 스냅샷 환산 안내
+    const FX_PREVIEW={KRW:1,JPY:9.2};
+    const fxNote = cur!=='KRW' ? h('div',{style:{fontSize:11.5,fontWeight:500,color:'#8A909B',paddingLeft:2}},'기본 통화(₩)로 환산 저장 · 1 '+cur+' ≈ '+FX_PREVIEW[cur]+'원') : null;
+    const amountField=h('div',{style:{display:'flex',flexDirection:'column',gap:6}},amountRow,fxNote);
     // payer radio
     const payer=h('div',{style:{display:'flex',gap:9}},this.MEM.map(m=>{const on=e.payer===m.id;
       return h('button',{key:m.id,onClick:()=>this.setE({payer:m.id}),style:{display:'flex',alignItems:'center',gap:7,height:42,padding:'0 13px 0 7px',borderRadius:99,border:'1.5px solid '+(on?m.color:'#E6E8EC'),background:on?'#fff':'#fff',cursor:'pointer',boxShadow:on?'0 0 0 2px '+m.color+'22':'none'}},this.avatar(m,28),h('span',{style:{fontSize:13,fontWeight:on?700:600,color:on?'#1B2030':'#5A606B'}},m.name));}));
@@ -374,7 +379,7 @@ class Component extends DCLogic {
   componentDidMount(){
     if(this.__navWired) return; this.__navWired=true;
     var rules = [
-      {label:'donghaeng.app',mode:'includes',to:'뷰어 공유.dc.html'},
+      {label:'jero.app',mode:'includes',to:'뷰어 공유.dc.html'},
       {label:'완료',to:'플랜 뷰.dc.html',tag:'BUTTON'},
       {label:'저장',to:'플랜 뷰.dc.html',tag:'BUTTON'},
       {label:'취소',to:'플랜 뷰.dc.html',tag:'BUTTON'},

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;color:#1F2430;background:#EEF0F4;}
+  @keyframes scSpin{to{transform:rotate(360deg);}}
+  @keyframes scFloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+  @keyframes scFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+</style>
+</helmet>
+
+<div style="min-width:100%;width:max-content;padding:40px 40px 130px;background:#EEF0F4;">
+  <div style="width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:13px;">
+
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;letter-spacing:-.01em;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#5B8DEF;"></span>
+      시스템 페이지 · 전역 안전망 · 데스크톱 1280px
+    </div>
+
+    <!-- ===== APP CARD ===== -->
+    <div style="width:1280px;height:760px;background:#fff;border-radius:22px;border:1px solid #E8EAEF;box-shadow:0 1px 3px rgba(16,24,40,.05),0 24px 60px -26px rgba(16,24,40,.28);overflow:hidden;position:relative;display:flex;flex-direction:column;">
+
+      <!-- minimal top bar: logo only -->
+      <div style="position:absolute;top:0;left:0;right:0;height:66px;display:flex;align-items:center;padding:0 26px;z-index:2;">
+        <div style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+          <div style="width:34px;height:34px;border-radius:11px;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px -2px rgba(91,141,239,.5);">
+            <svg width="19" height="19" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="9" r="5"/><circle cx="24" cy="9" r="1.9" fill="#fff" stroke="none"/><path d="M24 14V25a5.5 5.5 0 0 1-11 0"/></svg>
+          </div>
+          <span style="font-size:18px;font-weight:800;color:#1B2030;letter-spacing:-.04em;">jero</span>
+        </div>
+      </div>
+
+      <!-- soft ambient backdrop -->
+      <div style="position:absolute;top:-120px;right:-120px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,{{ tintGlow }},transparent 68%);transition:background .4s;"></div>
+      <div style="position:absolute;bottom:-160px;left:-80px;width:380px;height:380px;border-radius:50%;background:radial-gradient(circle,rgba(63,196,160,.08),transparent 70%);"></div>
+
+      <!-- centered content -->
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;position:relative;z-index:1;">
+        <div key="{{ stateKey }}" style="display:flex;flex-direction:column;align-items:center;animation:scFade .35s ease-out;">
+          {{ illoEl }}
+          <div style="margin-top:30px;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 13px;border-radius:99px;font-size:12.5px;font-weight:800;letter-spacing:.02em;background:{{ codeBg }};color:{{ codeFg }};">{{ codeLabel }}</div>
+          <h1 style="margin:16px 0 0;font-size:28px;font-weight:800;color:#1B2030;letter-spacing:-.03em;">{{ title }}</h1>
+          <p style="margin:12px 0 0;max-width:none;white-space:nowrap;font-size:15px;font-weight:500;color:#7A818D;line-height:1.65;">{{ desc }}</p>
+          <div style="margin-top:30px;display:flex;align-items:center;gap:11px;">{{ actionsEl }}</div>
+          {{ helperEl }}
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DS REFERENCE ===== -->
+    <div style="display:flex;align-items:center;gap:9px;color:#7A818D;font-size:12.5px;font-weight:600;margin-top:24px;">
+      <span style="display:inline-flex;width:7px;height:7px;border-radius:50%;background:#3FC4A0;"></span>
+      디자인 시스템 — 시스템 페이지 레이아웃 · 일러스트 스타일
+    </div>
+    <div style="width:1280px;background:#fff;border:1px solid #E8EAEF;border-radius:20px;box-shadow:0 1px 3px rgba(16,24,40,.05);padding:30px 34px;display:grid;grid-template-columns:1.1fr 1fr;gap:40px;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">일러스트 — 톤 원형 + 라인 아이콘 + 액센트 배지</div>
+        {{ dsIlloRow }}
+        <div style="font-size:12.5px;font-weight:500;color:#8A909B;line-height:1.6;">상태별 톤 컬러(블루·앰버·퍼플·그린) 위에 동일한 라인 아이콘 + 작은 흰색 배지를 얹어 차분하게. 코드 칩 → 제목 → 설명 → 액션 순서로 항상 가운데 정렬.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="font-size:13px;font-weight:700;color:#1B2030;">상태 매핑</div>
+        {{ dsMapEl }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- floating state switcher -->
+<div style="position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:9999;display:flex;align-items:center;gap:3px;background:rgba(27,32,48,.94);backdrop-filter:blur(10px);padding:6px 6px 6px 4px;border-radius:14px;box-shadow:0 10px 30px -6px rgba(0,0,0,.4);">
+  <span style="color:#8B92A0;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:0 9px;text-transform:uppercase;">상태</span>
+  {{ switchEl }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1360,&quot;height&quot;:980},&quot;viewState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;404&quot;,&quot;error&quot;,&quot;403&quot;,&quot;maint&quot;],&quot;default&quot;:&quot;404&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.ICN={
+      home:'<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+      'arrow-left':'<path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>',
+      refresh:'<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>',
+      mail:'<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+      activity:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+      'map-pin':'<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+      route:'<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
+      lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+      wrench:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+      help:'<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>',
+      alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+      users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+      settings:'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+      clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    };
+    this.S={
+      '404':{tint:'#EAF1FE',glow:'rgba(59,125,240,.16)',accent:'#3B7DF0',codeBg:'#EAF1FE',codeFg:'#2F6FE0',code:'404 · NOT FOUND',
+        title:'길을 잃은 것 같아요',desc:'주소가 바뀌었거나 삭제된 여행일 수 있어요.',
+        big:'map-pin',badge:'help',
+        actions:[{label:'내 여행 목록으로',icon:'home',kind:'primary'},{label:'이전으로',icon:'arrow-left',kind:'secondary'}],helper:''},
+      'error':{tint:'#FBF1E4',glow:'rgba(197,137,58,.16)',accent:'#C5893A',codeBg:'#FBF1E4',codeFg:'#B07A2E',code:'500 · ERROR',
+        title:'잠시 문제가 생겼어요',desc:'일시적인 오류예요. 잠시 후 다시 시도해 주세요.',
+        big:'route',badge:'alert',
+        actions:[{label:'다시 시도',icon:'refresh',kind:'primary'},{label:'홈으로',icon:'home',kind:'secondary'}],helper:'오류 코드 · TRIP-5A21'},
+      '403':{tint:'#F1ECFD',glow:'rgba(139,111,224,.16)',accent:'#8B6FE0',codeBg:'#F1ECFD',codeFg:'#7A5BD0',code:'403 · FORBIDDEN',
+        title:'접근 권한이 없어요',desc:'초대된 멤버만 볼 수 있는 여행이에요.',
+        big:'lock',badge:'users',
+        actions:[{label:'홈으로',icon:'home',kind:'primary'},{label:'초대 요청',icon:'mail',kind:'secondary'}],helper:''},
+      'maint':{tint:'#E1F6EE',glow:'rgba(31,160,120,.15)',accent:'#1FA078',codeBg:'#E1F6EE',codeFg:'#178A66',code:'점검 중 · MAINTENANCE',
+        title:'잠시 점검 중이에요',desc:'더 나은 제이로를 위해 업데이트하고 있어요.',
+        big:'wrench',badge:'settings',
+        actions:[{label:'상태 페이지 보기',icon:'activity',kind:'primary'}],helper:'예상 완료 · 오후 3:00'},
+    };
+    this.ORDER=['404','error','403','maint'];
+    this.state={view:this.S[props.viewState]?props.viewState:'404'};
+  }
+  componentDidUpdate(prev){ if(prev.viewState!==this.props.viewState && this.S[this.props.viewState]) this.setState({view:this.props.viewState}); }
+
+  icon(name,size,color,sw){
+    const inner=this.ICN[name]||'';
+    const svg='<svg width="'+(size||20)+'" height="'+(size||20)+'" viewBox="0 0 24 24" fill="none" stroke="'+(color||'#1F2430')+'" stroke-width="'+(sw||2)+'" stroke-linecap="round" stroke-linejoin="round">'+inner+'</svg>';
+    return React.createElement('span',{style:{display:'inline-flex',lineHeight:0},dangerouslySetInnerHTML:{__html:svg}});
+  }
+
+  illo(cfg,size){
+    const h=React.createElement;const d=size||188;
+    return h('div',{style:{position:'relative',width:d,height:d,display:'flex',alignItems:'center',justifyContent:'center'}},
+      h('div',{style:{position:'absolute',inset:0,borderRadius:'50%',background:cfg.tint}}),
+      h('div',{style:{position:'absolute',inset:d*0.12,borderRadius:'50%',background:'#fff',boxShadow:'inset 0 0 0 1px rgba(16,24,40,.04)'}}),
+      h('div',{style:{position:'relative',animation:'scFloat 4s ease-in-out infinite'}},this.icon(cfg.big,d*0.34,cfg.accent,1.8)),
+      h('div',{style:{position:'absolute',right:d*0.18,bottom:d*0.20,width:d*0.21,height:d*0.21,borderRadius:'50%',background:'#fff',boxShadow:'0 4px 12px -2px rgba(16,24,40,.18)',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon(cfg.badge,d*0.115,cfg.accent,2.2)));
+  }
+
+  actionBtn(a,accent){
+    const h=React.createElement;
+    const base={height:46,padding:'0 22px',borderRadius:13,fontSize:14,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:8,fontFamily:'inherit'};
+    if(a.kind==='primary') return h('button',{key:a.label,style:Object.assign({},base,{border:'none',background:accent,color:'#fff',boxShadow:'0 5px 14px -3px '+accent+'88'})},this.icon(a.icon,17,'#fff',2.2),a.label);
+    return h('button',{key:a.label,style:Object.assign({},base,{border:'1px solid #E6E8EC',background:'#fff',color:'#3A3F4B'})},this.icon(a.icon,17,'#5A606B',2.2),a.label);
+  }
+
+  buildSwitch(){
+    const h=React.createElement;const cur=this.state.view;const labels={'404':'404','error':'에러','403':'403','maint':'점검'};
+    return h('div',{style:{display:'flex',gap:2}},this.ORDER.map(k=>{const on=cur===k;return h('button',{key:k,onClick:()=>this.setState({view:k}),style:{height:32,padding:'0 13px',border:'none',borderRadius:10,cursor:'pointer',fontSize:12.5,fontWeight:700,background:on?'rgba(255,255,255,.16)':'transparent',color:on?'#fff':'#9298A6',transition:'all .12s'}},labels[k]);}));
+  }
+
+  renderVals(){
+    const h=React.createElement;const cfg=this.S[this.state.view];
+    const helperEl = cfg.helper ? h('div',{style:{marginTop:22,display:'inline-flex',alignItems:'center',gap:6,fontSize:12,fontWeight:600,color:'#A8AEB8'}},this.icon('clock',13,'#B6BCC6',2),cfg.helper) : null;
+
+    // DS illo row
+    const dsIlloRow=h('div',{style:{display:'flex',gap:16}},this.ORDER.map(k=>h('div',{key:k,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:8}},this.illo(this.S[k],92),h('span',{style:{fontSize:11.5,fontWeight:700,color:'#7B828F'}},this.S[k].code.split(' · ')[0]))));
+    // DS mapping
+    const map=[['404','없는 URL · 삭제된 여행','map-pin'],['500','렌더 예외 · 서버 오류','route'],['403','권한 없는 접근','lock'],['점검','maintenance','wrench']];
+    const dsMapEl=h('div',{style:{border:'1px solid #ECEEF1',borderRadius:14,overflow:'hidden'}},map.map((m,i)=>h('div',{key:m[0],style:{display:'flex',alignItems:'center',gap:12,padding:'13px 15px',borderBottom:i===3?'none':'1px solid #F2F3F6'}},
+      h('span',{style:{width:30,height:30,borderRadius:9,background:'#F1F3F6',display:'inline-flex',alignItems:'center',justifyContent:'center'}},this.icon(m[2],16,'#5A606B',2)),
+      h('span',{style:{fontSize:13,fontWeight:800,color:'#1B2030',width:42}},m[0]),
+      h('span',{style:{fontSize:12.5,fontWeight:500,color:'#7A818D'}},m[1]))));
+
+    return {
+      stateKey:this.state.view,
+      tintGlow:cfg.glow,
+      illoEl:this.illo(cfg,188),
+      codeBg:cfg.codeBg, codeFg:cfg.codeFg, codeLabel:cfg.code,
+      title:cfg.title, desc:cfg.desc,
+      actionsEl:h('div',{style:{display:'flex',gap:11}},cfg.actions.map(a=>this.actionBtn(a,cfg.accent))),
+      helperEl,
+      switchEl:this.buildSwitch(),
+      dsIlloRow, dsMapEl,
+    };
+  }
+}
+</script>
+</body>
+</html>
