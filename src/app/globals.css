@@ -4,117 +4,137 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   jero 디자인 토큰 — 단일 출처 (docs/design/prototype/디자인 시스템.dc.html v1.0)
+   · 데이터 구동 값(카테고리 8 / 멤버 5 / 역할 3 / 환율 4)은 src/lib/constants/*
+   · 색·radius·그림자 하드코딩 금지 — 이 토큰만 사용 (CLAUDE.md §7.1)
+   ============================================================ */
+@theme {
+  /* ── Typography — Pretendard self-host (next/font/local, CDN 미사용) ── */
+  --font-sans: var(--font-pretendard), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Apple SD Gothic Neo", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* ── Primary ── */
+  --color-primary-hover: #2f6fe0;
+  --color-primary-strong: #2b61c4; /* 세그먼트 활성 텍스트 */
+  --color-primary-tint: #eaf1fe; /* 연한 배경 */
+  --color-primary-wash: #f7faff; /* 더 옅은 선택 배경 */
+
+  /* ── Neutral 텍스트 램프 (디자인: Ink/Body/Muted/Subtle/Faint) ──
+     주: shadcn 의 --color-muted(연회색 면)와 충돌을 피하려고
+     디자인 "Muted #5A606B" → 토큰 `subtle`, "Subtle #8A909B" → `faint`,
+     "Faint #B6BCC6" → `mute` 로 한 칸씩 매핑. */
+  --color-ink: #1b2030; /* 제목 */
+  --color-body: #2b313d; /* 본문 강조 */
+  --color-subtle: #5a606b; /* 보조 텍스트·아이콘 */
+  --color-faint: #8a909b; /* 흐린 텍스트 */
+  --color-mute: #b6bcc6; /* 가장 흐림 */
+
+  /* ── Lines & surfaces ── */
+  --color-line: #eceef1; /* 기본 구분선 */
+  --color-line-strong: #e2e5ea; /* 입력 보더 */
+  --color-surface: #fbfbfc; /* 카드 안쪽 면 */
+  --color-canvas: #eef0f4; /* 페이지 배경 */
+
+  /* ── Semantic ── */
+  --color-success: #1fa078;
+  --color-success-tint: #e1f6ee;
+  --color-danger: #e8615c;
+  --color-danger-tint: #ffeceb;
+  --color-warn: #c5893a;
+  --color-warn-tint: #fbf1e4;
+  --color-violet: #8b6fe0; /* 보조 강조(예: 남은 예산 지표) — 디자인 팔레트 퍼플 */
+  --color-violet-tint: #f1ecfd;
+
+  /* ── Radius (카드 22 · 요소 11~14) ── */
+  --radius-xs: 9px; /* 세그먼트 내부 */
+  --radius-sm: 11px;
+  --radius-md: 13px; /* 버튼·입력 기본 */
+  --radius-lg: 14px;
+  --radius-panel: 18px; /* 여행 카드 등 서브 카드 */
+  --radius-card: 22px; /* 스테이지·모달 */
+  --radius-pill: 99px;
+
+  /* ── Shadow ── */
+  --shadow-card: 0 1px 3px rgba(16, 24, 40, 0.05);
+  --shadow-elevated: 0 1px 3px rgba(16, 24, 40, 0.05),
+    0 24px 60px -26px rgba(16, 24, 40, 0.28);
+  --shadow-lift: 0 14px 32px -12px rgba(16, 24, 40, 0.22); /* 카드 hover */
+  --shadow-modal: 0 20px 50px -20px rgba(16, 24, 40, 0.3);
+  --shadow-primary: 0 4px 10px -2px rgba(59, 125, 240, 0.5);
+  --shadow-focus: 0 0 0 3px rgba(59, 125, 240, 0.13); /* 포커스 링 */
+}
+
+/* shadcn 표준 슬롯 → jero 토큰 매핑 (유틸 생성) */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* shadcn 변수값 = jero 팔레트 (라이트 단일 테마) */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: #ffffff;
+  --foreground: #1b2030;
+  --card: #ffffff;
+  --card-foreground: #1b2030;
+  --popover: #ffffff;
+  --popover-foreground: #1b2030;
+  --primary: #3b7df0;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f3f6;
+  --secondary-foreground: #5a606b;
+  --muted: #f1f3f6;
+  --muted-foreground: #8a909b;
+  --accent: #eaf1fe;
+  --accent-foreground: #2f6fe0;
+  --destructive: #e8615c;
+  --border: #eceef1;
+  --input: #e2e5ea;
+  --ring: #3b7df0;
+  --chart-1: #3b7df0;
+  --chart-2: #1fa078;
+  --chart-3: #c5893a;
+  --chart-4: #b07cf0;
+  --chart-5: #e0609a;
+  --radius: 0.8125rem; /* 13px — shadcn 내부 계산 기준 */
+  --sidebar: #fbfbfc;
+  --sidebar-foreground: #1b2030;
+  --sidebar-primary: #3b7df0;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eaf1fe;
+  --sidebar-accent-foreground: #2f6fe0;
+  --sidebar-border: #eceef1;
+  --sidebar-ring: #3b7df0;
 }
 
 @layer base {
