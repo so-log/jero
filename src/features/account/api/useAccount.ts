@@ -2,6 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { createClient } from "@/lib/supabase/client";
+import { hasSupabase } from "@/lib/supabase/env";
+
 import type { ProfileForm } from "../lib/profileSchema";
 import type { ProfileDto } from "../types";
 
@@ -55,9 +58,9 @@ export function useDeleteAccount() {
   });
 }
 
-/** 로그아웃 seam. TODO(supabase): supabase.auth.signOut() + 세션 쿠키 정리. */
+/** 로그아웃 — Supabase 세션 종료(쿠키 정리). env 가드: 키 없으면 no-op(호출부에서 router.push('/')). */
 export function useLogout() {
-  return () => {
-    // TODO(auth): 세션 종료. 현재는 호출부에서 router.push('/').
+  return async () => {
+    if (hasSupabase) await createClient().auth.signOut();
   };
 }

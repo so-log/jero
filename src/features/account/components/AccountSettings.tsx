@@ -85,8 +85,8 @@ export function AccountSettings() {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const onLogout = () => {
-    logout();
+  const onLogout = async () => {
+    await logout();
     router.push("/");
   };
   const onDeleteAccount = async () => {

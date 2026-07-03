@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
+import { hasSupabase } from "@/lib/supabase/env";
 
 import { useAuth } from "../api/useAuth";
 import { authSchema, type AuthForm, type AuthMode } from "../lib/authSchema";
@@ -21,6 +22,14 @@ export function AuthPanel() {
   const auth = useAuth();
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPw, setShowPw] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  // 미들웨어가 보호 라우트에서 보낸 returnTo 로 복귀(안전 경로만).
+  const safeReturnTo = () => {
+    if (typeof window === "undefined") return "/trips";
+    const rt = new URLSearchParams(window.location.search).get("returnTo");
+    return rt && rt.startsWith("/") ? rt : "/trips";
+  };
 
   const {
     register,
@@ -47,14 +56,38 @@ export function AuthPanel() {
       }
       return;
     }
-    const mutation = signup ? auth.signup : auth.login;
-    await mutation.mutateAsync(values);
-    router.push("/trips");
+    setNotice(null);
+    try {
+      const result = signup
+        ? await auth.signup.mutateAsync(values)
+        : await auth.login.mutateAsync(values);
+      if (result.needsEmailConfirm) {
+        setNotice(
+          `${values.email} 로 확인 메일을 보냈어요. 메일의 링크를 눌러 인증하면 로그인돼요.`,
+        );
+        return;
+      }
+      router.push(safeReturnTo());
+    } catch (e) {
+      setError("pw", {
+        message:
+          e instanceof Error ? e.message : "요청에 실패했어요. 다시 시도해 주세요.",
+      });
+    }
   });
 
   const onGoogle = async () => {
-    await auth.googleLogin.mutateAsync();
-    router.push("/trips");
+    setNotice(null);
+    try {
+      await auth.googleLogin.mutateAsync();
+      // 실 연동 시 브라우저가 Google 로 리다이렉트된다. 스텁(키 없음)은 여기서 이동.
+      if (!hasSupabase) router.push(safeReturnTo());
+    } catch (e) {
+      setError("pw", {
+        message:
+          e instanceof Error ? e.message : "Google 로그인을 시작하지 못했어요.",
+      });
+    }
   };
 
   return (
@@ -70,6 +103,12 @@ export function AuthPanel() {
               : "로그인하고 함께 만들던 여행을 이어가세요."}
           </span>
         </div>
+
+        {notice && (
+          <div className="mb-4 rounded-md border border-primary/25 bg-primary-tint px-3.5 py-3 text-[13px] font-semibold leading-relaxed text-primary-strong">
+            {notice}
+          </div>
+        )}
 
         {/* Google */}
         <button
@@ -113,7 +152,7 @@ export function AuthPanel() {
               {...register("pw")}
               type={showPw ? "text" : "password"}
               leftIcon="lock"
-              placeholder={signup ? "6자 이상" : "비밀번호"}
+              placeholder={signup ? "8자 이상" : "비밀번호"}
               invalid={!!errors.pw}
               endAdornment={
                 <button
