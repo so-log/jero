@@ -2,6 +2,9 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { createClient } from "@/lib/supabase/client";
+import { hasSupabase } from "@/lib/supabase/env";
+
 import { reorderDayPlaces } from "../lib/selectors";
 import type { PlacesResponse } from "../types";
 
@@ -32,7 +35,16 @@ export function useReorderPlaces(tripId: string) {
     ReorderInput,
     { previous?: PlacesResponse }
   >({
-    mutationFn: (input) => Promise.resolve(input),
+    mutationFn: async (input) => {
+      if (!hasSupabase) return input; // 스텁: 낙관적 캐시만(키 없을 때)
+      const { error } = await createClient().rpc("reorder_places", {
+        p_trip_id: tripId,
+        p_date: input.date,
+        p_ids: input.orderedIds,
+      });
+      if (error) throw new Error("순서를 저장하지 못했어요.");
+      return input;
+    },
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: key });
       const previous = queryClient.getQueryData<PlacesResponse>(key);
@@ -46,6 +58,10 @@ export function useReorderPlaces(tripId: string) {
     },
     onError: (_err, _input, context) => {
       if (context?.previous) queryClient.setQueryData(key, context.previous);
+    },
+    onSettled: () => {
+      // 실연동: 서버와 재동기화(§10). 스텁(키 없음)은 fixture 되감기 방지 위해 invalidate 안 함.
+      if (hasSupabase) void queryClient.invalidateQueries({ queryKey: key });
     },
   });
 }
