@@ -3,27 +3,41 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import type { TripDto } from "@/features/itinerary";
+import { createClient } from "@/lib/supabase/client";
+import { hasSupabase } from "@/lib/supabase/env";
 
 import type { CreateTripInput } from "../lib/tripSchema";
 
 /**
- * 여행 생성 seam — 현재는 **스텁**(새 id 반환, 서버 미연동). 03 §7 생성자=owner.
- *
- * TODO(supabase): mutationFn 을 트랜잭션 RPC 로 교체.
- *   1) trip insert(생성자 = owner, 클라가 보낸 owner/소유 관계 신뢰 안 함, §8.2)
- *   2) members 초대(editor/viewer 만, owner 불가) + 읽기전용 초대 토큰 발급(§8.2)
- *   3) startMode==='template' 이면 시드 템플릿 → place 다수 복제(계약 §4.10)
- *   입력은 서버에서 tripSchema 재검증(§8.3).
- * 성공 시: ['trips'] 무효화 + ['trip', newId] seed → 워크스페이스 진입이 즉시(캐시 연속성).
+ * 여행 생성 seam — `create_trip` RPC(계약 B2.1)로 trip + owner 멤버십(+멤버 초대)을 원자적으로 생성.
+ * owner 는 생성으로만 부여(§4.9), 서버가 auth.uid() 로 소유 확정(클라 신뢰 안 함, §8.2). 입력은 서버 재검증(§8.3).
+ * env 가드: 키 없으면 스텁(새 id). 성공 시 ['trips'] 무효화 + ['trip', id] seed(즉시 진입).
  */
 export function useCreateTrip() {
   const queryClient = useQueryClient();
 
   return useMutation<{ id: string }, Error, CreateTripInput>({
-    mutationFn: (input) => {
-      void input; // 스텁: 서버 대신 새 id 생성(실연동 시 input 으로 trip insert).
-      const id = `trip_${Date.now().toString(36)}`;
-      return Promise.resolve({ id });
+    mutationFn: async (input) => {
+      if (!hasSupabase) {
+        return { id: `trip_${Date.now().toString(36)}` };
+      }
+      const { data, error } = await createClient().rpc("create_trip", {
+        payload: {
+          title: input.title,
+          icon: input.icon,
+          cover: input.cover,
+          country: input.country,
+          region: input.region,
+          start_date: input.start_date,
+          end_date: input.end_date,
+          startMode: input.startMode,
+          members: input.members,
+        },
+      });
+      if (error || typeof data !== "string") {
+        throw new Error("여행을 만들지 못했어요. 잠시 후 다시 시도해 주세요.");
+      }
+      return { id: data };
     },
     onSuccess: ({ id }, input) => {
       const seed: TripDto = {

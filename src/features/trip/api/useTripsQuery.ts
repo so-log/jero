@@ -4,25 +4,96 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 import type { TripDto } from "@/features/itinerary";
+import type { CoverColor } from "@/lib/constants/covers";
+import type { IconName } from "@/lib/constants/icons";
+import type { Role } from "@/lib/constants/roles";
+import { createClient } from "@/lib/supabase/client";
+import { hasSupabase } from "@/lib/supabase/env";
 
 import type { TripSummaryDto } from "../types";
 import { TRIPS_FIXTURE } from "./fixtures";
 
 /**
- * 목록 ↔ 상세 쿼리 키 정리:
- *   - ['trips']      → 내 여행 목록(02). useTripsQuery
- *   - ['trip', id]   → 단일 여행 상세 헤더(워크스페이스 셸). useTripQuery
- * 카드 클릭 → 상세 진입 시 목록 요약으로 ['trip', id] 를 미리 채워(seed) 헤더가 즉시 렌더된다(캐시 연속성).
- * 컴포넌트 직접 fetch 금지(§7.1) — TODO(supabase): queryFn 을 RLS select(내가 멤버인 trip만, §8.2)로 교체.
+ * 쿼리 키: ['trips'] 목록(02) · ['trip', id] 상세 헤더(셸). 카드 클릭 → seed 로 헤더 즉시 렌더.
+ * 컴포넌트 직접 fetch 금지(§7.1). Supabase 연동은 seam 내부만 — **env 가드**로 키 없으면 fixture 유지.
+ * RLS(is_trip_member)로 내가 멤버인 trip 만 조회된다(§8.2, 격리).
  */
+
+/** trip_member ⨝ trip ⨝ place/멤버 profile 중첩 select 행. */
+interface TripMemberRow {
+  role: Role;
+  trip: {
+    id: string;
+    title: string;
+    cover_icon: string;
+    cover_color: string;
+    start_date: string;
+    end_date: string;
+    place: { name: string }[];
+    trip_member: { profile: { name: string; avatar_color: string } | null }[];
+  } | null;
+}
+
+/** 상세 헤더 select 행. */
+interface TripHeaderRow {
+  role: Role;
+  trip: {
+    id: string;
+    title: string;
+    start_date: string;
+    end_date: string;
+    cover_icon: string;
+  } | null;
+}
+
+const LIST_SELECT =
+  "role, trip:trip_id ( id, title, cover_icon, cover_color, start_date, end_date, place ( name ), trip_member ( profile:user_id ( name, avatar_color ) ) )";
+
+function rowToSummary(row: TripMemberRow): TripSummaryDto | null {
+  const t = row.trip;
+  if (!t) return null;
+  const names = t.place.map((p) => p.name);
+  return {
+    id: t.id,
+    title: t.title,
+    cover_color: t.cover_color as CoverColor,
+    cover_icon: t.cover_icon as IconName,
+    start_date: t.start_date,
+    end_date: t.end_date,
+    my_role: row.role,
+    member_avatars: t.trip_member
+      .map((m) => m.profile)
+      .filter((p): p is { name: string; avatar_color: string } => p !== null)
+      .map((p) => ({ initial: p.name.slice(0, 1), color: p.avatar_color })),
+    place_count: names.length,
+    search_text: [t.title, ...names].join(" ").toLowerCase(),
+  };
+}
+
 export function useTripsQuery() {
   return useQuery<TripSummaryDto[]>({
     queryKey: ["trips"],
-    queryFn: () => TRIPS_FIXTURE,
+    queryFn: async () => {
+      if (!hasSupabase) return TRIPS_FIXTURE;
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("trip_member")
+        .select(LIST_SELECT)
+        .eq("user_id", user.id)
+        .returns<TripMemberRow[]>();
+      if (error) throw new Error("여행 목록을 불러오지 못했어요.");
+      return (data ?? [])
+        .map(rowToSummary)
+        .filter((t): t is TripSummaryDto => t !== null);
+    },
   });
 }
 
-/** 요약 → 상세(TripDto) 투영. seed·standalone fallback 공용. */
+/** 요약 → 상세(TripDto) 투영. seed·fixture fallback 공용. */
 function toTripDto(summary: TripSummaryDto): TripDto {
   return {
     id: summary.id,
@@ -37,17 +108,38 @@ function toTripDto(summary: TripSummaryDto): TripDto {
 export function useTripQuery(tripId: string) {
   return useQuery<TripDto>({
     queryKey: ["trip", tripId],
-    // 연동 전: 목록 fixture 에서 해당 여행을 찾아 상세로 투영(seed 가 있으면 그 캐시 사용).
-    queryFn: () => {
-      const found = TRIPS_FIXTURE.find((t) => t.id === tripId);
-      if (found) return toTripDto(found);
-      // fixture 에 없으면 데모 기본값(워크스페이스 단독 진입 대비).
-      return toTripDto(TRIPS_FIXTURE[0]);
+    queryFn: async () => {
+      if (!hasSupabase) {
+        const found = TRIPS_FIXTURE.find((t) => t.id === tripId);
+        return toTripDto(found ?? TRIPS_FIXTURE[0]);
+      }
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("로그인이 필요해요.");
+      const { data, error } = await supabase
+        .from("trip_member")
+        .select("role, trip:trip_id ( id, title, start_date, end_date, cover_icon )")
+        .eq("trip_id", tripId)
+        .eq("user_id", user.id)
+        .limit(1)
+        .returns<TripHeaderRow[]>();
+      const row = data?.[0];
+      if (error || !row?.trip) throw new Error("여행을 불러오지 못했어요.");
+      return {
+        id: row.trip.id,
+        title: row.trip.title,
+        start_date: row.trip.start_date,
+        end_date: row.trip.end_date,
+        my_role: row.role,
+        cover_icon: row.trip.cover_icon as IconName,
+      };
     },
   });
 }
 
-/** 목록 로드 후 각 여행의 ['trip', id] 캐시를 채워 상세 진입 시 헤더를 즉시 표시. */
+/** 목록 로드 후 각 여행의 ['trip', id] 캐시 seed → 상세 진입 시 헤더 즉시 표시. */
 export function useSeedTripDetails(trips: TripSummaryDto[] | undefined) {
   const queryClient = useQueryClient();
   useEffect(() => {
