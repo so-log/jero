@@ -33,7 +33,7 @@ export function BudgetView({ tripId }: { tripId: string }) {
   const { data, isLoading } = useBudgetQuery(tripId);
   const { data: members = [] } = useMembersQuery(tripId);
   const { data: trip } = usePlacesQuery(tripId);
-  const { openAddExpense, markSettled } = useExpenseActions();
+  const { openAddExpense, markSettled } = useExpenseActions(tripId);
 
   // 권한은 trip.my_role 단일 소스(셸과 동일 쿼리 캐시) — 서버/RLS 가 최종 강제(§8.2).
   const canEdit = trip ? roleCanEdit(trip.trip.my_role) : false;
