@@ -32,8 +32,9 @@ const DEFAULTS: CreateTripInput = {
   cover: "blue",
   country: "일본",
   region: "도쿄",
-  start_date: "2026-04-18",
-  end_date: "2026-04-21",
+  // 기본 날짜 없음 — 사용자가 시작·종료를 필수 선택(과거 기본값 방지, 종료≥시작).
+  start_date: "",
+  end_date: "",
   members: [
     { email: "minjun@gmail.com", role: "editor" },
     { email: "seoyoon@gmail.com", role: "viewer" },

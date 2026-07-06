@@ -51,6 +51,14 @@ export const tripSchema = z
     templateId: z.string().nullable(),
   })
   .superRefine((v, ctx) => {
+    // 시작·종료 모두 선택됐고 종료가 시작보다 빠르면 거부(빈 값은 위 min(1) 이 처리).
+    if (v.start_date && v.end_date && v.end_date < v.start_date) {
+      ctx.addIssue({
+        path: ["end_date"],
+        code: "custom",
+        message: "종료일은 시작일과 같거나 이후여야 해요",
+      });
+    }
     if (v.startMode === "template" && !v.templateId) {
       ctx.addIssue({
         path: ["templateId"],

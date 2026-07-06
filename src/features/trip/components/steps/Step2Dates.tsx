@@ -82,7 +82,7 @@ export function Step2Dates() {
   const endISO = watch("end_date");
   const startDay = isoToDay(startISO);
   const endDay = isoToDay(endISO);
-  const dateError = errors.start_date?.message;
+  const dateError = errors.start_date?.message ?? errors.end_date?.message;
 
   const pick = (day: number) => {
     const opts = { shouldValidate: true } as const;
