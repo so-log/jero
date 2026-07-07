@@ -15,6 +15,7 @@ interface SortablePlaceItemProps {
   order: number;
   selected: boolean;
   onSelect: (id: string) => void;
+  onUnassign?: (placeId: string) => void;
 }
 
 export function SortablePlaceItem({
@@ -22,6 +23,7 @@ export function SortablePlaceItem({
   order,
   selected,
   onSelect,
+  onUnassign,
 }: SortablePlaceItemProps) {
   const {
     setNodeRef,
@@ -51,6 +53,7 @@ export function SortablePlaceItem({
         muted={false}
         canDrag
         onSelect={onSelect}
+        onUnassign={onUnassign}
         dragHandleRef={setActivatorNodeRef}
         dragAttributes={attributes}
         dragListeners={listeners}

@@ -28,6 +28,8 @@ interface PlaceCardProps {
   muted: boolean;
   canDrag: boolean;
   onSelect: (id: string) => void;
+  /** 일정에서 빼기(editor+). 있으면 hover 시 제거 버튼 표시. */
+  onUnassign?: (placeId: string) => void;
   /**
    * dnd-kit 정렬 핸들 바인딩(정렬 가능 시). 셋이 함께 오면 grip 이 드래그 핸들이 된다.
    * ref 세터는 데이터(attributes·listeners)와 분리해 평면 prop 으로 받는다 — 콜백 ref 를 담은 객체의
@@ -45,6 +47,7 @@ export function PlaceCard({
   muted,
   canDrag,
   onSelect,
+  onUnassign,
   dragHandleRef,
   dragAttributes,
   dragListeners,
@@ -64,7 +67,7 @@ export function PlaceCard({
       onClick={() => onSelect(place.id)}
       onKeyDown={onKeyDown}
       className={cn(
-        "relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg border bg-background py-2.5 pr-3 pl-3.5 text-left transition-all",
+        "group relative flex w-full cursor-pointer items-center gap-2.5 rounded-lg border bg-background py-2.5 pr-3 pl-3.5 text-left transition-all",
         "hover:-translate-y-px hover:border-line-strong hover:shadow-lift",
         selected ? "border-primary/40" : "border-line",
         muted && "opacity-45",
@@ -99,6 +102,20 @@ export function PlaceCard({
           <span className="truncate text-xs text-mute">{place.memo}</span>
         )}
       </div>
+      {onUnassign && (
+        <button
+          type="button"
+          aria-label="일정에서 빼기"
+          title="일정에서 빼기"
+          onClick={(e) => {
+            e.stopPropagation();
+            onUnassign(place.id);
+          }}
+          className="flex flex-none rounded-xs p-1 text-mute opacity-0 transition-opacity hover:bg-danger-tint hover:text-danger focus-visible:outline-2 focus-visible:outline-primary focus-visible:opacity-100 group-hover:opacity-100"
+        >
+          <Icon name="x" size={16} strokeWidth={2} />
+        </button>
+      )}
       {canDrag &&
         (dragHandleRef ? (
           <button

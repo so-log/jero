@@ -12,6 +12,7 @@ import { canEdit as roleCanEdit } from "@/lib/constants/roles";
 
 import { usePlacesQuery } from "../api/usePlacesQuery";
 import { useReorderPlaces } from "../api/useReorderPlaces";
+import { useUnassignPlace } from "../api/useUnassignPlace";
 import {
   deriveDays,
   placesForDay,
@@ -75,6 +76,8 @@ export function PlanView({ tripId }: { tripId: string }) {
     if (activeDate) reorder.mutate({ date: activeDate, orderedIds });
   };
 
+  const unassignPlace = useUnassignPlace(tripId);
+
   return (
     <div className="flex h-full min-h-0 w-full">
       <ItineraryPanel
@@ -83,6 +86,7 @@ export function PlanView({ tripId }: { tripId: string }) {
         isLoading={isLoading}
         canEdit={canEdit}
         onReorder={onReorder}
+        onUnassign={canEdit ? (placeId) => unassignPlace.mutate(placeId) : undefined}
       />
       <div className="relative min-w-0 flex-1 bg-canvas">
         <TripMap
