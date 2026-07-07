@@ -6,6 +6,7 @@ import { useMembersQuery } from "@/features/itinerary";
 import { useTripQuery } from "@/features/trip";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
 
+import { useTripRealtime } from "../api/useTripRealtime";
 import { WorkspaceOverlays } from "./WorkspaceOverlays";
 import { WorkspaceTopBar } from "./WorkspaceTopBar";
 
@@ -24,10 +25,18 @@ export function WorkspaceShell({
   const { data: members = [] } = useMembersQuery(tripId);
   const canEdit = trip ? roleCanEdit(trip.my_role) : false;
 
+  // 실시간: presence(접속) + 데이터 변경 동기화(계약 B4). online 은 presence 로 덮어쓴다.
+  const onlineIds = useTripRealtime(tripId);
+  const onlineSet = new Set(onlineIds);
+  const membersWithPresence = members.map((m) => ({
+    ...m,
+    online: onlineSet.has(m.id),
+  }));
+
   return (
     <div className="flex h-screen flex-col">
       {trip ? (
-        <WorkspaceTopBar trip={trip} members={members} canEdit={canEdit} />
+        <WorkspaceTopBar trip={trip} members={membersWithPresence} canEdit={canEdit} />
       ) : (
         <div className="h-[66px] flex-none border-b border-line bg-background" />
       )}
