@@ -80,7 +80,7 @@ export async function signedInClient(
   return { client, token };
 }
 
-function adminClient(): SupabaseClient {
+export function adminClient(): SupabaseClient {
   return createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -169,6 +169,31 @@ export async function bootstrap(runId: string): Promise<RtData> {
     .map((r) => ({ id: r.id as string, name: r.name as string }));
 
   return { tripId, date, a, b, c, places };
+}
+
+/** 단독 owner(다른 멤버 없음) + 여행 1개 생성. 계정삭제 "단독 소유 → cascade 삭제" 케이스용. */
+export async function createSoloOwner(
+  runId: string,
+): Promise<{ user: RtUser; tripId: string }> {
+  const admin = adminClient();
+  const user = await createUser(admin, `rt-solo-${runId}@jero.test`, "Solo", "S");
+  const { client } = await signedInClient(user);
+  const { data, error } = await client.rpc("create_trip", {
+    payload: {
+      title: "단독 소유 여행",
+      icon: "plane",
+      cover: "#6E9CF2",
+      start_date: "2026-09-01",
+      end_date: "2026-09-02",
+      startMode: "blank",
+      members: [],
+    },
+  });
+  await client.auth.signOut();
+  if (error || typeof data !== "string") {
+    throw new Error(`solo create_trip 실패: ${error?.message}`);
+  }
+  return { user, tripId: data };
 }
 
 /** 여행(하위 cascade) + 계정 3개 삭제. teardown. */

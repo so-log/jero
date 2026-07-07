@@ -65,9 +65,20 @@
 만료(5s 주기 prune). 이탈 시 `presence:bye` broadcast(best-effort; SPA 이탈은 소켓 종료와 경합해
 미전달 가능 → 그 경우 TTL 로 자연 정리). `broadcast:{self:true}` 로 자기 자신도 접속 표시.
 
+## 계정(09) — 실연동 완료 (2026-07-07)
+
+- `useProfileQuery` — 본인 `profile` select(RLS). `useUpdateProfile` — **서버 라우트**
+  `PATCH /api/account/profile`(세션 검증 + profileSchema 재검증 + update, §8.3) → inv `['profile']`.
+  `useDeleteAccount` — **서버 라우트** `DELETE /api/account`: 세션 재확인 → 유일 owner trip 은 다른
+  멤버(editor 우선→오래된 순)에게 owner 승계, 나 혼자면 trip cascade 삭제, 생존 trip 의 내 참조
+  (created_by·payer_id 등 NOT NULL FK)는 승계자에 재배정·place.saved_by/scheduled_by 는 NULL →
+  `auth.admin.deleteUser`(service role, `lib/supabase/admin.ts`). 이후 클라 signOut + 캐시 clear.
+- 검증(e2e `account.spec.ts`): 프로필 표시·이름/색 저장·새로고침 유지·워크스페이스 아바타 반영 ✅,
+  삭제 위임(A→B owner 승계·여행 생존) ✅, 삭제 단독(여행+계정 cascade) ✅. check/build 그린.
+- **참고**: FK 가 대부분 `NO ACTION` 이라 삭제 시 참조 재배정이 필수(마이그레이션 변경 없이 서버에서 처리).
+
 ## 남은 후속
 
-- **계정** — profile 수정 / 회원 탈퇴(owner 승계·cascade, service role).
 - **지출 편집** — expense 편집 플로우.
 - **작은 UI** — 드롭다운 방향, unassign(일정→저장 되돌리기), 공유링크 복사.
 - **e2e flows 재작성** — 기존 stub 기반 `e2e/flows.spec.ts`·`home.spec.ts` 를 실연동 기준으로 갱신(현재는 깨진 상태).
