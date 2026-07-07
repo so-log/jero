@@ -25,36 +25,95 @@ export const ACCOUNT_META = {
   lastLogin: "2026.6.23 오전 9:12",
 };
 
+/** profile 테이블(본인) select 행 — 생성 타입 부재로 계약(§4.1) 기준 수기 정의(usePlacesQuery 패턴). */
+interface ProfileRow {
+  name: string;
+  email: string;
+  avatar_color: string;
+  default_currency: ProfileDto["currency"];
+  notif_trip: boolean;
+  notif_comment: boolean;
+  notif_settle: boolean;
+  notif_marketing: boolean;
+}
+
+const PROFILE_COLS =
+  "name, email, avatar_color, default_currency, notif_trip, notif_comment, notif_settle, notif_marketing";
+
+/** 본인 profile 조회(계약 B5). RLS(profile_select) 로 본인 행만. env 가드: 키 없으면 fixture. */
 export function useProfileQuery() {
   return useQuery<ProfileDto>({
     queryKey: ["profile"],
-    queryFn: () => PROFILE_FIXTURE,
+    queryFn: async () => {
+      if (!hasSupabase) return PROFILE_FIXTURE;
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("로그인이 필요해요.");
+      const { data, error } = await supabase
+        .from("profile")
+        .select(PROFILE_COLS)
+        .eq("id", user.id)
+        .limit(1)
+        .returns<ProfileRow[]>();
+      const row = data?.[0];
+      if (error || !row) throw new Error("프로필을 불러오지 못했어요.");
+      return {
+        name: row.name,
+        email: row.email,
+        avatarColor: row.avatar_color,
+        currency: row.default_currency,
+        notif: {
+          trip: row.notif_trip,
+          comment: row.notif_comment,
+          settle: row.notif_settle,
+          marketing: row.notif_marketing,
+        },
+      };
+    },
   });
 }
 
 /**
- * 프로필·환경설정 저장. TODO(supabase): profile/user_preference update → invalidate(['profile']).
- * 입력은 서버에서 재검증(§8.3). 아바타 이미지 업로드는 스토리지·서명 URL(§8.3, 09 §13).
+ * 프로필·환경설정 저장(계약 B5). **서버 라우트**(PATCH /api/account/profile)에서 세션 검증 + 동일
+ * profileSchema 로 재검증 후 update(§8.3). 성공 시 ['profile'] 무효화 → 상단바·워크스페이스 아바타 갱신.
+ * (아바타 이미지 업로드는 스토리지·서명 URL — 후속.)
  */
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
   return useMutation<ProfileForm, Error, ProfileForm>({
-    mutationFn: (input) => Promise.resolve(input),
-    onSuccess: (data) => {
-      queryClient.setQueryData<ProfileDto>(["profile"], (prev) =>
-        prev ? { ...prev, ...data } : prev,
-      );
+    mutationFn: async (input) => {
+      if (!hasSupabase) return input;
+      const res = await fetch("/api/account/profile", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) throw new Error("저장에 실패했어요. 다시 시도해 주세요.");
+      return input;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }
 
 /**
  * 계정 삭제 — 파괴적·되돌릴 수 없음. ConfirmDialog 확인 후 호출.
- * TODO(supabase): 서버에서 **본인 인증·소유 재확인**(§8.7) + cascade(owner 공유 여행 처리, §13) 후 세션 종료.
+ * **서버 라우트**(DELETE /api/account)가 세션 재확인 + 소유권 승계/재배정 + auth.admin.deleteUser(service role)
+ * 수행(§8.7, B8). 성공 후 클라 세션 종료 + 캐시 초기화 → 호출부에서 `/`(01)로 이동.
  */
 export function useDeleteAccount() {
+  const queryClient = useQueryClient();
   return useMutation<void, Error, void>({
-    mutationFn: () => Promise.resolve(),
+    mutationFn: async () => {
+      if (!hasSupabase) return;
+      const res = await fetch("/api/account", { method: "DELETE" });
+      if (!res.ok) throw new Error("계정 삭제에 실패했어요. 다시 시도해 주세요.");
+      await createClient().auth.signOut();
+      queryClient.clear();
+    },
   });
 }
 
