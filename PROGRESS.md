@@ -33,8 +33,8 @@
 
 커밋 내용:
 - `src/features/workspace/api/useTripRealtime.ts` — trip 단위 **private 채널** 훅:
-  presence + `postgres_changes`(place/expense/expense_split/trip_member) → 쿼리 invalidate.
-  낙관적↔실시간 reconciliation(in-flight 중 invalidate 디바운스, settle 후 재동기화).
+  presence(**broadcast heartbeat**, 아래 참조) + `postgres_changes`(place/expense/expense_split/
+  trip_member) → 쿼리 invalidate. 낙관적↔실시간 reconciliation(in-flight 중 invalidate 디바운스, settle 후 재동기화).
   **버그 수정**: 구독 전 `supabase.realtime.setAuth(access_token)` 추가 — 이게 없으면 private
   채널이 CHANNEL_ERROR 로 구독 실패해 실시간 전체(presence·postgres_changes)가 죽었다.
 - `src/features/workspace/components/WorkspaceShell.tsx` — 훅 연결, presence로 멤버 `online` 덮어씀.
@@ -51,18 +51,22 @@
 | (4) 비멤버 C 채널 구독 거부(realtime.messages RLS) | ✅ 통과 |
 | 콘솔·Supabase 4xx/5xx | ✅ 0건 |
 | `yarn run check` / `yarn build` | ✅ 그린 |
-| (2) presence "접속 중" 아바타 | ❌ **미동작(아래 알려진 이슈)** — 스펙에 `test.fixme` |
+| (2) presence "접속 중" 아바타 | ✅ **통과 (broadcast heartbeat 구현)** |
 
-### ⚠ 알려진 이슈 — presence 미동작 (Supabase 측)
+### presence = broadcast heartbeat 로 구현 (네이티브 presence sync 우회)
 
-`channel.track()`가 `ok` 를 반환하고 구독도 `SUBSCRIBED` 인데 presence `sync` 이벤트가 전혀
-전달되지 않는다. **브라우저·순수 supabase-js, public·private 채널 모두** 동일(반면
-postgres_changes 는 정상). 인가(RLS)·앱 코드 문제가 아니라 이 **Supabase 프로젝트의 realtime
-presence/broadcast 전달** 문제로 판단. 후속에서 프로젝트 realtime 설정/버전 확인 필요.
+**원인 규명**: 네이티브 realtime presence 는 `track()`이 `ok` 를 반환해도 `sync` 이벤트가 전혀
+전달되지 않는다(브라우저·순수 supabase-js, public·private 모두). 같은 채널에서 **broadcast 는
+정상**(self-receive public/private 확인), postgres_changes 도 정상 → **presence 기능 전용**
+문제(Supabase 프로젝트측). 대시보드 조사 없이 broadcast 로 우회 구현.
+
+**구현**(`useTripRealtime` 내부만 교체, 인터페이스 `onlineIds` 불변 → WorkspaceShell·TopBar 무변경):
+구독 시 + 12s 주기로 자기 user id 를 `presence:hb` broadcast → 피어는 수신 시각 기록, 30s TTL 로
+만료(5s 주기 prune). 이탈 시 `presence:bye` broadcast(best-effort; SPA 이탈은 소켓 종료와 경합해
+미전달 가능 → 그 경우 TTL 로 자연 정리). `broadcast:{self:true}` 로 자기 자신도 접속 표시.
 
 ## 남은 후속
 
-- **presence 전달 이슈** — Supabase 프로젝트 realtime(presence/broadcast) 설정·버전 조사 → 해결 후 `test.fixme` 해제.
 - **계정** — profile 수정 / 회원 탈퇴(owner 승계·cascade, service role).
 - **지출 편집** — expense 편집 플로우.
 - **작은 UI** — 드롭다운 방향, unassign(일정→저장 되돌리기), 공유링크 복사.

@@ -14,11 +14,8 @@ import {
  * 실시간 협업(계약 B4) 실검증 — 2계정 동시 접속(Playwright 2 컨텍스트).
  *  (1) A 쓰기(장소 추가·순서변경) → B 화면 자동 반영(postgres_changes → invalidate)  ✅
  *  (4) 비멤버 C 는 그 trip 채널 구독 거부(realtime.messages RLS)                      ✅
- *  (2) presence("접속 중") 아바타 → 아래 test.fixme 참조.
- *      **알려진 이슈**: 이 Supabase 프로젝트의 realtime presence 는 track 이 'ok' 를 반환해도
- *      presence 'sync' 이벤트가 전달되지 않는다(브라우저·순수 supabase-js, public·private 채널 모두
- *      동일 — postgres_changes 는 정상). 앱 코드가 아니라 Supabase 측 presence 전달 문제라
- *      자동 단언에서 제외하고 fixme 로 남긴다.
+ *  (2) presence("접속 중") 아바타 → **broadcast heartbeat** 로 구현(네이티브 realtime presence sync 가
+ *      이 프로젝트에서 미전달이라 broadcast 로 우회). A·B 상호 접속 표시 + 이탈 시 제거를 검증.
  *  (3) 낙관적↔실시간 reconciliation: 순서변경 동기화(서버측 결과)까지 자동 검증. 드래그 클라이언트의
  *      "무깜빡임"은 dnd-kit 드래그 자동화 불안정 + 훅 in-flight 가드 로직으로 갈음(수동 2브라우저 확인 권장).
  * 데이터는 service_role 로 부트스트랩(사용자 승인) 후 종료 시 전량 삭제.
@@ -140,32 +137,42 @@ test.describe("실시간 협업(B4)", () => {
     }
   });
 
-  // (2) presence — 알려진 Supabase 측 이슈로 자동 단언 보류(상단 주석 참조).
-  test.fixme(
-    "(2) A·B 상단바에 서로 presence 아바타 표시 (Supabase presence 전달 이슈)",
-    async ({ browser }) => {
-      const ctxA = await browser.newContext();
-      const ctxB = await browser.newContext();
-      const pageA = await ctxA.newPage();
-      const pageB = await ctxB.newPage();
-      try {
-        await login(pageA, data.a);
-        await login(pageB, data.b);
-        const url = `/trips/${data.tripId}?view=plan`;
-        await pageA.goto(url);
-        await pageB.goto(url);
-        await expect(
-          pageA.locator("header").getByText("B", { exact: true }),
-        ).toBeVisible({ timeout: 20000 });
-        await expect(
-          pageB.locator("header").getByText("A", { exact: true }),
-        ).toBeVisible({ timeout: 20000 });
-      } finally {
-        await ctxA.close();
-        await ctxB.close();
-      }
-    },
-  );
+  // (2) presence(broadcast heartbeat) — 상호 접속 표시 + 이탈 시 제거.
+  test("(2) A·B 상단바에 서로 presence 아바타 표시 + 이탈 시 사라짐", async ({
+    browser,
+  }) => {
+    test.setTimeout(100_000); // 이탈은 bye(best-effort) 실패 시 TTL(30s)로 정리 — 여유 대기.
+    const ctxA = await browser.newContext();
+    const ctxB = await browser.newContext();
+    const pageA = await ctxA.newPage();
+    const pageB = await ctxB.newPage();
+    try {
+      await login(pageA, data.a);
+      await login(pageB, data.b);
+      const url = `/trips/${data.tripId}?view=plan`;
+      await pageA.goto(url);
+      await pageB.goto(url);
+
+      const headerA = pageA.locator("header");
+      const headerB = pageB.locator("header");
+
+      // 상호 접속: A 헤더에 B("B"), B 헤더에 A("A") 아바타(자기 자신도 포함).
+      await expect(headerA.getByText("B", { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(headerA.getByText("A", { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(headerB.getByText("A", { exact: true })).toBeVisible({ timeout: 20000 });
+      await expect(headerB.getByText("B", { exact: true })).toBeVisible({ timeout: 20000 });
+
+      // B 가 워크스페이스 이탈 → 훅 unmount(bye best-effort) → 미수신 시 heartbeat 끊겨 TTL(30s)로 만료.
+      await pageB.goto("/trips");
+      await expect(pageB).toHaveURL(/\/trips(\?|$)/, { timeout: 20000 });
+      await expect(headerA.getByText("B", { exact: true })).toHaveCount(0, { timeout: 45000 });
+      // A 자신은 계속 접속 표시.
+      await expect(headerA.getByText("A", { exact: true })).toBeVisible();
+    } finally {
+      await ctxA.close();
+      await ctxB.close();
+    }
+  });
 
   test("(4) 비멤버 C 는 trip 채널 구독 거부 (realtime RLS)", async () => {
     // 양성 대조: 멤버 A 는 구독 성공.
