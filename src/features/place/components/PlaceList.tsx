@@ -18,6 +18,7 @@ import { SavedPlaceCard } from "./SavedPlaceCard";
  * UI 상태(검색·정렬·선택)는 placesStore, 데이터는 props(설계 §4 분리).
  */
 interface PlaceListProps {
+  tripId: string;
   places: PlaceDto[];
   members: MemberDto[];
   days: Day[];
@@ -27,6 +28,7 @@ interface PlaceListProps {
 }
 
 export function PlaceList({
+  tripId,
   places,
   members,
   days,
@@ -36,7 +38,7 @@ export function PlaceList({
 }: PlaceListProps) {
   const { query, sort, selectedId, assigned, setQuery, setSort, select } =
     usePlacesStore();
-  const { assign, unassign } = useAddPlaceToSchedule();
+  const { assign, unassign } = useAddPlaceToSchedule(tripId);
   const openOverlay = useOverlayStore((s) => s.open);
   const memberById = new Map(members.map((m) => [m.id, m]));
 

@@ -67,6 +67,7 @@ export function PlacesView({ tripId }: { tripId: string }) {
         onSelect={setFolder}
       />
       <PlaceList
+        tripId={tripId}
         places={visible}
         members={members}
         days={days}
