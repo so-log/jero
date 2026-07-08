@@ -43,6 +43,8 @@ interface ItineraryPanelProps {
   canEdit: boolean;
   /** 드래그 재정렬 → 해당 날 새 순서(id 배열)를 상위(PlanView)로 전달. canDrag 일 때만 활성. */
   onReorder?: (orderedIds: string[]) => void;
+  /** 일정에서 빼기(editor+). 없으면 카드에 버튼 미표시. */
+  onUnassign?: (placeId: string) => void;
 }
 
 export function ItineraryPanel({
@@ -51,6 +53,7 @@ export function ItineraryPanel({
   isLoading,
   canEdit,
   onReorder,
+  onUnassign,
 }: ItineraryPanelProps) {
   const {
     activeDay,
@@ -171,6 +174,7 @@ export function ItineraryPanel({
                         order={dayPlaces.findIndex((p) => p.id === place.id) + 1}
                         selected={selectedId === place.id}
                         onSelect={select}
+                        onUnassign={onUnassign}
                       />
                     ))}
                   </ul>
@@ -191,6 +195,7 @@ export function ItineraryPanel({
                         muted={false}
                         canDrag={canDrag}
                         onSelect={select}
+                        onUnassign={onUnassign}
                       />
                     </li>
                   );

@@ -9,6 +9,7 @@ import { RoleBadge } from "@/components/ui/role-badge";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs";
 import type { MemberDto } from "@/features/itinerary";
 import { inviteSchema, type InviteRole } from "@/features/trip";
+import { copyToClipboard } from "@/lib/clipboard";
 import { MEMBER_COLORS } from "@/lib/constants/members";
 import type { Role } from "@/lib/constants/roles";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,33 @@ export function ShareOverlay({
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState<string | null>(null);
   const [menuId, setMenuId] = useState<string | null>(null);
+
+  // 공유 링크: 복사 시 발급(권한별) 후 URL 캐시. 권한 변경 시 재발급 위해 초기화.
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+
+  const copyLink = async () => {
+    setCopyError(false);
+    let url = shareUrl;
+    if (!url) {
+      try {
+        const token = await share.issueShareLink.mutateAsync({ role: linkRole });
+        url = `${window.location.origin}/share/${token}`;
+        setShareUrl(url);
+      } catch {
+        setCopyError(true);
+        return;
+      }
+    }
+    const ok = await copyToClipboard(url);
+    if (ok) {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } else {
+      setCopyError(true);
+    }
+  };
 
   const invite = () => {
     const parsed = inviteSchema.shape.email.safeParse(email);
@@ -114,16 +142,33 @@ export function ShareOverlay({
             <Icon name="link" size={16} strokeWidth={2} />
           </span>
           <span className="flex-1 truncate text-[13px] font-semibold text-body">
-            jero.app/i/tokyo-4d92x
+            {shareUrl ?? "복사를 누르면 공유 링크가 만들어져요"}
           </span>
           <button
             type="button"
-            className="inline-flex h-[34px] flex-none items-center gap-1.5 rounded-md border border-line-strong bg-background pr-3 pl-2.5 text-[12.5px] font-bold text-body hover:bg-secondary"
+            onClick={copyLink}
+            disabled={share.issueShareLink.isPending}
+            className={cn(
+              "inline-flex h-[34px] flex-none items-center gap-1.5 rounded-md border pr-3 pl-2.5 text-[12.5px] font-bold transition-colors disabled:opacity-60",
+              copied
+                ? "border-success/40 bg-success-tint text-success"
+                : "border-line-strong bg-background text-body hover:bg-secondary",
+            )}
           >
-            <Icon name="copy" size={14} strokeWidth={2} className="text-faint" />
-            복사
+            <Icon
+              name={copied ? "check" : "copy"}
+              size={14}
+              strokeWidth={2}
+              className={copied ? "text-success" : "text-faint"}
+            />
+            {copied ? "복사됨" : "복사"}
           </button>
         </div>
+        {copyError && (
+          <span className="text-[11.5px] font-semibold text-danger">
+            링크를 복사하지 못했어요. 다시 시도해 주세요.
+          </span>
+        )}
         <div className="flex items-center justify-between">
           <span className="text-[12.5px] font-semibold text-faint">
             링크로 들어온 사람의 권한
@@ -132,7 +177,11 @@ export function ShareOverlay({
             <SegmentedTabs
               items={ROLE_SEG}
               value={linkRole}
-              onValueChange={(v) => setLinkRole(v as InviteRole)}
+              onValueChange={(v) => {
+                setLinkRole(v as InviteRole);
+                setShareUrl(null); // 권한 바뀌면 다음 복사 때 재발급
+                setCopied(false);
+              }}
               size="sm"
               aria-label="링크 권한"
             />

@@ -77,8 +77,18 @@
   삭제 위임(A→B owner 승계·여행 생존) ✅, 삭제 단독(여행+계정 cascade) ✅. check/build 그린.
 - **참고**: FK 가 대부분 `NO ACTION` 이라 삭제 시 참조 재배정이 필수(마이그레이션 변경 없이 서버에서 처리).
 
+## 작은 UI 3건 — 완료 (2026-07-07)
+
+- **AddToScheduleMenu 드롭다운 방향**: 기본 아래로 열고, 트리거 `getBoundingClientRect` 로 아래 공간
+  부족 + 위 공간 충분 시에만 위로 flip(뷰포트 경계 인식). header 잘림 해소.
+- **일정에서 빼기(unassign)**: `features/itinerary/api/useUnassignPlace`(scheduled_date=null + 그 날 순서
+  컴팩션, 낙관적 + inv `['places',id]`) → PlanView→ItineraryPanel→(SortablePlaceItem)→PlaceCard 에
+  hover 제거 버튼 배선. add-to-schedule=place, remove-from-schedule=itinerary 로 도메인 분리(역참조 회피).
+- **ShareOverlay 링크 복사**: `lib/clipboard`(navigator.clipboard + execCommand 폴백) + `issueShareLink`
+  로 실제 `/share/{token}` 발급·복사 + "복사됨" 피드백/에러. 권한 변경 시 재발급.
+- 검증: 컴포넌트 테스트 3파일(+8) 통과, `yarn run check`(77)·build 그린.
+
 ## 남은 후속
 
 - **지출 편집** — expense 편집 플로우.
-- **작은 UI** — 드롭다운 방향, unassign(일정→저장 되돌리기), 공유링크 복사.
 - **e2e flows 재작성** — 기존 stub 기반 `e2e/flows.spec.ts`·`home.spec.ts` 를 실연동 기준으로 갱신(현재는 깨진 상태).

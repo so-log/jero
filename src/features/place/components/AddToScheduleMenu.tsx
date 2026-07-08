@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type MouseEvent, useRef, useState } from "react";
 
 import { Icon } from "@/components/ui/icon";
 import type { Day } from "@/features/itinerary";
@@ -27,6 +27,23 @@ export function AddToScheduleMenu({
   onUnassign,
 }: AddToScheduleMenuProps) {
   const [open, setOpen] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // 기본은 아래로 열고, 아래 공간이 부족하면서 위 공간은 충분할 때만 위로 flip(뷰포트 경계 인식).
+  const toggle = (e: MouseEvent) => {
+    e.stopPropagation();
+    if (!open) {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (rect) {
+        const estimated = 44 + days.length * 38 + 12; // 헤더 + 날짜행 + 패딩
+        const below = window.innerHeight - rect.bottom;
+        const above = rect.top;
+        setDropUp(below < estimated && above > below);
+      }
+    }
+    setOpen((v) => !v);
+  };
 
   if (assignedDay != null) {
     return (
@@ -58,12 +75,10 @@ export function AddToScheduleMenu({
   return (
     <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
+        onClick={toggle}
         className={cn(
           "inline-flex h-8 items-center gap-1.5 rounded-md border pr-3 pl-2.5 text-[12.5px] font-bold transition-colors",
           open
@@ -91,7 +106,10 @@ export function AddToScheduleMenu({
           />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-[calc(100%+6px)] left-0 z-20 w-[188px] rounded-lg border border-line bg-popover p-1.5 shadow-modal"
+            className={cn(
+              "absolute left-0 z-20 w-[188px] rounded-lg border border-line bg-popover p-1.5 shadow-modal",
+              dropUp ? "bottom-[calc(100%+6px)]" : "top-[calc(100%+6px)]",
+            )}
           >
             <div className="px-2.5 pt-1 pb-1.5 text-[11px] font-bold text-faint">
               어느 날짜에 추가할까요?

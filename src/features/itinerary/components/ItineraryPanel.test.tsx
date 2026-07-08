@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PLAN_FIXTURE } from "../api/fixtures";
 import { deriveDays, placesForDay } from "../lib/selectors";
@@ -61,6 +61,32 @@ describe("ItineraryPanel 드래그 게이트 canDrag=canEdit && activeCategory==
       <ItineraryPanel days={days} dayPlaces={dayPlaces} isLoading={false} canEdit={false} />,
     );
     expect(screen.queryByRole("button", { name: /순서 변경/ })).toBeNull();
+  });
+});
+
+describe("ItineraryPanel 일정에서 빼기(unassign)", () => {
+  it("onUnassign 제공 시 각 장소에 '일정에서 빼기' 버튼이 있고 place id 로 호출된다", () => {
+    const onUnassign = vi.fn();
+    render(
+      <ItineraryPanel
+        days={days}
+        dayPlaces={dayPlaces}
+        isLoading={false}
+        canEdit
+        onUnassign={onUnassign}
+      />,
+    );
+    const buttons = screen.getAllByRole("button", { name: "일정에서 빼기" });
+    expect(buttons).toHaveLength(dayPlaces.length);
+    fireEvent.click(buttons[0]);
+    expect(onUnassign).toHaveBeenCalledWith(dayPlaces[0].id);
+  });
+
+  it("onUnassign 미제공 시 '일정에서 빼기' 버튼이 없다", () => {
+    render(
+      <ItineraryPanel days={days} dayPlaces={dayPlaces} isLoading={false} canEdit />,
+    );
+    expect(screen.queryByRole("button", { name: "일정에서 빼기" })).toBeNull();
   });
 });
 
