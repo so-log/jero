@@ -125,6 +125,14 @@
   전체 e2e 13/13, `yarn run check`(88)·build 그린. **지도 위 렌더는 Google Maps 키(env) 필요** — 지도 마커 전반과 동일 제약(렌더 컴포넌트 무변경).
 - 새 마이그레이션 없음(broadcast 재사용).
 
+## 2차 B — 폴더 관리 (2026-07-08)
+
+`docs/architecture/2차_구현_설계.md` B 항목. **folder RLS 는 0002 에 이미 존재**(folder_select 멤버 / folder_write editor+) → 새 마이그레이션 없음. place.folder_id 는 `ON DELETE SET NULL`(0002).
+- `features/place/api/useFolders.ts`(신규): `useUpsertFolder`(생성/이름변경 id 분기, 낙관적 setQueryData(['places',id]) + 무효화), `useDeleteFolder`(폴더 제거 + 소속 저장장소 folder_id→null 낙관, 서버는 SET NULL). onError 롤백.
+- 장소 폴더 이동은 기존 `useUpsertPlace`(folder_id) 재사용 — 신규 훅 없음.
+- `FolderSidebar`: "폴더 추가" 인라인 입력 + 폴더별 더보기(이름변경/삭제, ConfirmDialog) 배선. viewer(canEdit=false)는 관리 UI 비노출. 개수는 항상 표시(더보기는 hover 오버레이). `PlacesView` 가 훅→콜백 배선(활성 폴더 삭제 시 전체로).
+- 검증: 유닛(useFolders 낙관/롤백 create·rename·delete, FolderSidebar 상호작용·viewer) + e2e `folder.spec`(추가→개수→삭제→미분류, 실 Supabase ON DELETE SET NULL). 전체 e2e 14/14, `yarn run check`(97)·build 그린.
+
 ## 남은 후속(2차)
 
-- **D**(OAuth·설정) · **B**(폴더 관리) · **C**(템플릿) · **E**(통계) · **F**(메모) — `docs/architecture/2차_구현_설계.md` 참조.
+- **D**(OAuth·설정) · **C**(템플릿) · **E**(통계) · **F**(메모) — `docs/architecture/2차_구현_설계.md` 참조.
