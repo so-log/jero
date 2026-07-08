@@ -109,6 +109,22 @@
   (`COVER[cover_color].gradient`)가 500 — 유효 CoverColor 키("blue")로 교체. (앱은 마법사가 항상 유효 키 사용.)
 - 검증: **전체 e2e 12/12**(account·budget·flows·home·realtime), `yarn run check`(81)·build 그린.
 
-## 남은 후속
+## 2차 A — 실시간 커서 (2026-07-08)
 
-- (백엔드 연동 ①~③ + 계정·지출편집·작은 UI·e2e 재작성 완료) — 다음 범위는 사용자와 협의.
+`docs/architecture/2차_구현_설계.md` A 항목. presence 와 **동일한 private 채널**의 broadcast 재사용.
+- `useTripRealtime`: 같은 채널에 `cursor:move`(payload `{userId,lat,lng,ts}`)/`cursor:leave` 추가 →
+  본인 제외하고 `cursorStore` 에 피어 좌표 기록(수신시각 기준 5s TTL prune), 송신 transport(send/leave)를 store 에 등록.
+  **반환 시그니처(onlineIds) 불변.**
+- `src/store/cursorStore.ts`(신규, 중립 전역): 피어 맵(TTL) + send/leave transport. workspace↔itinerary 공유라 전역.
+- `src/lib/throttle.ts`(신규): 선행+후행 throttle. PlanView 가 지도 mousemove 를 60ms throttle 해 송신.
+- `PlanView`: `useMockCursors` 제거 → `peersToCursors(cursorStore.peers, members)`(색·이름=presence 아바타 동일 소스)
+  로 `LiveCursor[]` 투영. 지도 포인터 이벤트를 store.send/leave 로 배선.
+- `TripMap`/`MapCanvas`: 도메인 무관 `onPointerMove(LatLng)`/`onPointerLeave`(GoogleMap onMouseMove/onMouseOut) 추가.
+  `LiveCursorLayer`/`cursors` 인터페이스 **불변**. `useMockCursors` 삭제.
+- 검증: 유닛(throttle·cursorStore·peersToCursors) + e2e `cursor.spec`(2계정 cursor:move/leave 수신·self 필터).
+  전체 e2e 13/13, `yarn run check`(88)·build 그린. **지도 위 렌더는 Google Maps 키(env) 필요** — 지도 마커 전반과 동일 제약(렌더 컴포넌트 무변경).
+- 새 마이그레이션 없음(broadcast 재사용).
+
+## 남은 후속(2차)
+
+- **D**(OAuth·설정) · **B**(폴더 관리) · **C**(템플릿) · **E**(통계) · **F**(메모) — `docs/architecture/2차_구현_설계.md` 참조.

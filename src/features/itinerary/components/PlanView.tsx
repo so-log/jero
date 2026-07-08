@@ -1,20 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
-import {
-  DEFAULT_CENTER,
-  TripMap,
-  useMockCursors,
-  type LatLng,
-} from "@/components/map";
+import { TripMap, type LatLng } from "@/components/map";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
+import { throttle } from "@/lib/throttle";
+import { useCursorStore } from "@/store/cursorStore";
 
-import { usePlacesQuery } from "../api/usePlacesQuery";
+import { useMembersQuery, usePlacesQuery } from "../api/usePlacesQuery";
 import { useReorderPlaces } from "../api/useReorderPlaces";
 import { useUnassignPlace } from "../api/useUnassignPlace";
 import {
   deriveDays,
+  peersToCursors,
   placesForDay,
   toSavedMarkers,
   toScheduledMarkers,
@@ -22,13 +20,17 @@ import {
 import { usePlanStore } from "../store/planStore";
 import { ItineraryPanel } from "./ItineraryPanel";
 
+/** 커서 송신 throttle 주기(ms) — mousemove 폭주를 브로드캐스트 절감(2차 A). */
+const CURSOR_THROTTLE_MS = 60;
+
 /**
- * 04 플랜 뷰 — 좌측 일정 패널 + 우측 지도(동선·마커·커서)를 조립(설계 §3).
- * 서버상태=usePlacesQuery/useMembersQuery, UI 상태=planStore. 지도 뷰모델은 순수 셀렉터로 투영.
- * 컴포넌트 직접 fetch 금지(§7.1) — 데이터는 features/itinerary/api 경유.
+ * 04 플랜 뷰 — 좌측 일정 패널 + 우측 지도(동선·마커·실시간 커서)를 조립(설계 §3).
+ * 서버상태=usePlacesQuery/useMembersQuery, UI 상태=planStore, 실시간 커서=cursorStore(useTripRealtime 송수신).
+ * 지도 뷰모델은 순수 셀렉터로 투영. 컴포넌트 직접 fetch 금지(§7.1) — 데이터는 features/itinerary/api 경유.
  */
 export function PlanView({ tripId }: { tripId: string }) {
   const { data, isLoading } = usePlacesQuery(tripId);
+  const { data: members = [] } = useMembersQuery(tripId);
 
   const { activeDay, filterToday, activeCategory, selectedId, select } =
     usePlanStore();
@@ -52,22 +54,23 @@ export function PlanView({ tripId }: { tripId: string }) {
     [data],
   );
 
-  // 커서 목 중심 — 당일 마커 중심(없으면 도쿄 기본). presence 연동 시 교체(useMockCursors TODO).
-  const center = useMemo<LatLng>(() => {
-    if (scheduledMarkers.length === 0) return DEFAULT_CENTER;
-    const sum = scheduledMarkers.reduce(
-      (acc, m) => ({
-        lat: acc.lat + m.position.lat,
-        lng: acc.lng + m.position.lng,
-      }),
-      { lat: 0, lng: 0 },
-    );
-    return {
-      lat: sum.lat / scheduledMarkers.length,
-      lng: sum.lng / scheduledMarkers.length,
-    };
-  }, [scheduledMarkers]);
-  const cursors = useMockCursors(center);
+  // 실시간 커서(2차 A): 피어 좌표(cursorStore) × 멤버(색·이름) → LiveCursor. 본인은 store 에서 제외됨.
+  const peers = useCursorStore((s) => s.peers);
+  const cursors = useMemo(() => peersToCursors(peers, members), [peers, members]);
+
+  // 지도 mousemove → throttle 후 브로드캐스트(송신 transport 는 useTripRealtime 이 store 에 등록).
+  const onPointerMove = useMemo(
+    () =>
+      throttle(
+        (pos: LatLng) => useCursorStore.getState().send?.(pos.lat, pos.lng),
+        CURSOR_THROTTLE_MS,
+      ),
+    [],
+  );
+  const onPointerLeave = useCallback(
+    () => useCursorStore.getState().leave?.(),
+    [],
+  );
 
   const canEdit = data ? roleCanEdit(data.trip.my_role) : false;
 
@@ -98,6 +101,8 @@ export function PlanView({ tripId }: { tripId: string }) {
           cursors={cursors}
           routeStyle="solid"
           onSelect={select}
+          onPointerMove={onPointerMove}
+          onPointerLeave={onPointerLeave}
           emptyOverlay={
             <div className="max-w-[280px] rounded-2xl border-[1.5px] border-dashed border-mute bg-white/85 px-6 py-4 text-center text-[13px] font-semibold leading-relaxed text-subtle backdrop-blur">
               장소를 추가하면

@@ -1,10 +1,12 @@
 import type {
+  LiveCursor,
   ScheduledMarker,
   SavedMarker as SavedMarkerVM,
 } from "@/components/map";
 import type { CategoryKey } from "@/lib/constants/category";
+import type { CursorPeer } from "@/store/cursorStore";
 
-import type { Day, PlaceDto, PlacesResponse } from "../types";
+import type { Day, MemberDto, PlaceDto, PlacesResponse } from "../types";
 
 /**
  * 순수 셀렉터 — 도메인(PlaceDto) → 화면/지도 뷰모델 투영(설계 §4 "혼용 금지", §10).
@@ -63,6 +65,26 @@ export function toScheduledMarkers(dayPlaces: PlaceDto[]): ScheduledMarker[] {
 }
 
 /** 좌표가 있는 저장 장소 → 다이아 마커. */
+/**
+ * 실시간 커서(2차 A) — cursorStore 피어(userId→좌표)를 멤버(이름·색)와 매핑해 LiveCursor[] 로 투영.
+ * 색·이름은 presence 아바타와 동일 소스(MemberDto = profile.avatar_color/name). 본인은 store 에서 이미 제외됨.
+ */
+export function peersToCursors(
+  peers: Record<string, CursorPeer>,
+  members: MemberDto[],
+): LiveCursor[] {
+  const byId = new Map(members.map((m) => [m.id, m]));
+  return Object.entries(peers).map(([userId, p]) => {
+    const m = byId.get(userId);
+    return {
+      id: userId,
+      name: m?.name ?? "멤버",
+      color: m?.color ?? "#8A94A6",
+      position: { lat: p.lat, lng: p.lng },
+    };
+  });
+}
+
 export function toSavedMarkers(savedPlaces: PlaceDto[]): SavedMarkerVM[] {
   return savedPlaces
     .filter((p) => p.lat != null && p.lng != null)

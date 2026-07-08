@@ -38,6 +38,8 @@ export function MapCanvas({
   center,
   zoom,
   onSelect,
+  onPointerMove,
+  onPointerLeave,
   emptyOverlay,
   legend,
   className,
@@ -115,6 +117,15 @@ export function MapCanvas({
         zoom={zoom ?? DEFAULT_ZOOM}
         onLoad={onLoad}
         onUnmount={onUnmount}
+        onMouseMove={
+          onPointerMove
+            ? (e) => {
+                if (e.latLng)
+                  onPointerMove({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+              }
+            : undefined
+        }
+        onMouseOut={onPointerLeave}
       >
         <RouteLine path={routePath} style={routeStyle} />
 
