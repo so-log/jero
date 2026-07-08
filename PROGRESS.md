@@ -88,7 +88,17 @@
   로 실제 `/share/{token}` 발급·복사 + "복사됨" 피드백/에러. 권한 변경 시 재발급.
 - 검증: 컴포넌트 테스트 3파일(+8) 통과, `yarn run check`(77)·build 그린.
 
+## 지출 편집(07) — 완료 (2026-07-08)
+
+- `useUpsertExpense` 를 **id 유무로 insert/update 분기** + expense_split delete→insert 재작성(인원 변경 반영).
+  fx_rate 는 저장 시점 스냅샷, day→spent_on 변환. 무효화 `['budget']` → 지표·차트·정산 재계산.
+- `overlayStore` 에 `expenseId` 추가 · `useExpenseActions.openEditExpense` · `ExpenseTable` 행 클릭 편집
+  · `ExpenseOverlay` expense 프리필(제목 "지출 편집") · `WorkspaceOverlays` 가 budget 캐시에서 expense 조회 전달.
+- **정산 충돌 규칙**: 편집은 `trip.settled_at` 을 건드리지 않는다 — 정산은 항상 지출에서 라이브 재계산
+  (`computeSettlements`)되어 충돌 없고, `settled_at` 은 UI 미표시 + owner 전용 RLS(editor 편집이 못 건드림). 마이그레이션 무변경.
+- 검증: 컴포넌트 테스트(+4, ExpenseOverlay 프리필·ExpenseTable 진입점) + **e2e `budget.spec.ts`**
+  (생성→금액 편집→분담 편집→정산/합계 재계산, 실 Supabase). `yarn run check`(81)·build 그린.
+
 ## 남은 후속
 
-- **지출 편집** — expense 편집 플로우.
 - **e2e flows 재작성** — 기존 stub 기반 `e2e/flows.spec.ts`·`home.spec.ts` 를 실연동 기준으로 갱신(현재는 깨진 상태).

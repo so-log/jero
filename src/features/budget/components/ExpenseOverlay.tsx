@@ -18,6 +18,7 @@ import {
   expenseSchema,
   type ExpenseForm,
 } from "../lib/expenseSchema";
+import type { ExpenseDto } from "../types";
 
 /**
  * ③ 지출 추가 · 중앙 모달(480px). expenseSchema 폼(금액>0·분담≥1) + 1인당 실시간 계산 + 환산 안내.
@@ -36,14 +37,18 @@ export function ExpenseOverlay({
   tripId,
   members,
   days,
+  expense,
 }: {
   open: boolean;
   onClose: () => void;
   tripId: string;
   members: MemberDto[];
   days: Day[];
+  /** 있으면 편집 모드(값 프리필). */
+  expense?: ExpenseDto;
 }) {
   const upsert = useUpsertExpense(tripId);
+  const isEdit = !!expense;
   const {
     control,
     register,
@@ -51,15 +56,28 @@ export function ExpenseOverlay({
     formState: { errors },
   } = useForm<ExpenseForm>({
     resolver: zodResolver(expenseSchema),
-    defaultValues: {
-      title: "",
-      amount: 0,
-      currency: "KRW",
-      category: "shopping",
-      payerId: members[0]?.id ?? "",
-      split: members.map((m) => m.id),
-      day: 1,
-    },
+    defaultValues: expense
+      ? {
+          title: expense.name,
+          amount: expense.amount,
+          currency: expense.currency === "JPY" ? "JPY" : "KRW",
+          category: expense.category,
+          payerId: expense.payer_id,
+          split: expense.split,
+          day: Math.max(
+            1,
+            days.findIndex((d) => d.date === expense.spent_on) + 1,
+          ),
+        }
+      : {
+          title: "",
+          amount: 0,
+          currency: "KRW",
+          category: "shopping",
+          payerId: members[0]?.id ?? "",
+          split: members.map((m) => m.id),
+          day: 1,
+        },
   });
 
   const amount = useWatch({ control, name: "amount" });
@@ -69,7 +87,7 @@ export function ExpenseOverlay({
   const perPerson = split.length > 0 ? Math.round(amount / split.length) : 0;
 
   const onSubmit = handleSubmit(async (values) => {
-    await upsert.mutateAsync(values);
+    await upsert.mutateAsync({ ...values, id: expense?.id });
     onClose();
   });
 
@@ -83,7 +101,7 @@ export function ExpenseOverlay({
       width={480}
       icon="wallet"
       iconTone="success"
-      title="지출 추가"
+      title={isEdit ? "지출 편집" : "지출 추가"}
       subtitle="도쿄, 우리끼리 4일"
       banner={bannerErr}
       loading={upsert.isPending}

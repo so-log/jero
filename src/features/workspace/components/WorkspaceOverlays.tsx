@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { ExpenseOverlay } from "@/features/budget";
+import { ExpenseOverlay, useBudgetQuery } from "@/features/budget";
 import { deriveDays, useMembersQuery, usePlacesQuery } from "@/features/itinerary";
 import { PlaceDetailOverlay } from "@/features/place";
 import { useTripQuery } from "@/features/trip";
@@ -15,10 +15,11 @@ import { ShareOverlay } from "./ShareOverlay";
  * 데이터는 04~07과 동일 쿼리(usePlacesQuery·useMembersQuery·useTripQuery) 재사용 — 컴포넌트 직접 fetch 없음(§7.1).
  */
 export function WorkspaceOverlays({ tripId }: { tripId: string }) {
-  const { active, placeId, close } = useOverlayStore();
+  const { active, placeId, expenseId, close } = useOverlayStore();
   const { data } = usePlacesQuery(tripId);
   const { data: members = [] } = useMembersQuery(tripId);
   const { data: trip } = useTripQuery(tripId);
+  const { data: budget } = useBudgetQuery(tripId);
 
   const days = useMemo(
     () => (data ? deriveDays(data.trip.start_date, data.trip.end_date) : []),
@@ -53,6 +54,9 @@ export function WorkspaceOverlays({ tripId }: { tripId: string }) {
     );
   }
   if (active === "expense") {
+    const expense = expenseId
+      ? budget?.expenses.find((e) => e.id === expenseId)
+      : undefined;
     return (
       <ExpenseOverlay
         open
@@ -60,6 +64,7 @@ export function WorkspaceOverlays({ tripId }: { tripId: string }) {
         tripId={tripId}
         members={members}
         days={days}
+        expense={expense}
       />
     );
   }
