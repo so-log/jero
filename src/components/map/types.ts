@@ -30,7 +30,7 @@ export interface SavedMarker {
 
 /**
  * 실시간 커서 — 타 멤버 포인터(이름·색). color 는 profile.avatar_color(계약 §4.1).
- * 현재는 목 데이터 골격(useMockCursors), Supabase Realtime presence 연동 전.
+ * 데이터는 상위(PlanView)가 cursorStore 피어 × 멤버로 투영해 넘긴다(2차 A, broadcast 실연동).
  */
 export interface LiveCursor {
   id: string;
@@ -63,6 +63,10 @@ export interface TripMapProps {
   zoom?: number;
   /** 마커/동선 선택 → selectedId 후보 전달. */
   onSelect?: (id: string) => void;
+  /** 지도 포인터 이동 → 지도 좌표(lat/lng). 실시간 커서 송신용(도메인 무관, 상위에서 throttle). */
+  onPointerMove?: (position: LatLng) => void;
+  /** 지도에서 포인터 이탈. 실시간 커서 leave 송신용. */
+  onPointerLeave?: () => void;
   /**
    * 등록 장소 0 일 때 지도 위 안내(예: "장소를 추가하면 …").
    * 도메인 카피를 components/map 에 두지 않으려고 슬롯으로 받는다(설계 §8).

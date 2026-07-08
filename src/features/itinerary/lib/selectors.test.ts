@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import { PLAN_FIXTURE } from "../api/fixtures";
+import type { MemberDto } from "../types";
 import {
   deriveDays,
   filterByCategory,
+  peersToCursors,
   placesForDay,
   reorderDayPlaces,
   toSavedMarkers,
@@ -81,5 +83,27 @@ describe("reorderDayPlaces — 드래그 재정렬(order_in_day 재부여)", () 
     );
     // Day2 는 영향 없음
     expect(placesForDay(result.places, "2026-04-19")).toEqual(day2Before);
+  });
+});
+
+describe("peersToCursors (2차 A 실시간 커서)", () => {
+  const members: MemberDto[] = [
+    { id: "u1", name: "민준", initial: "민", color: "#FF8A65", role: "editor", online: true },
+    { id: "u2", name: "서윤", initial: "서", color: "#3FC4A0", role: "viewer", online: false },
+  ];
+
+  it("피어 좌표를 멤버 색·이름과 매핑해 LiveCursor 로 투영", () => {
+    const cursors = peersToCursors(
+      { u1: { lat: 35.6, lng: 139.7, ts: 1 } },
+      members,
+    );
+    expect(cursors).toEqual([
+      { id: "u1", name: "민준", color: "#FF8A65", position: { lat: 35.6, lng: 139.7 } },
+    ]);
+  });
+
+  it("멤버 목록에 없는 피어는 기본 이름·색으로 폴백", () => {
+    const cursors = peersToCursors({ ghost: { lat: 1, lng: 2, ts: 1 } }, members);
+    expect(cursors[0]).toMatchObject({ id: "ghost", name: "멤버" });
   });
 });

@@ -4,7 +4,6 @@
  */
 export { TripMap } from "./TripMap";
 export { MapFallback } from "./MapFallback";
-export { useMockCursors } from "./useMockCursors";
 export { clusterMarkers, resolvePlaceLocation } from "./stubs";
 export {
   DEFAULT_CENTER,

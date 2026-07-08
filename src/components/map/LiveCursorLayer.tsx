@@ -6,8 +6,8 @@ import type { LiveCursor } from "./types";
 
 /**
  * 실시간 커서 레이어 — 타 멤버 포인터(화살표 + 이름 핀). 시안 buildOverlay(live cursors).
- * 현재는 목 데이터 골격(useMockCursors)으로 위치를 받는다. Supabase Realtime presence 연동 전(04 §11·§13).
- * 색은 멤버 식별 색(profile.avatar_color, 계약 §4.1) — 데이터로 들어온다.
+ * 위치·색·이름은 상위가 넘기는 cursors(LiveCursor[])로 렌더(2차 A: broadcast 실연동). 표현 전용·도메인 무관.
+ * 색은 멤버 식별 색(profile.avatar_color, 계약 §4.1).
  */
 interface LiveCursorLayerProps {
   map: google.maps.Map | null;
