@@ -122,7 +122,7 @@ export async function bootstrap(runId: string): Promise<RtData> {
     payload: {
       title: "실시간 검증 여행",
       icon: "plane",
-      cover: "#6E9CF2",
+      cover: "blue",
       country: "일본",
       region: "도쿄",
       start_date: date,
@@ -182,7 +182,7 @@ export async function createSoloOwner(
     payload: {
       title: "단독 소유 여행",
       icon: "plane",
-      cover: "#6E9CF2",
+      cover: "blue",
       start_date: "2026-09-01",
       end_date: "2026-09-02",
       startMode: "blank",

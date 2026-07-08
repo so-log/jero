@@ -99,6 +99,16 @@
 - 검증: 컴포넌트 테스트(+4, ExpenseOverlay 프리필·ExpenseTable 진입점) + **e2e `budget.spec.ts`**
   (생성→금액 편집→분담 편집→정산/합계 재계산, 실 Supabase). `yarn run check`(81)·build 그린.
 
+## e2e flows 재작성(실인증) — 완료 (2026-07-08)
+
+- `home.spec`: 랜딩 로그인 폼 렌더 · 미인증 보호라우트(/trips) 리다이렉트 · 인증 후 /trips 도달.
+- `flows.spec`: (1) 로그인→여행 생성 마법사(4단계, 캘린더 날짜 필수)→워크스페이스, (2) 장소 추가→일정
+  배정→예산 지출 관통. stub 단언(demo@trip.co·trip_1·fixture) 제거, service_role 부트스트랩 실인증 기반.
+- 티어다운: flows 는 A 소유 여행(부트스트랩 + 마법사 생성분) 전부 삭제 후 계정 정리.
+- **부수 발견/수정**: e2e 부트스트랩이 trip.cover 를 hex("#6E9CF2")로 넣어 /trips 목록의 `TripCard`
+  (`COVER[cover_color].gradient`)가 500 — 유효 CoverColor 키("blue")로 교체. (앱은 마법사가 항상 유효 키 사용.)
+- 검증: **전체 e2e 12/12**(account·budget·flows·home·realtime), `yarn run check`(81)·build 그린.
+
 ## 남은 후속
 
-- **e2e flows 재작성** — 기존 stub 기반 `e2e/flows.spec.ts`·`home.spec.ts` 를 실연동 기준으로 갱신(현재는 깨진 상태).
+- (백엔드 연동 ①~③ + 계정·지출편집·작은 UI·e2e 재작성 완료) — 다음 범위는 사용자와 협의.
