@@ -16,6 +16,7 @@ import {
   sortPlaces,
   toSavedMapMarkers,
 } from "../lib/selectors";
+import { useDeleteFolder, useUpsertFolder } from "../api/useFolders";
 import { usePlacesStore } from "../store/placesStore";
 import { ALL_FOLDER } from "../types";
 import { FolderSidebar } from "./FolderSidebar";
@@ -31,6 +32,8 @@ export function PlacesView({ tripId }: { tripId: string }) {
   const { data: members = [] } = useMembersQuery(tripId);
   const { folderId, query, sort, selectedId, select, setFolder } =
     usePlacesStore();
+  const upsertFolder = useUpsertFolder(tripId);
+  const deleteFolder = useDeleteFolder(tripId);
 
   const saved = useMemo(() => data?.saved_places ?? [], [data]);
   const folders = data?.folders ?? [];
@@ -65,6 +68,20 @@ export function PlacesView({ tripId }: { tripId: string }) {
         folderId={folderId}
         canEdit={canEdit}
         onSelect={setFolder}
+        onCreateFolder={
+          canEdit ? (name) => upsertFolder.mutate({ name }) : undefined
+        }
+        onRenameFolder={
+          canEdit ? (id, name) => upsertFolder.mutate({ id, name }) : undefined
+        }
+        onDeleteFolder={
+          canEdit
+            ? (id) => {
+                if (folderId === id) setFolder(ALL_FOLDER); // 활성 폴더 삭제 → 전체로
+                deleteFolder.mutate(id);
+              }
+            : undefined
+        }
       />
       <PlaceList
         tripId={tripId}
