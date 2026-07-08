@@ -145,6 +145,18 @@
 - 검증: 유닛(useCreateTrip templateId/무효화) + e2e template.spec(템플릿 선택→생성→센소지·명소 폴더 복제 렌더, 빈 여행 회귀).
   전체 e2e 16/16, `yarn run check`(99)·build 그린. Supabase 마이그레이션 0001~0005 적용됨.
 
+## 2차 E — 여행 통계 (2026-07-08)
+
+`docs/architecture/2차_구현_설계.md` E + 기획 15. **신규 쿼리·마이그레이션 없음**(usePlacesQuery 재사용).
+- `features/stats/lib/stats.ts`: `computeTripStats(places, trip)` 순수 셀렉터 → `totalDistanceKm`(연속 일정 좌표
+  Haversine 합, 좌표 없는 장소 제외), `perDay[]`, `byCategory[]`(pct), `byArea[]`, placeCount/tripDays/avgPerDay.
+  `haversineKm` 포함. deriveDays 재사용(공유 계약).
+- `features/stats/components`: StatsView(usePlacesQuery 재사용, 빈/로딩), StatCard, DistanceTrend(Recharts 막대),
+  CategoryPie(Recharts 도넛, **카테고리 색 = CATEGORY 단일 출처**). 예산 대시보드(07) 톤 재사용(import 아님·경계 준수).
+- 라우트 `?view=stats` 분기 + ViewSegment 5번째 '통계'(icon activity). 전 멤버(viewer 포함) 열람.
+- 검증: 유닛(computeTripStats 거리·분포·빈 + haversine) + 컴포넌트(StatsView 렌더·빈·로딩) + e2e stats.spec(세그먼트→카드·차트 렌더).
+  전체 e2e 17/17, `yarn run check`(106)·build 그린.
+
 ## 남은 후속(2차)
 
-- **D**(OAuth·설정) · **E**(통계) · **F**(메모) — `docs/architecture/2차_구현_설계.md` 참조.
+- **D**(OAuth·설정) · **F**(메모) — `docs/architecture/2차_구현_설계.md` 참조.

@@ -1,6 +1,7 @@
 import { BudgetView } from "@/features/budget";
 import { CalendarView, PlanView } from "@/features/itinerary";
 import { PlacesView } from "@/features/place";
+import { StatsView } from "@/features/stats";
 import { WorkspaceShell } from "@/features/workspace";
 
 /**
@@ -28,6 +29,8 @@ export default async function TripWorkspacePage({
         <PlacesView tripId={id} />
       ) : view === "budget" ? (
         <BudgetView tripId={id} />
+      ) : view === "stats" ? (
+        <StatsView tripId={id} />
       ) : (
         <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-faint">
           &lsquo;{view}&rsquo; 뷰는 준비 중이에요

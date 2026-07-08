@@ -6,16 +6,17 @@ import { Icon, type IconName } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
 /**
- * 워크스페이스 뷰 세그먼트(플랜/일정표/장소/예산) — 설계 §2. 시안 플랜 뷰 중앙 토글.
+ * 워크스페이스 뷰 세그먼트(플랜/일정표/장소/예산/통계) — 설계 §2 · 2차 E. 시안 플랜 뷰 중앙 토글.
  * `?view=` 쿼리만 바꿔 본문 교체(셸·데이터 유지). 현재 뷰 강조.
  */
-type ViewKey = "plan" | "calendar" | "places" | "budget";
+type ViewKey = "plan" | "calendar" | "places" | "budget" | "stats";
 
 const VIEWS: { value: ViewKey; label: string; icon: IconName }[] = [
   { value: "plan", label: "플랜", icon: "route" },
   { value: "calendar", label: "일정표", icon: "calendar" },
   { value: "places", label: "장소", icon: "map-pin" },
   { value: "budget", label: "예산", icon: "wallet" },
+  { value: "stats", label: "통계", icon: "activity" },
 ];
 
 export function ViewSegment() {
