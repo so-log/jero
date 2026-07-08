@@ -10,14 +10,24 @@ interface OverlayState {
   active: OverlayType | null;
   /** 편집 대상 place id(있으면 편집, 없으면 추가). */
   placeId: string | null;
-  open: (type: OverlayType, payload?: { placeId?: string }) => void;
+  /** 편집 대상 expense id(있으면 편집, 없으면 추가). */
+  expenseId: string | null;
+  open: (
+    type: OverlayType,
+    payload?: { placeId?: string; expenseId?: string },
+  ) => void;
   close: () => void;
 }
 
 export const useOverlayStore = create<OverlayState>((set) => ({
   active: null,
   placeId: null,
+  expenseId: null,
   open: (type, payload) =>
-    set({ active: type, placeId: payload?.placeId ?? null }),
-  close: () => set({ active: null, placeId: null }),
+    set({
+      active: type,
+      placeId: payload?.placeId ?? null,
+      expenseId: payload?.expenseId ?? null,
+    }),
+  close: () => set({ active: null, placeId: null, expenseId: null }),
 }));

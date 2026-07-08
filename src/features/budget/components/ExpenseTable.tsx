@@ -19,6 +19,8 @@ interface ExpenseTableProps {
   members: MemberDto[];
   canEdit: boolean;
   onAddExpense: () => void;
+  /** 행 클릭 편집(editor+). 없으면 행은 비활성(읽기 전용). */
+  onEditExpense?: (id: string) => void;
 }
 
 const COLS = "grid-cols-[78px_1fr_96px_84px_110px]";
@@ -28,6 +30,7 @@ export function ExpenseTable({
   members,
   canEdit,
   onAddExpense,
+  onEditExpense,
 }: ExpenseTableProps) {
   const memberById = new Map(members.map((m) => [m.id, m]));
   const formatDate = (iso: string) => {
@@ -70,10 +73,29 @@ export function ExpenseTable({
       <div className="max-h-[236px] overflow-y-auto">
         {expenses.map((e) => {
           const payer = memberById.get(e.payer_id);
+          const editable = !!onEditExpense;
           return (
             <div
               key={e.id}
-              className={`grid ${COLS} items-center gap-3 border-b border-line px-5 py-3 last:border-0 hover:bg-surface`}
+              role={editable ? "button" : undefined}
+              tabIndex={editable ? 0 : undefined}
+              aria-label={editable ? `${e.name} 편집` : undefined}
+              onClick={editable ? () => onEditExpense(e.id) : undefined}
+              onKeyDown={
+                editable
+                  ? (ev) => {
+                      if (ev.key === "Enter" || ev.key === " ") {
+                        ev.preventDefault();
+                        onEditExpense(e.id);
+                      }
+                    }
+                  : undefined
+              }
+              className={`grid ${COLS} items-center gap-3 border-b border-line px-5 py-3 last:border-0 hover:bg-surface ${
+                editable
+                  ? "cursor-pointer focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+                  : ""
+              }`}
             >
               <span className="text-[12.5px] font-semibold text-faint">
                 {formatDate(e.spent_on)}
