@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 import { useDeletePlace, useUpsertPlace } from "../api/useUpsertPlace";
 import { placeSchema, type PlaceForm } from "../lib/placeSchema";
+import { MemoField } from "./MemoField";
 
 /**
  * ① 장소 상세 · 우측 패널(432px). placeSchema 폼 + "일정에 추가" + 삭제(ConfirmDialog 재사용).
@@ -42,6 +43,7 @@ export function PlaceDetailOverlay({
   const {
     control,
     register,
+    setValue,
     handleSubmit,
     formState: { errors },
   } = useForm<PlaceForm>({
@@ -156,11 +158,13 @@ export function PlaceDetailOverlay({
       </Field>
 
       <Field label="메모">
-        <textarea
-          {...register("memo")}
-          rows={3}
-          placeholder="함께 보면 좋은 메모를 남겨보세요"
-          className="w-full resize-none rounded-md border-[1.5px] border-line-strong bg-background px-3.5 py-2.5 text-sm font-medium leading-relaxed text-ink outline-none focus:border-primary focus:shadow-focus"
+        {/* 2차 F: 기존 장소는 인라인 자동저장(placeId), 신규는 폼값만 동기화(제출 시 저장). */}
+        <MemoField
+          tripId={tripId}
+          placeId={place?.id}
+          initial={place?.memo ?? ""}
+          canEdit
+          onChange={(v) => setValue("memo", v)}
         />
       </Field>
 

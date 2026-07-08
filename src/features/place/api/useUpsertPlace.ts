@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import type { PlacesResponse } from "@/features/itinerary";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabase } from "@/lib/supabase/env";
 
@@ -64,6 +65,51 @@ export function useDeletePlace(tripId: string) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["places", tripId] });
+    },
+  });
+}
+
+/**
+ * 장소 메모 인라인 자동저장 seam(2차 F) — **memo 만 patch**. MemoField 가 debounce 후 호출.
+ * 낙관적 setQueryData(['places', tripId]) 로 즉시 반영, 실패 시 롤백, settle 후 재동기화(무효화 유지).
+ * editor+ 권한은 서버 RLS(place_write)가 강제(§8.2). env 가드: 키 없으면 낙관 캐시만.
+ */
+export function useAutosaveMemo(tripId: string) {
+  const queryClient = useQueryClient();
+  const key = ["places", tripId];
+  return useMutation<
+    void,
+    Error,
+    { placeId: string; memo: string },
+    { previous?: PlacesResponse }
+  >({
+    mutationFn: async ({ placeId, memo }) => {
+      if (!hasSupabase) return;
+      const { error } = await createClient()
+        .from("place")
+        .update({ memo: memo || null })
+        .eq("id", placeId);
+      if (error) throw new Error("메모를 저장하지 못했어요.");
+    },
+    onMutate: async ({ placeId, memo }) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<PlacesResponse>(key);
+      if (previous) {
+        const patch = (p: (typeof previous.places)[number]) =>
+          p.id === placeId ? { ...p, memo: memo || null } : p;
+        queryClient.setQueryData<PlacesResponse>(key, {
+          ...previous,
+          places: previous.places.map(patch),
+          saved_places: previous.saved_places.map(patch),
+        });
+      }
+      return { previous };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(key, ctx.previous);
+    },
+    onSettled: () => {
+      if (hasSupabase) void queryClient.invalidateQueries({ queryKey: key });
     },
   });
 }

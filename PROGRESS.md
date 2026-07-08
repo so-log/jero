@@ -157,6 +157,16 @@
 - 검증: 유닛(computeTripStats 거리·분포·빈 + haversine) + 컴포넌트(StatsView 렌더·빈·로딩) + e2e stats.spec(세그먼트→카드·차트 렌더).
   전체 e2e 17/17, `yarn run check`(106)·build 그린.
 
+## 2차 F — 장소 메모 인라인 자동저장 (2026-07-08)
+
+`docs/architecture/2차_구현_설계.md` F. **새 마이그레이션 없음.**
+- `useAutosaveMemo(tripId)`(useUpsertPlace.ts): **memo 만 patch** + 낙관적 setQueryData(['places',id]) + 실패 롤백 + settle 무효화.
+- `MemoField`: 인라인 textarea + **debounce 600ms**(useEffect+setTimeout, 입력마다 리셋 → 멈춘 뒤 1회 저장) + 상태("저장 중…"/"저장됨").
+  placeId 있으면 자동저장(기존 장소), 없으면 onChange 로 폼 동기화(신규 → 제출 저장). viewer(canEdit=false) 읽기 전용.
+- `PlaceDetailOverlay`: 메모 폼 textarea → `MemoField`(placeId=place?.id, onChange=setValue('memo') 로 제출 되돌림 방지).
+- 검증: 유닛(useAutosaveMemo 낙관/롤백) + 컴포넌트(MemoField 디바운스 1회 저장·저장됨·viewer·신규 onChange).
+  전체 e2e 17/17, `yarn run check`(112)·build 그린.
+
 ## 남은 후속(2차)
 
-- **D**(OAuth·설정) · **F**(메모) — `docs/architecture/2차_구현_설계.md` 참조.
+- **D**(OAuth·설정) — `docs/architecture/2차_구현_설계.md` 참조. (A·B·C·E·F 완료)
