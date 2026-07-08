@@ -133,6 +133,18 @@
 - `FolderSidebar`: "폴더 추가" 인라인 입력 + 폴더별 더보기(이름변경/삭제, ConfirmDialog) 배선. viewer(canEdit=false)는 관리 UI 비노출. 개수는 항상 표시(더보기는 hover 오버레이). `PlacesView` 가 훅→콜백 배선(활성 폴더 삭제 시 전체로).
 - 검증: 유닛(useFolders 낙관/롤백 create·rename·delete, FolderSidebar 상호작용·viewer) + e2e `folder.spec`(추가→개수→삭제→미분류, 실 Supabase ON DELETE SET NULL). 전체 e2e 14/14, `yarn run check`(97)·build 그린.
 
+## 2차 C — 템플릿 복제로 시작 (2026-07-08)
+
+`docs/architecture/2차_구현_설계.md` C 항목. **방식 (a) 시드 테이블 + 서버 복제.**
+- **마이그레이션 `0005_templates.sql`**(Dashboard 적용 완료): `trip_template`/`template_folder`/
+  `template_place`(id=슬러그 text) + 공개 read RLS(쓰기 없음) + 시드 2종(도쿄 클래식 4일 tpl-tokyo 10곳·폴더3·Day1~4,
+  제주 드라이브 3일 tpl-jeju 8곳·폴더3·Day1~3) + **create_trip RPC 확장**(`create or replace`):
+  startMode='template'+templateId → folder→place 복제, Day 는 새 여행 start_date 기준 오프셋 매핑, security definer owner=호출자.
+- 프론트: `useCreateTrip` payload 에 templateId 전달 + onSuccess `['places',id]` 무효화. `TRIP_TEMPLATES` 시드 2종과 일치(osaka 제거).
+  Step4Mode 는 기존 templateId 폼값 그대로 → RPC TODO 해소로 실제 복제 동작.
+- 검증: 유닛(useCreateTrip templateId/무효화) + e2e template.spec(템플릿 선택→생성→센소지·명소 폴더 복제 렌더, 빈 여행 회귀).
+  전체 e2e 16/16, `yarn run check`(99)·build 그린. Supabase 마이그레이션 0001~0005 적용됨.
+
 ## 남은 후속(2차)
 
-- **D**(OAuth·설정) · **C**(템플릿) · **E**(통계) · **F**(메모) — `docs/architecture/2차_구현_설계.md` 참조.
+- **D**(OAuth·설정) · **E**(통계) · **F**(메모) — `docs/architecture/2차_구현_설계.md` 참조.

@@ -31,6 +31,7 @@ export function useCreateTrip() {
           start_date: input.start_date,
           end_date: input.end_date,
           startMode: input.startMode,
+          templateId: input.templateId,
           members: input.members,
         },
       });
@@ -50,6 +51,8 @@ export function useCreateTrip() {
       };
       queryClient.setQueryData(["trip", id], seed);
       void queryClient.invalidateQueries({ queryKey: ["trips"] });
+      // 템플릿 복제 시 새 trip 의 장소/폴더가 서버에서 생성됨 → 워크스페이스 진입 시 최신 반영.
+      void queryClient.invalidateQueries({ queryKey: ["places", id] });
     },
   });
 }
