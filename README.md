@@ -16,6 +16,11 @@
 ![Google Maps](https://img.shields.io/badge/Google_Maps-vector-4285F4?logo=googlemaps&logoColor=white)
 ![Vitest](https://img.shields.io/badge/tested_with-Vitest_%2B_Playwright-6E9F18?logo=vitest&logoColor=white)
 
+![Lighthouse](https://img.shields.io/badge/Lighthouse-성능_100_·_접근성_100_·_SEO_100-0CCE6B?logo=lighthouse&logoColor=white)
+
+> **Lighthouse(프로덕션 `/`, 데스크톱)**: 성능 **100** · 접근성 **100** · 권장사항 **100** · SEO **100**.
+> 측정으로 병목(폰트 2MB)을 특정해 **동적 서브셋**으로 개선 → LCP 2.3s→**0.6s**, 성능 87→**100**. 상세는 [`docs/tech-decisions.md`](./docs/tech-decisions.md) §8.
+
 ---
 
 **제이로**(`J`=MBTI 계획형 + `路`=길·동선, 발음은 "제일로")는 친구들과 함께 여행 일정을 짜고
