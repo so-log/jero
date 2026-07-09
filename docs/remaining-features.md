@@ -109,7 +109,8 @@
 ## 6. 유지보수 · 후속 (구현과 별개)
 
 - **`middleware` → `proxy` 이전(Next 16)**: `next build` 시 "middleware 파일 규약 deprecated, proxy 사용 권고" 경고. 동작에는 문제없으나 Next 권고에 맞춰 `src/middleware.ts`를 `proxy` 규약으로 이전 필요(소규모). ([안내](https://nextjs.org/docs/messages/middleware-to-proxy))
-- **팜플렛 후속**(`architecture/팜플렛_설계.md` §13): 서버 PDF 승격(Node 22) · 준비물 편집 인쇄 반영 · AI 테마 추천.
+- **팜플렛 서버 PDF 승격 — 완료**(2026-07-09, `architecture/팜플렛_설계.md` §5·§13): `POST /api/pamphlet/export`(`puppeteer-core`+`@sparticuz/chromium` headless)로 A4 무인 PDF 다운로드 전환, 실패 시 `window.print()` 폴백. 남은 팜플렛 후속: 준비물 편집분 인쇄 반영 · AI 테마 추천.
+- **Node ≥ 22.12 필요**: 툴체인(vitest 4/@vitejs/plugin-react 6, `std-env` ESM)이 `require(ESM)`(Node ≥22.12 기본)을 요구. 22.11 이하에서는 `yarn run check`(vitest) 실행 불가 → 개발/CI Node 를 22.12+ 로.
 - **번들 최적화 후보**(`tech-decisions.md` §8.1): Recharts를 차트 화면(예산·통계)에서만 동적 import로 코드 스플리팅.
 - **폰트 최적화(성능 1순위, `tech-decisions.md` §8.3)**: Pretendard Variable woff2가 페이지 전송량의 ~85%(≈2.0MB)·LCP 주원인. **한글 subset woff2로 교체** → 폰트 대폭 감축 + LCP 개선. (`src/app/fonts/` 교체)
 - **접근성 개선(Lighthouse 90 → 상향, §8.3)**: 색 대비 AA 미달 토큰(`text-faint`·`text-mute`·primary 버튼) 명도 상향, `<main>` 랜드마크 추가, 비밀번호 보기 버튼 타깃 24px+.
