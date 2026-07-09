@@ -73,4 +73,13 @@ export type IconName =
   | "more-horizontal"
   | "log-out"
   | "plane"
-  | "arrow-up-down";
+  | "arrow-up-down"
+  // 팜플렛(2차)
+  | "image"
+  | "luggage"
+  | "compass"
+  | "list-checks"
+  | "file-text"
+  | "qr-code"
+  | "download"
+  | "inbox";

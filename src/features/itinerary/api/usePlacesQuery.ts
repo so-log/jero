@@ -53,6 +53,8 @@ interface TripHeaderRow {
     start_date: string;
     end_date: string;
     cover_icon: string;
+    country: string | null;
+    region: string | null;
   } | null;
 }
 
@@ -77,7 +79,9 @@ export function usePlacesQuery(tripId: string) {
       const [headerRes, placesRes, foldersRes] = await Promise.all([
         supabase
           .from("trip_member")
-          .select("role, trip:trip_id ( id, title, start_date, end_date, cover_icon )")
+          .select(
+            "role, trip:trip_id ( id, title, start_date, end_date, cover_icon, country, region )",
+          )
           .eq("trip_id", tripId)
           .eq("user_id", user.id)
           .limit(1)
@@ -110,6 +114,8 @@ export function usePlacesQuery(tripId: string) {
         end_date: header.trip.end_date,
         my_role: header.role,
         cover_icon: header.trip.cover_icon as IconName,
+        country: header.trip.country,
+        region: header.trip.region,
       };
       const all = (placesRes.data ?? []).map(toPlace);
       const folders: FolderDto[] = (foldersRes.data ?? []).map((f) => ({

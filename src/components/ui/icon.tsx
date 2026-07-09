@@ -65,6 +65,14 @@ import {
   LogOut,
   Plane,
   ArrowUpDown,
+  Image as ImageIcon,
+  Luggage,
+  Compass,
+  ListChecks,
+  FileText,
+  QrCode,
+  Download,
+  Inbox,
   type LucideIcon,
   type LucideProps,
 } from "lucide-react";
@@ -143,6 +151,14 @@ const ICONS = {
   "log-out": LogOut,
   plane: Plane,
   "arrow-up-down": ArrowUpDown,
+  image: ImageIcon,
+  luggage: Luggage,
+  compass: Compass,
+  "list-checks": ListChecks,
+  "file-text": FileText,
+  "qr-code": QrCode,
+  download: Download,
+  inbox: Inbox,
 } satisfies Record<IconName, LucideIcon>;
 
 export interface IconProps extends Omit<LucideProps, "ref"> {

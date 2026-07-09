@@ -167,6 +167,20 @@
 - 검증: 유닛(useAutosaveMemo 낙관/롤백) + 컴포넌트(MemoField 디바운스 1회 저장·저장됨·viewer·신규 onChange).
   전체 e2e 17/17, `yarn run check`(112)·build 그린.
 
-## 남은 후속(2차)
+## 팜플렛 내보내기 1단계 (2026-07-09)
 
-- **D**(OAuth·설정) — `docs/architecture/2차_구현_설계.md` 참조. (A·B·C·E·F 완료)
+`docs/architecture/팜플렛_설계.md` §12 1~4. **PDF 내보내기(§5)·AI(§7)는 다음 단계.** 새 마이그레이션 없음.
+- 의존성: **qrcode**(+@types) 추가. 아이콘 8종(image/luggage/compass/list-checks/file-text/qr-code/download/inbox).
+- `lib/constants/pamphletThemes.ts`: 12테마(패턴6+씬6) 단일 출처. `features/pamphlet/lib/art.tsx`: pattern()·sceneSvg()·miniSceneSvg()
+  결정적 SVG(팔레트 색만, 유저입력 없음 → dangerouslySetInnerHTML 안전; 텍스트는 React children).
+- 패널: CoverPanel(씬/패턴)·DayPanel·PrepPanel·IntroPanel·QrPanel + PanelShell/JeroMark. `lib/faces.ts`(섹션→면), `lib/prep.ts`.
+- `api/usePamphletData.ts`(usePlacesQuery 재사용 → 표지·Day·하이라이트), `api/useQrCode.ts`(issueShareLink 재사용 + qrcode SVG).
+- `PamphletPreview`(미리보기/인쇄 공용), `SettingPanel`(섹션·테마·준비물), `PamphletExportView`(2분할+viewer 게이트), store `pamphletStore`(Zustand).
+- 라우트 `/trips/[id]/pamphlet`. **공유 계약 확장**: TripDto/usePlacesQuery 에 country/region 추가(additive).
+- 검증: 유닛(faces) + 컴포넌트(SettingPanel 토글·테마·빈, PamphletPreview 렌더/토글/빈) + e2e pamphlet.spec(진입·렌더·테마전환).
+  시안 대조(1280px 스크린샷) 일치. 전체 e2e 18/18, `yarn run check`(125)·build 그린.
+
+## 남은 후속
+
+- **팜플렛 2단계**: 인쇄 라우트 + PDF 내보내기(서버 headless 또는 print 폴백, §5) · AI 테마 추천(§7) · 워크스페이스 진입 버튼.
+- **2차 D**(OAuth·설정) — `docs/architecture/2차_구현_설계.md`. (A·B·C·E·F + 팜플렛 1단계 완료)

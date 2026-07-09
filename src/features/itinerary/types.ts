@@ -50,6 +50,9 @@ export interface TripDto {
   end_date: string;
   my_role: Role;
   cover_icon: IconName;
+  /** 나라·지역(표지·헤더 표시용, 선택). 팜플렛(2차)에서 사용. */
+  country?: string | null;
+  region?: string | null;
 }
 
 /** usePlacesQuery(trip_id) 응답 — 04·05·06 공유 단일 소스(설계 §4). */
