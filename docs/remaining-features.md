@@ -103,3 +103,14 @@
 6. **F 메모 자동저장** — 마무리 polish.
 
 > 순서는 제안일 뿐이며, 하나씩 골라 진행하면 된다.
+
+---
+
+## 6. 유지보수 · 후속 (구현과 별개)
+
+- **`middleware` → `proxy` 이전(Next 16)**: `next build` 시 "middleware 파일 규약 deprecated, proxy 사용 권고" 경고. 동작에는 문제없으나 Next 권고에 맞춰 `src/middleware.ts`를 `proxy` 규약으로 이전 필요(소규모). ([안내](https://nextjs.org/docs/messages/middleware-to-proxy))
+- **팜플렛 후속**(`architecture/팜플렛_설계.md` §13): 서버 PDF 승격(Node 22) · 준비물 편집 인쇄 반영 · AI 테마 추천.
+- **번들 최적화 후보**(`tech-decisions.md` §8.1): Recharts를 차트 화면(예산·통계)에서만 동적 import로 코드 스플리팅.
+- **폰트 최적화(성능 1순위, `tech-decisions.md` §8.3)**: Pretendard Variable woff2가 페이지 전송량의 ~85%(≈2.0MB)·LCP 주원인. **한글 subset woff2로 교체** → 폰트 대폭 감축 + LCP 개선. (`src/app/fonts/` 교체)
+- **접근성 개선(Lighthouse 90 → 상향, §8.3)**: 색 대비 AA 미달 토큰(`text-faint`·`text-mute`·primary 버튼) 명도 상향, `<main>` 랜드마크 추가, 비밀번호 보기 버튼 타깃 24px+.
+- **성능 지표는 측정 완료**(§8.1~8.3): 번들·빌드·Lighthouse 반영됨. Lighthouse 점수 성능90·접근성90·권장96·SEO100.
