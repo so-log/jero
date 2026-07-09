@@ -16,7 +16,7 @@ interface RouteLineProps {
 }
 
 export function RouteLine({ path, style = "solid" }: RouteLineProps) {
-  const color = useCssVar("--primary", "#3b7df0");
+  const color = useCssVar("--primary", "#3172e3");
 
   const options = useMemo<google.maps.PolylineOptions>(() => {
     if (style === "dashed") {

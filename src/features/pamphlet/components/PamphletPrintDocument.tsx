@@ -87,7 +87,7 @@ export function PamphletPrintDocument({
         <button
           type="button"
           onClick={() => window.print()}
-          style={{ height: 40, padding: "0 18px", borderRadius: 10, border: "none", background: "#3B7DF0", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
+          style={{ height: 40, padding: "0 18px", borderRadius: 10, border: "none", background: "#3172E3", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer" }}
         >
           인쇄 · PDF로 저장
         </button>

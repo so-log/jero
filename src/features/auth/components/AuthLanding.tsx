@@ -16,7 +16,7 @@ const FEATURES: { icon: IconName; bg: string; fg: string; title: string; desc: s
 
 export function AuthLanding() {
   return (
-    <div className="flex min-h-screen w-full">
+    <main className="flex min-h-screen w-full">
       {/* 좌측 — 브랜드/가치 */}
       <div
         className="relative hidden w-[660px] flex-none flex-col overflow-hidden p-[48px_52px] lg:flex"
@@ -71,6 +71,6 @@ export function AuthLanding() {
 
       {/* 우측 — 인증 */}
       <AuthPanel />
-    </div>
+    </main>
   );
 }

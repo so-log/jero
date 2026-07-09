@@ -40,7 +40,7 @@ export function WorkspaceShell({
       ) : (
         <div className="h-[66px] flex-none border-b border-line bg-background" />
       )}
-      <div className="flex min-h-0 flex-1">{children}</div>
+      <main className="flex min-h-0 flex-1">{children}</main>
       <WorkspaceOverlays tripId={tripId} />
     </div>
   );

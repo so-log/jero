@@ -24,7 +24,7 @@ export function DailyTrend({
   data: DayTotal[];
   dailyAvg: number;
 }) {
-  const primary = useCssVar("--primary", "#3b7df0");
+  const primary = useCssVar("--primary", "#3172e3");
 
   return (
     <div className="flex flex-col gap-1.5 rounded-panel border border-line bg-background p-5 shadow-card">

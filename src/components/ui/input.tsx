@@ -71,7 +71,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         {input}
         {endAdornment && (
-          <span className="absolute right-3.5 flex text-mute">
+          <span className="absolute inset-y-0 right-2.5 flex items-center text-mute">
             {endAdornment}
           </span>
         )}

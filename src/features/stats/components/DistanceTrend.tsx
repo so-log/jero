@@ -17,7 +17,7 @@ import type { DayDistance } from "../lib/stats";
  * 데이터(DayDistance[])는 셀렉터 결과만 받는다(차트는 계산하지 않음).
  */
 export function DistanceTrend({ data }: { data: DayDistance[] }) {
-  const primary = useCssVar("--primary", "#3b7df0");
+  const primary = useCssVar("--primary", "#3172e3");
 
   return (
     <div className="flex flex-col gap-1.5 rounded-panel border border-line bg-background p-5 shadow-card">

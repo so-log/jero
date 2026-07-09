@@ -159,7 +159,7 @@ export function AuthPanel() {
                   type="button"
                   aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 보기"}
                   onClick={() => setShowPw((v) => !v)}
-                  className="flex text-mute hover:text-subtle"
+                  className="flex size-6 items-center justify-center text-mute hover:text-subtle"
                 >
                   <Icon name={showPw ? "eye-off" : "eye"} size={16} />
                 </button>

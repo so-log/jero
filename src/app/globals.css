@@ -28,8 +28,8 @@
   --color-ink: #1b2030; /* 제목 */
   --color-body: #2b313d; /* 본문 강조 */
   --color-subtle: #5a606b; /* 보조 텍스트·아이콘 */
-  --color-faint: #8a909b; /* 흐린 텍스트 */
-  --color-mute: #b6bcc6; /* 가장 흐림 */
+  --color-faint: #6b7280; /* 흐린 텍스트 — WCAG AA 상향(구 #8a909b) */
+  --color-mute: #71767f; /* 가장 흐림 — WCAG AA 상향(구 #b6bcc6) */
 
   /* ── Lines & surfaces ── */
   --color-line: #eceef1; /* 기본 구분선 */
@@ -62,8 +62,8 @@
     0 24px 60px -26px rgba(16, 24, 40, 0.28);
   --shadow-lift: 0 14px 32px -12px rgba(16, 24, 40, 0.22); /* 카드 hover */
   --shadow-modal: 0 20px 50px -20px rgba(16, 24, 40, 0.3);
-  --shadow-primary: 0 4px 10px -2px rgba(59, 125, 240, 0.5);
-  --shadow-focus: 0 0 0 3px rgba(59, 125, 240, 0.13); /* 포커스 링 */
+  --shadow-primary: 0 4px 10px -2px rgba(49, 114, 227, 0.5);
+  --shadow-focus: 0 0 0 3px rgba(49, 114, 227, 0.13); /* 포커스 링 */
 }
 
 /* shadcn 표준 슬롯 → jero 토큰 매핑 (유틸 생성) */
@@ -109,19 +109,19 @@
   --card-foreground: #1b2030;
   --popover: #ffffff;
   --popover-foreground: #1b2030;
-  --primary: #3b7df0;
+  --primary: #3172e3;
   --primary-foreground: #ffffff;
   --secondary: #f1f3f6;
   --secondary-foreground: #5a606b;
   --muted: #f1f3f6;
-  --muted-foreground: #8a909b;
+  --muted-foreground: #6b7280;
   --accent: #eaf1fe;
   --accent-foreground: #2f6fe0;
   --destructive: #e8615c;
   --border: #eceef1;
   --input: #e2e5ea;
-  --ring: #3b7df0;
-  --chart-1: #3b7df0;
+  --ring: #3172e3;
+  --chart-1: #3172e3;
   --chart-2: #1fa078;
   --chart-3: #c5893a;
   --chart-4: #b07cf0;
@@ -129,12 +129,12 @@
   --radius: 0.8125rem; /* 13px — shadcn 내부 계산 기준 */
   --sidebar: #fbfbfc;
   --sidebar-foreground: #1b2030;
-  --sidebar-primary: #3b7df0;
+  --sidebar-primary: #3172e3;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #eaf1fe;
   --sidebar-accent-foreground: #2f6fe0;
   --sidebar-border: #eceef1;
-  --sidebar-ring: #3b7df0;
+  --sidebar-ring: #3172e3;
 }
 
 @layer base {
