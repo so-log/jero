@@ -1,8 +1,8 @@
 # 제이로 (jero)
 
-> **jero** is a collaborative travel planner for friends who plan trips *together* — not just saving pins, but managing the **order, route, budget, and roles** as a team.
-> Built as a portfolio piece: it applies 4 years of data-dense admin-UI experience (tables, filters, charts, workflows, permissions) to a modern consumer collaboration product.
-> Stack: Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · TanStack Query · Google Maps. Backend is intentionally a contract-first **seam** (stubbed), ready to swap to Supabase.
+> **jero**는 친구들과 함께 여행을 계획하는 협업 여행 플래너입니다 — 지도에 장소를 저장하는 데 그치지 않고 **순서·동선·예산·역할**을 팀으로 함께, **실시간으로** 관리합니다.
+> 4년간의 데이터 밀집 어드민 UI 경험(테이블·필터·차트·워크플로우·권한)을 최신 스택 위의 소비자 협업 제품으로 재구성한 포트폴리오입니다.
+> Stack: Next.js 16 (App Router) · React 19 · TypeScript · Tailwind v4 · TanStack Query · Zustand · Google Maps · **Supabase**(Auth·Postgres+RLS·Realtime).
 > **Live demo → https://jero-travel.vercel.app**
 
 **라이브 데모:** https://jero-travel.vercel.app · **문서:** [`docs/`](./docs)
@@ -12,6 +12,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?logo=tailwindcss&logoColor=white)
 ![TanStack Query](https://img.shields.io/badge/TanStack_Query-5-FF4154?logo=reactquery&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Auth·RLS·Realtime-3ECF8E?logo=supabase&logoColor=white)
 ![Google Maps](https://img.shields.io/badge/Google_Maps-vector-4285F4?logo=googlemaps&logoColor=white)
 ![Vitest](https://img.shields.io/badge/tested_with-Vitest_%2B_Playwright-6E9F18?logo=vitest&logoColor=white)
 
@@ -20,6 +21,8 @@
 **제이로**(`J`=MBTI 계획형 + `路`=길·동선, 발음은 "제일로")는 친구들과 함께 여행 일정을 짜고
 **장소 순서·동선·예산·역할**까지 여러 명이 함께 관리하는 협업 여행 플래너(웹)입니다.
 위치 저장에 그치지 않고 *누가·언제·어떤 순서로·얼마에* 움직일지를 한 화면에서 정리합니다.
+
+두 개의 계정으로 같은 여행에 접속하면, 한쪽의 장소 추가·순서 변경이 다른 쪽 화면에 실시간으로 반영되고 접속 중 멤버 아바타가 표시됩니다.
 
 ---
 
@@ -37,75 +40,125 @@
 
 ## 핵심 기능
 
-- **플랜 뷰** — 좌측 일정 리스트 + 우측 Google Maps. 순서대로 동선(Polyline)·번호 마커, 카테고리 mute, 카드↔마커 양방향 하이라이트, 타 멤버 실시간 커서(목).
-- **드래그 동선** — 일정 카드를 드래그(포인터 + 키보드)해 순서를 바꾸면 리스트·번호 마커·동선이 **즉시** 갱신(낙관적 업데이트).
-- **일정표** — 월/주/일 캘린더 모드로 같은 여행을 시간축에서 조망.
-- **장소** — 폴더로 저장한 장소를 관리하고 "일정에 추가"로 특정 날짜에 배정.
-- **예산** — 카테고리 도넛·일별 추이 차트 + 지출 테이블 + 멤버별 **정산** 요약.
-- **공유** — 읽기 전용 공개 링크(토큰)로 비멤버에게 스냅샷 공유(이메일·예산 등 민감 필드 제외).
-- **권한** — `owner` / `editor` / `viewer`. viewer는 "보기 전용"·"공유받은 플랜" 배지와 함께 편집·추가·공유·드래그 UI가 감춰집니다(권한은 서버/RLS에서 강제하는 설계).
+- **실시간 협업 편집** — 같은 여행에 접속한 멤버의 장소 추가·순서 변경이 서로의 화면에 자동 반영(Supabase Realtime). 접속 중 멤버 아바타 표시.
+- **플랜 뷰** — 좌측 일정 리스트 + 우측 Google Maps. 순서대로 동선(Polyline)·번호 마커, 카테고리 mute, 카드↔마커 양방향 하이라이트.
+- **드래그 동선** — 일정 카드를 드래그(포인터 + 키보드)해 순서를 바꾸면 리스트·번호 마커·동선이 **즉시** 갱신되고 서버에 반영(낙관적 업데이트 + 실시간 동기화).
+- **일정표 / 장소** — 캘린더 시간축 조망, 폴더로 저장한 장소를 특정 날짜에 "일정에 추가" / "일정에서 빼기".
+- **예산·정산** — 카테고리 도넛·일별 추이 차트 + 지출 테이블. 지출 추가·**편집**, 분담(split) 관리, 멤버별 정산 자동 재계산.
+- **공유·초대·권한** — `owner` / `editor` / `viewer`. 읽기 전용 공개 링크(토큰 스코프·민감 필드 제외), 편집 초대 링크 수락. 권한은 UI가 아니라 서버/RLS에서 강제.
+- **계정** — 프로필·기본 통화 설정, 계정 탈퇴(소유 여행 owner 승계 또는 cascade 삭제).
 
 ## 기술 스택
 
 | 영역 | 선택 | 왜 |
 |---|---|---|
-| 프레임워크 | **Next.js 16** (App Router, Turbopack) | 서버/클라 경계·파일 라우팅·이미지/폰트 최적화를 표준으로. |
+| 프레임워크 | **Next.js 16** (App Router, Turbopack) | 서버/클라 경계·미들웨어 라우트 가드로 인증을 서버 경계에서 강제. |
 | 런타임 | **React 19** | 최신 동시성·`useSyncExternalStore` 등 안정 API 활용. |
 | 언어 | **TypeScript (strict)** | 계약(타입) 우선 설계 — `any`/비검증 `unknown` 금지. |
 | 스타일 | **Tailwind v4** (CSS-first `@theme`) + shadcn/ui | 토큰 단일 출처로 밀도 높은 UI를 일관되게. |
-| 서버 상태 | **TanStack Query** | 캐시·무효화·낙관적 업데이트를 seam으로 캡슐화. |
+| 서버 상태 | **TanStack Query** | 캐시·무효화·낙관적 업데이트를 seam으로 캡슐화, 실시간과 결합. |
 | 클라 상태 | **Zustand** | 선택·필터·모드 등 가벼운 UI 상태(서버 상태와 혼용 금지). |
 | 테이블·가상화 | **TanStack Table / Virtual** | 지출 등 데이터 밀집 영역의 정렬·가상 스크롤. |
 | 폼 | **React Hook Form + Zod** | 클라 UX + 서버 신뢰 경계 양쪽 동일 스키마 검증. |
 | 차트 | **Recharts** | 예산 대시보드(도넛·막대)를 카테고리 토큰 색으로. |
 | 지도 | **Google Maps** (`@react-google-maps/api`) | 해외 여행 포함, 벡터 맵 + AdvancedMarkerElement. |
 | 드래그 | **dnd-kit** | 접근성(키보드 센서) 있는 정렬, 필터 중 비활성 제어. |
-| 테스트 | **Vitest + Testing Library / Playwright** | 데이터→렌더 통합 + 핵심 플로우 e2e. |
+| 백엔드 | **Supabase** (Auth · Postgres + RLS · Realtime) | 인증·행 단위 보안·실시간을 하나의 계약으로 통합. |
+| 테스트 | **Vitest + Testing Library / Playwright** | 데이터→렌더 통합 + 실 Supabase e2e. |
 | 패키지·배포 | **yarn (1.x)** · **Vercel** | — |
 
 ## 아키텍처
 
-**의존 방향** — 단방향(`app → features → components·lib·types`). 도메인 간 직접참조를 금지하고, 공유가 필요하면 `lib`/`components`로 승격합니다. 지도는 도메인 로직이 없는 **표현 전용** 레이어라 `components/map`으로 승격해 여러 도메인이 공유합니다.
+**의존 방향** — 단방향(`app → features → components·lib·types`). 도메인 간 직접참조를 금지하고, 공유가 필요하면 `lib`/`components`로 승격합니다. 지도는 도메인 로직이 없는 **표현 전용** 레이어라 `components/map`으로 승격해 여러 도메인이 공유합니다. `app/`은 라우팅 전용, 비즈니스 로직은 도메인별 `features/`(account·auth·budget·invite·itinerary·place·share·trip·workspace·system)로 응집합니다.
 
 ```mermaid
 flowchart TD
-  app["app/ · 라우팅·페이지"] --> features["features/도메인 · trip·itinerary·place·budget·share·account·workspace"]
+  app["app/ · 라우팅·페이지·api 라우트"] --> features["features/도메인 · trip·itinerary·place·budget·share·account·workspace"]
   features --> ui["components/ui + components/map · 표현 전용"]
-  features --> lib["lib/ · 상수·유틸·queryClient"]
+  features --> lib["lib/ · supabase 클라이언트·상수·유틸·queryClient"]
   features --> types["types/ · 도메인 타입"]
   ui --> lib
   classDef box fill:#EAF2FE,stroke:#3B7DF0,color:#0B1220;
   class app,features,ui,lib,types box;
 ```
 
-**데이터 흐름** — `usePlacesQuery` 하나가 04·05·06의 **단일 출처**이고, 순수 셀렉터가 도메인 데이터를 화면/지도 뷰모델로 투영합니다(도메인/표현 분리). 드래그 재정렬은 쿼리 캐시를 낙관적으로 갱신해 리스트와 지도가 같은 소스에서 함께 다시 그려집니다.
+**데이터 흐름** — `usePlacesQuery` 하나가 여러 뷰의 **단일 출처**이고, 순수 셀렉터가 도메인 데이터를 화면/지도 뷰모델로 투영합니다(도메인/표현 분리). 드래그 재정렬은 쿼리 캐시를 낙관적으로 갱신해 리스트와 지도가 같은 소스에서 함께 다시 그려지고, Realtime `postgres_changes`가 타 멤버의 변경을 같은 쿼리 키로 무효화해 자동 동기화합니다.
 
 ```mermaid
 flowchart LR
-  fixture["Supabase 예정 · 현재 fixture 스텁"] --> q["usePlacesQuery · places,tripId"]
+  supa["Supabase · Postgres + RLS"] --> q["usePlacesQuery · places,tripId"]
   q --> sel["순수 셀렉터 · placesForDay·toScheduledMarkers·reorderDayPlaces"]
   sel --> list["일정 리스트 · ItineraryPanel"]
   sel --> map["지도 동선·번호 마커 · TripMap"]
   drag["드래그 · dnd-kit"] --> reorder["useReorderPlaces · 낙관적 setQueryData"]
   reorder --> q
+  rt["Realtime · postgres_changes"] --> inv["invalidate 같은 쿼리 키"]
+  inv --> q
   classDef box fill:#E1F6EE,stroke:#1FA078,color:#0B1220;
-  class fixture,q,sel,list,map,drag,reorder box;
+  class supa,q,sel,list,map,drag,reorder,rt,inv box;
 ```
 
 - **공통 셸**: 워크스페이스 4뷰(플랜/일정표/장소/예산)는 상단 바·프레즌스·오버레이를 공유하는 `WorkspaceShell`이 본문만 교체합니다.
-- **단일 출처**: 화면·지도·오버레이가 같은 쿼리 키를 공유 → 한 곳이 바뀌면 모두 동기화.
+- **단일 출처 계약**: 데이터 계약은 [`docs/architecture/데이터모델_계약.md`](./docs/architecture/데이터모델_계약.md) 한 곳에서만 정의하고, DB 스키마 + 생성 타입이 프론트·백의 공유 진실입니다. 응답 타입을 클라이언트에서 다시 정의하지 않습니다.
 - **표현/도메인 분리**: `components/map`은 `lat/lng`·순서만 받는 표현 레이어이며 도메인 타입을 모릅니다.
+- **보안은 서버에서 강제**: "UI에서 감추는 것은 보안이 아니다" — 모든 접근을 **RLS**로 행 단위 강제하고, 민감 동작은 서버 라우트에서 세션을 재검증합니다. Zod로 클라이언트(UX)·서버(신뢰 경계) 양쪽을 검증합니다.
 
 ## 엔지니어링 결정 & 트러블슈팅
 
-실제 구현/검증 중 내린 판단과 함정들입니다. (포트폴리오 관점에서 가장 봐주셨으면 하는 섹션)
+실제 구현/검증 중 부딪히고 해결한 문제들입니다. (포트폴리오 관점에서 가장 봐주셨으면 하는 섹션 — 각 항목 "증상 → 원인 → 해결")
 
-- **계약 우선 seam (백엔드 스텁)** — 데이터 통신은 전부 `features/<도메인>/api`의 훅을 경유합니다. 지금은 `queryFn`이 계약 응답 예시(fixture)를 반환하고 뮤테이션은 스텁이지만, **Supabase로 교체 시 이 seam의 내부만 바꾸면** 화면 코드는 그대로입니다. 응답 예시를 테스트 fixture로 재사용해 "계약 = 단일 출처"를 유지합니다.
-- **드래그 낙관적 갱신** — `useReorderPlaces`가 `onMutate`에서 `['places']` 캐시를 재배치(`order_in_day` 재부여)해 리스트·지도가 즉시 반영됩니다. 백엔드 전이라 성공 후 `invalidate`를 **하지 않습니다** — refetch하면 fixture 원순서로 되감기기 때문. 실연동 시 `onSettled` invalidate로 재동기화하도록 TODO를 남겨뒀습니다.
-- **지도 인증 실패 방어 (`gm_authFailure`)** — 스크립트는 정상 로드됐지만 지도 인증이 실패(`RefererNotAllowedMapError` 등)하면 `useJsApiLoader`의 `loadError`로는 안 잡히고 `GoogleMap`이 렌더돼 상호작용이 에러 바운더리로 튑니다. 전역 `window.gm_authFailure`를 `useSyncExternalStore`로 구독해 `loadError`와 동일하게 error fallback으로 분기합니다.
-- **Vector → Raster 폴백** — Map ID는 벡터 타입이고 최신 `AdvancedMarkerElement`를 씁니다. "Attempted to load a Vector Map… falling back to Raster" 경고는 **WebGL 미지원 환경(헤드리스 CI 등)에서만** 뜨는 안내이며 기능에는 영향이 없어, 최신 마커 스택을 위해 벡터 Map ID를 유지합니다.
-- **테스트 OOM → 직렬 실행** — jsdom + Recharts/base-ui 무거운 트리를 파일 병렬로 올리면 워커들이 합쳐 힙 OOM으로 죽었습니다(개별 파일은 통과). `vitest.config`의 `fileParallelism: false`로 peak 메모리를 묶었습니다.
-- **`yarn check` 함정** — yarn 1.x에서 `yarn check`는 **의존성 무결성 검사(내장 명령)**라 프로젝트 스크립트가 아닙니다. 게이트(typecheck+lint+test)는 반드시 **`yarn run check`**로 실행합니다.
+### 실시간 private 채널이 조용히 죽던 문제 — `setAuth` 누락
+
+Realtime private 채널이 `SUBSCRIBED`처럼 보이는데도 postgres_changes·presence가 전혀 오지 않았고, 뚜렷한 콘솔 에러도 없었습니다. 원인은 구독 **전에** `supabase.realtime.setAuth(access_token)`을 호출하지 않은 것. 이게 없으면 private 채널이 인가에 실패해 `CHANNEL_ERROR`로 **조용히** 죽고 그 위 실시간 기능 전체가 함께 죽습니다. 구독 직전 `setAuth`를 넣어 데이터 동기화를 정상화했습니다.
+
+### presence sync 미전달 → broadcast heartbeat로 우회
+
+"접속 중 멤버"를 네이티브 Realtime presence로 구현했는데, `track()`이 `ok`를 반환하고 채널이 `SUBSCRIBED`인데도 `sync` 이벤트가 오지 않았습니다. 같은 채널에서 기능을 분리 측정하니 **broadcast(self-receive)·postgres_changes는 정상**이고 **presence sync만** public·private 모두 전달되지 않았습니다(브라우저·순수 supabase-js 동일) → 앱 코드·인가·소켓이 아닌 presence 기능의 서버측 전달 문제로 좁혔습니다. 정상 동작하는 broadcast로 **heartbeat** 우회: 구독 시 + 12초 주기로 자기 user id를 broadcast, 피어는 수신 시각을 30초 TTL로 만료(5초 prune), `self:true`로 자신도 포함. 인터페이스(`onlineIds`)를 유지해 훅 내부만 교체, 상위 컴포넌트는 무변경이었습니다.
+
+### 계정 탈퇴 — FK가 `NO ACTION`이라 참조 재배정
+
+계정 삭제 시 대부분의 FK가 `NO ACTION`이라 참조가 남아 삭제가 막혔습니다. 스키마를 cascade로 바꾸는 대신 서버 라우트(`DELETE /api/account`)에서 정리: 세션 재확인 → **유일 owner인 여행은 다른 멤버(editor 우선 → 오래된 순)에게 owner 승계**, 혼자면 여행 cascade 삭제, 생존 여행의 내 참조(NOT NULL FK)는 승계자에게 재배정하고 `saved_by`/`scheduled_by`는 NULL 처리 → `auth.admin.deleteUser`(service role, 서버 전용) → 클라 signOut. 마이그레이션 변경 없이 애플리케이션 계층에서 안전하게 처리했습니다.
+
+### 정산을 저장하지 않고 라이브 재계산 (단일 출처)
+
+지출 편집과 정산 상태가 충돌할 수 있었습니다. 정산 결과를 저장하는 대신 **항상 지출에서 파생 계산**(`computeSettlements`)하도록 설계해 충돌을 원천 차단했습니다. 지출을 편집해도 `trip.settled_at`을 건드리지 않고, 지표·차트·정산이 무효화 하나로 함께 재계산됩니다. 단일 출처 원칙을 정산에도 적용한 결정입니다.
+
+### RLS 재귀 회피 — security-definer 헬퍼
+
+멤버십 기반 RLS 정책이 자기 테이블을 다시 참조하며 재귀에 빠졌습니다. `is_trip_member(t)`·`trip_role(t)`를 **security definer** 함수로 분리해 정책에서 호출하도록 해 재귀 없이 행 단위 접근을 강제했습니다.
+
+### 통합 e2e가 잡아낸 목록 화면 500
+
+실인증 기반으로 e2e를 재작성하면서, 부트스트랩이 `trip.cover`에 hex 값을 넣자 `/trips` 목록의 `TripCard`(`COVER[cover_color].gradient`)가 500을 냈습니다. 개별 spec들은 목록 화면을 거치지 않아 놓쳤던 경로를 **관통 통합 테스트**가 잡아냈습니다. 유효 키로 교체해 해결(앱의 생성 마법사는 항상 유효 키를 보내므로 사용자 경로는 무관).
+
+### 계약 우선 seam — 스텁 → Supabase 무중단 전환
+
+데이터 통신은 전부 `features/<도메인>/api`의 훅을 경유합니다. 백엔드 연동 전에는 `queryFn`이 계약 응답 예시(fixture)를 반환하는 스텁이었고, **훅 시그니처·쿼리 키·무효화 키를 먼저 확정**한 뒤 내부만 Supabase 호출로 교체했습니다. 화면 코드는 그대로였고, 응답 예시를 테스트 fixture로 재사용해 "계약 = 단일 출처"를 유지했습니다.
+
+### 지도 인증 실패 방어 (`gm_authFailure`)
+
+스크립트는 정상 로드됐지만 지도 인증이 실패(`RefererNotAllowedMapError` 등)하면 `useJsApiLoader`의 `loadError`로는 안 잡히고 `GoogleMap`이 렌더돼 상호작용이 에러 바운더리로 튑니다. 전역 `window.gm_authFailure`를 `useSyncExternalStore`로 구독해 `loadError`와 동일하게 error fallback으로 분기합니다.
+
+### 테스트 OOM → 직렬 실행
+
+jsdom + Recharts/base-ui 무거운 트리를 파일 병렬로 올리면 워커들이 합쳐 힙 OOM으로 죽었습니다(개별 파일은 통과). `vitest.config`의 `fileParallelism: false`로 peak 메모리를 묶었습니다.
+
+### `yarn check` 함정
+
+yarn 1.x에서 `yarn check`는 **의존성 무결성 검사(내장 명령)**라 프로젝트 스크립트가 아닙니다. 게이트(typecheck+lint+test)는 반드시 **`yarn run check`**로 실행합니다.
+
+## 테스트
+
+- **단위·통합**: Vitest + Testing Library — 81 tests. "데이터 응답 → 화면 렌더링" 통합 검증을 유닛 테스트보다 우선.
+- **e2e**: Playwright — 12 tests, **실 Supabase** 대상. service_role 부트스트랩으로 실인증, 생성 데이터 티어다운. 2계정 2컨텍스트로 실시간 협업까지 검증(account·budget·flows·home·realtime).
+
+```bash
+yarn run check      # typecheck + lint + Vitest(81 tests) — 커밋/PR 전 게이트
+yarn test           # Vitest 단위·통합 (1회)
+yarn test:e2e       # Playwright e2e (실 Supabase)
+```
+
+검증은 **각 화면의 수용 기준(기획문서 §11) → 테스트/실렌더**로 이어집니다. 데이터 응답→화면 렌더링 통합 테스트를 유닛 테스트보다 우선하고, 지도·드래그·실시간처럼 브라우저가 필요한 흐름은 Playwright 실렌더로 확인합니다.
 
 ## 로컬 실행
 
@@ -113,26 +166,20 @@ flowchart LR
 # 요구: Node 20+, yarn 1.x
 yarn install
 
-# 환경변수 — .env.local (커밋 금지). 예시는 .env.example 참고.
-#   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...   (지도 렌더에 필요)
-#   NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=...    (선택 — 벡터 맵 + AdvancedMarker)
-# 키가 없어도 앱은 깨지지 않고 지도 자리표시(MapFallback)로 동작합니다.
+# 환경변수 — .env.local (커밋 금지)
+#   NEXT_PUBLIC_SUPABASE_URL=...
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+#   SUPABASE_SERVICE_ROLE_KEY=...          (서버 전용 — 계정 삭제 라우트. NEXT_PUBLIC_ 아님)
+#   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...    (지도 렌더에 필요)
+#   NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=...     (선택 — 벡터 맵 + AdvancedMarker)
 
 yarn dev                    # http://localhost:3000
 yarn build && yarn start    # 프로덕션
 ```
 
-> Google Maps API 키는 클라이언트 노출 전제입니다. 콘솔에서 **HTTP referrer(도메인) 제한 + 사용 API 범위 제한**을 걸어 두세요.
+Supabase 스키마는 `supabase/migrations/`를 순서대로 적용합니다: `0001_auth`(인증·profile 프로비저닝) · `0002_data`(trips/places/budget·RLS·RPC) · `0003_share`(공유·초대) · `0004_realtime`(퍼블리케이션·realtime.messages RLS).
 
-## 테스트
-
-```bash
-yarn run check      # typecheck + lint + Vitest(68 tests) — 커밋/PR 전 게이트
-yarn test           # Vitest 단위·통합 (1회)
-yarn test:e2e       # Playwright e2e (dev 서버 자동 기동)
-```
-
-검증은 **각 화면의 수용 기준(기획문서 §11) → 테스트/실렌더**로 이어집니다. 데이터 응답→화면 렌더링 통합 테스트를 유닛 테스트보다 우선하고, 지도·드래그처럼 브라우저가 필요한 흐름은 Playwright 실렌더로 확인합니다.
+> Google Maps API 키는 클라이언트 노출 전제입니다. 콘솔에서 **HTTP referrer(도메인) 제한 + 사용 API 범위 제한**을 걸어 두세요. `SUPABASE_SERVICE_ROLE_KEY`는 서버 전용이며 절대 클라이언트에 노출하지 않습니다.
 
 ## 문서 지도
 
@@ -140,24 +187,19 @@ yarn test:e2e       # Playwright e2e (dev 서버 자동 기동)
 |---|---|---|
 | 기능명세서 | [`docs/spec/기능명세서.md`](./docs/spec/기능명세서.md) | 무엇을 만드는가(기능·범위·데이터·권한) |
 | 화면구조 와이어프레임 | [`docs/spec/화면구조_와이어프레임.md`](./docs/spec/화면구조_와이어프레임.md) | 어떤 화면에 무엇이 들어가는가 |
-| 페이지별 기획 | [`docs/planning/`](./docs/planning) | 화면 단위 상세 기획(01~11) + 수용 기준 |
-| 설계문서 | [`docs/architecture/`](./docs/architecture) | 데이터 모델·상태관리·API 계약·구글맵 연동 |
+| 페이지별 기획 | [`docs/planning/`](./docs/planning) | 화면 단위 상세 기획(01~13) + 수용 기준 |
+| 설계문서 · 계약 | [`docs/architecture/`](./docs/architecture) | 데이터 모델·상태관리·API 계약·RLS·Realtime·구글맵 연동 |
 | 디자인 시안 | [`docs/design/prototype/`](./docs/design/prototype) | 시각 참고(HTML) |
+| 기술 선택 근거 · 현업 대비 | [`docs/tech-decisions.md`](./docs/tech-decisions.md) | 왜 이 스택인가 + 현업(B2B) 대비 코드·운영 차이 (보고서) |
 
 ## 포트폴리오 관점
 
 데이터 밀집 **어드민 UI 역량(4년)** — 테이블·필터·차트·워크플로우·권한 — 을 최신 스택 위의 소비자 협업 제품으로 재구성한 작업입니다. 그 역량이 드러나는 지점:
 
-- **예산 대시보드** — Recharts 차트 + 지출 테이블 + 멤버별 정산(집계·워크플로우).
-- **일정표** — 월/주/일 모드와 데이터 밀집 리스트(TanStack Table/Virtual 지향).
-- **권한/워크플로우** — owner/editor/viewer 분기, 공유 토큰, 낙관적 협업 편집.
-- **완성도** — 디자인 토큰 단일 출처, 접근성 있는 드래그(키보드), 그레이스풀 폴백(키 없음/인증 실패/로딩).
-
-## 범위 (정직하게)
-
-- **백엔드는 아직 seam(스텁)입니다.** `api/` 훅이 계약 응답 예시를 반환하고 뮤테이션은 스텁 — 화면·상호작용·낙관적 UI는 데모에서 실제로 동작합니다.
-- **다음 단계는 Supabase 연동**(Auth·DB·RLS·Realtime): seam 내부만 교체하면 되도록 **계약 우선**으로 설계했습니다. 권한은 UI가 아니라 서버/RLS에서 강제하는 것을 전제로 문서화돼 있습니다.
-- 실시간 커서·프레즌스는 현재 목(mock) 골격이며 Realtime presence로 대체 예정입니다.
+- **예산 대시보드** — Recharts 차트 + 지출 테이블 + 멤버별 정산(집계·워크플로우·라이브 재계산).
+- **실시간 협업** — Supabase Realtime로 다중 사용자 동시 편집·프레즌스, 낙관적 업데이트와의 reconciliation.
+- **권한/보안** — owner/editor/viewer 분기 + RLS 행 단위 강제 + 서버 라우트 세션 재검증(계정 삭제·owner 승계).
+- **완성도** — 계약 우선 설계로 스텁→Supabase 무중단 전환, 디자인 토큰 단일 출처, 접근성 있는 드래그(키보드), 그레이스풀 폴백(키 없음/인증 실패/로딩), 실 Supabase e2e.
 
 ---
 
