@@ -141,6 +141,11 @@
   --sidebar-ring: #3172e3;
 }
 
+/* Google Places Autocomplete 드롭다운(body 렌더) — 모달(z-50) 위로 올린다. */
+.pac-container {
+  z-index: 100000;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

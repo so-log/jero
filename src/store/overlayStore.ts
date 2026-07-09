@@ -6,15 +6,30 @@ import { create } from "zustand";
  */
 export type OverlayType = "place" | "share" | "expense";
 
+/** 지도 클릭 등록 프리필(좌표·주소) — "장소 추가"를 이 값으로 미리 채운다. */
+export interface PlacePrefill {
+  name?: string;
+  address?: string;
+  lat?: number | null;
+  lng?: number | null;
+  googlePlaceId?: string | null;
+}
+
 interface OverlayState {
   active: OverlayType | null;
   /** 편집 대상 place id(있으면 편집, 없으면 추가). */
   placeId: string | null;
+  /** 지도 클릭 등록 등 "장소 추가" 프리필(placeId 없을 때만 의미). */
+  placePrefill: PlacePrefill | null;
   /** 편집 대상 expense id(있으면 편집, 없으면 추가). */
   expenseId: string | null;
   open: (
     type: OverlayType,
-    payload?: { placeId?: string; expenseId?: string },
+    payload?: {
+      placeId?: string;
+      expenseId?: string;
+      placePrefill?: PlacePrefill;
+    },
   ) => void;
   close: () => void;
 }
@@ -22,12 +37,15 @@ interface OverlayState {
 export const useOverlayStore = create<OverlayState>((set) => ({
   active: null,
   placeId: null,
+  placePrefill: null,
   expenseId: null,
   open: (type, payload) =>
     set({
       active: type,
       placeId: payload?.placeId ?? null,
+      placePrefill: payload?.placePrefill ?? null,
       expenseId: payload?.expenseId ?? null,
     }),
-  close: () => set({ active: null, placeId: null, expenseId: null }),
+  close: () =>
+    set({ active: null, placeId: null, placePrefill: null, expenseId: null }),
 }));

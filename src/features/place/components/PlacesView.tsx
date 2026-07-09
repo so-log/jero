@@ -2,13 +2,14 @@
 
 import { useMemo } from "react";
 
-import { TripMap } from "@/components/map";
+import { reverseGeocode, TripMap } from "@/components/map";
 import {
   deriveDays,
   useMembersQuery,
   usePlacesQuery,
 } from "@/features/itinerary";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
+import { useOverlayStore } from "@/store/overlayStore";
 
 import {
   filterBySearch,
@@ -34,6 +35,7 @@ export function PlacesView({ tripId }: { tripId: string }) {
     usePlacesStore();
   const upsertFolder = useUpsertFolder(tripId);
   const deleteFolder = useDeleteFolder(tripId);
+  const openOverlay = useOverlayStore((s) => s.open);
 
   const saved = useMemo(() => data?.saved_places ?? [], [data]);
   const folders = data?.folders ?? [];
@@ -42,6 +44,21 @@ export function PlacesView({ tripId }: { tripId: string }) {
     () => (data ? deriveDays(data.trip.start_date, data.trip.end_date) : []),
     [data],
   );
+
+  // 지도 빈 곳 클릭 → 좌표·주소(reverse geocoding) 확보 후 "장소 추가" 프리필로 오버레이 오픈.
+  const onMapClick = canEdit
+    ? async (position: { lat: number; lng: number }) => {
+        const geo = await reverseGeocode(position);
+        openOverlay("place", {
+          placePrefill: {
+            address: geo?.address ?? "",
+            lat: position.lat,
+            lng: position.lng,
+            googlePlaceId: geo?.placeId ?? null,
+          },
+        });
+      }
+    : undefined;
 
   // 폴더 → 검색 → 정렬: 리스트·지도가 공유하는 단일 가시 집합.
   const visible = useMemo(
@@ -99,6 +116,7 @@ export function PlacesView({ tripId }: { tripId: string }) {
           filterToday={false}
           selectedId={selectedId}
           onSelect={select}
+          onMapClick={onMapClick}
           legend={
             <div className="absolute bottom-3.5 left-3.5 flex items-center gap-2 rounded-md border border-line bg-white/90 px-3 py-2 text-xs font-semibold text-subtle shadow-[0_4px_14px_-4px_color-mix(in_srgb,var(--color-ink)_16%,transparent)] backdrop-blur">
               <span

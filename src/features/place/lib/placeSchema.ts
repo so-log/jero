@@ -18,6 +18,11 @@ export const placeSchema = z.object({
   ]),
   folderId: z.string().nullable(),
   memo: z.string().max(300),
+  // 좌표·place_id — Places Autocomplete/지도 클릭으로 채워지는 파생값(사용자 직접 입력 아님).
+  // 없으면 null(수기 입력 허용) → 지도 마커만 안 뜬다(계약 §4.5).
+  lat: z.number().nullable().optional(),
+  lng: z.number().nullable().optional(),
+  googlePlaceId: z.string().nullable().optional(),
 });
 
 export type PlaceForm = z.infer<typeof placeSchema>;

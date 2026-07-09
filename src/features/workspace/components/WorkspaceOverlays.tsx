@@ -15,7 +15,7 @@ import { ShareOverlay } from "./ShareOverlay";
  * 데이터는 04~07과 동일 쿼리(usePlacesQuery·useMembersQuery·useTripQuery) 재사용 — 컴포넌트 직접 fetch 없음(§7.1).
  */
 export function WorkspaceOverlays({ tripId }: { tripId: string }) {
-  const { active, placeId, expenseId, close } = useOverlayStore();
+  const { active, placeId, placePrefill, expenseId, close } = useOverlayStore();
   const { data } = usePlacesQuery(tripId);
   const { data: members = [] } = useMembersQuery(tripId);
   const { data: trip } = useTripQuery(tripId);
@@ -39,6 +39,7 @@ export function WorkspaceOverlays({ tripId }: { tripId: string }) {
         tripId={tripId}
         folders={data?.folders ?? []}
         place={place}
+        prefill={placePrefill ?? undefined}
       />
     );
   }

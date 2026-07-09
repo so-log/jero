@@ -19,8 +19,8 @@ export const hasMapsKey = GOOGLE_MAPS_API_KEY.length > 0;
 /** loadScript 단일 id — 한 번만 로드(중복 로드 경고 방지). */
 export const MAPS_SCRIPT_ID = "jero-google-maps";
 
-/** AdvancedMarkerElement 사용을 위한 marker 라이브러리. 모듈 레벨 const 로 고정(재로드 방지). */
-export const MAPS_LIBRARIES: Libraries = ["marker"];
+/** AdvancedMarkerElement(marker) + 장소 검색(places). 모듈 레벨 const 로 고정(재로드 방지). */
+export const MAPS_LIBRARIES: Libraries = ["marker", "places"];
 
 /** 시안 기준 도쿄. 마커가 있으면 fitBounds 로 덮어쓴다. */
 export const DEFAULT_CENTER: LatLng = { lat: 35.6804, lng: 139.769 };

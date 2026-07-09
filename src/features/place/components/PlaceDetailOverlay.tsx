@@ -1,9 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
+import { usePlacesAutocomplete } from "@/components/map";
 import { Button } from "@/components/ui/button";
 import { CategoryChips } from "@/components/ui/category-chip";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -12,6 +13,7 @@ import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import type { FolderDto, PlaceDto } from "@/features/itinerary";
 import { cn } from "@/lib/utils";
+import type { PlacePrefill } from "@/store/overlayStore";
 
 import { useDeletePlace, useUpsertPlace } from "../api/useUpsertPlace";
 import { placeSchema, type PlaceForm } from "../lib/placeSchema";
@@ -27,6 +29,8 @@ interface PlaceDetailOverlayProps {
   tripId: string;
   folders: FolderDto[];
   place?: PlaceDto;
+  /** 지도 클릭 등록 프리필(좌표·주소) — 신규 추가 시 사용. */
+  prefill?: PlacePrefill;
 }
 
 export function PlaceDetailOverlay({
@@ -35,10 +39,12 @@ export function PlaceDetailOverlay({
   tripId,
   folders,
   place,
+  prefill,
 }: PlaceDetailOverlayProps) {
   const upsert = useUpsertPlace(tripId);
   const remove = useDeletePlace(tripId);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const addressRef = useRef<HTMLInputElement | null>(null);
 
   const {
     control,
@@ -49,12 +55,25 @@ export function PlaceDetailOverlay({
   } = useForm<PlaceForm>({
     resolver: zodResolver(placeSchema),
     defaultValues: {
-      name: place?.name ?? "",
-      address: place?.area ?? "",
+      name: place?.name ?? prefill?.name ?? "",
+      address: place?.area ?? prefill?.address ?? "",
       category: place?.category ?? "cafe",
       folderId: place?.folder_id ?? null,
       memo: place?.memo ?? "",
+      lat: place?.lat ?? prefill?.lat ?? null,
+      lng: place?.lng ?? prefill?.lng ?? null,
+      googlePlaceId: place?.google_place_id ?? prefill?.googlePlaceId ?? null,
     },
+  });
+
+  // "위치·주소" 필드에 Places Autocomplete 부착 — 선택 시 이름·주소·좌표·place_id 채움(§04 §13).
+  const addressField = register("address");
+  usePlacesAutocomplete(addressRef, (sel) => {
+    setValue("address", sel.address, { shouldValidate: false });
+    if (sel.name) setValue("name", sel.name, { shouldValidate: true });
+    setValue("lat", sel.lat);
+    setValue("lng", sel.lng);
+    setValue("googlePlaceId", sel.placeId);
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -114,7 +133,20 @@ export function PlaceDetailOverlay({
       </Field>
 
       <Field label="위치 · 주소">
-        <Input {...register("address")} placeholder="주소 입력" />
+        <Input
+          name={addressField.name}
+          onChange={addressField.onChange}
+          onBlur={addressField.onBlur}
+          ref={(el) => {
+            addressField.ref(el);
+            addressRef.current = el;
+          }}
+          leftIcon="search"
+          placeholder="장소 검색(예: 센소지) 또는 주소 입력"
+        />
+        <span className="text-[11.5px] font-medium text-faint">
+          검색 결과를 선택하면 지도에 표시돼요. 직접 입력해도 저장돼요(지도 마커는 없음).
+        </span>
       </Field>
 
       <Field label="카테고리">

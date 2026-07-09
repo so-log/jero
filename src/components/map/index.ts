@@ -4,7 +4,12 @@
  */
 export { TripMap } from "./TripMap";
 export { MapFallback } from "./MapFallback";
-export { clusterMarkers, resolvePlaceLocation } from "./stubs";
+export { clusterMarkers } from "./stubs";
+export { reverseGeocode, type GeocodeResult } from "./geocode";
+export {
+  usePlacesAutocomplete,
+  type PlaceSelection,
+} from "./usePlacesAutocomplete";
 export {
   DEFAULT_CENTER,
   DEFAULT_ZOOM,

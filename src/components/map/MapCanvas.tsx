@@ -38,6 +38,7 @@ export function MapCanvas({
   center,
   zoom,
   onSelect,
+  onMapClick,
   onPointerMove,
   onPointerLeave,
   emptyOverlay,
@@ -117,6 +118,14 @@ export function MapCanvas({
         zoom={zoom ?? DEFAULT_ZOOM}
         onLoad={onLoad}
         onUnmount={onUnmount}
+        onClick={
+          onMapClick
+            ? (e) => {
+                if (e.latLng)
+                  onMapClick({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+              }
+            : undefined
+        }
         onMouseMove={
           onPointerMove
             ? (e) => {

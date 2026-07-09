@@ -30,6 +30,10 @@ export function useUpsertPlace(tripId: string) {
         category: input.category,
         folder_id: input.folderId,
         memo: input.memo || null,
+        // 좌표·place_id 기록(Places Autocomplete/지도 클릭). 없으면 null — 지도 마커만 미표시.
+        lat: input.lat ?? null,
+        lng: input.lng ?? null,
+        google_place_id: input.googlePlaceId ?? null,
       };
       if (input.id) {
         const { error } = await supabase
