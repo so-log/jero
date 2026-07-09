@@ -32,3 +32,8 @@ yarn-error.log*
 .DS_Store
 *.pem
 *.stackdump
+
+# 디자인 툴(prototype) 산출물 — 커밋하지 않음
+docs/design/prototype/.thumbnail
+docs/design/prototype/uploads/
+docs/design/prototype/*(standalone).html
