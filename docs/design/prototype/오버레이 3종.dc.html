@@ -139,14 +139,14 @@ class Component extends DCLogic {
       cafe:{label:'카페',icon:'coffee',bg:'#FBF1E4',fg:'#C5893A'},
       shopping:{label:'쇼핑',icon:'shopping-bag',bg:'#FCE8F1',fg:'#D9609A'},
       transport:{label:'교통',icon:'bus',bg:'#E6F3FA',fg:'#3E97CC'},
-      museum:{label:'명소',icon:'landmark',bg:'#E9F1FE',fg:'#3B7DF0'},
+      museum:{label:'명소',icon:'landmark',bg:'#E9F1FE',fg:'#3172E3'},
       hotel:{label:'숙소',icon:'bed',bg:'#E1F6EE',fg:'#1FA078'},
       gift:{label:'기념품',icon:'gift',bg:'#F1ECFD',fg:'#8B6FE0'},
       etc:{label:'기타',icon:'circle-dot',bg:'#EEF0F4',fg:'#7B828F'},
     };
     this.FOLDERS=[{k:'food',label:'맛집'},{k:'cafe',label:'카페'},{k:'shopping',label:'쇼핑'},{k:'museum',label:'명소·뷰'},{k:'wish',label:'가보고 싶은'}];
     this.MEM=[
-      {id:'ji',initial:'지',color:'#3B7DF0',name:'지현',email:'jihyun@trip.co',role:'owner'},
+      {id:'ji',initial:'지',color:'#3172E3',name:'지현',email:'jihyun@trip.co',role:'owner'},
       {id:'min',initial:'민',color:'#FF8A65',name:'민준',email:'minjun@gmail.com',role:'editor'},
       {id:'seo',initial:'서',color:'#3FC4A0',name:'서윤',email:'seoyoon@gmail.com',role:'editor'},
       {id:'do',initial:'도',color:'#B07CF0',name:'도윤',email:'doyoon@gmail.com',role:'viewer'},
@@ -213,7 +213,7 @@ class Component extends DCLogic {
           h('div',{style:{display:'flex',flexDirection:'column',gap:1,minWidth:0}},
             h('span',{style:{fontSize:16,fontWeight:800,color:'#1B2030',letterSpacing:'-.02em'}},title),
             sub?h('span',{style:{fontSize:12.5,fontWeight:500,color:'#9097A1',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},sub):null)),
-        h('button',{style:{width:34,height:34,border:'none',background:'#F4F6F8',borderRadius:10,color:'#8A909B',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flex:'none'},onMouseEnter:e=>{e.currentTarget.style.background='#ECEEF1';e.currentTarget.style.color='#5A606B';},onMouseLeave:e=>{e.currentTarget.style.background='#F4F6F8';e.currentTarget.style.color='#8A909B';}},this.icon('x',{size:18,color:'currentColor',sw:2.2}))),
+        h('button',{style:{width:34,height:34,border:'none',background:'#F4F6F8',borderRadius:10,color:'#6B7280',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flex:'none'},onMouseEnter:e=>{e.currentTarget.style.background='#ECEEF1';e.currentTarget.style.color='#5A606B';},onMouseLeave:e=>{e.currentTarget.style.background='#F4F6F8';e.currentTarget.style.color='#6B7280';}},this.icon('x',{size:18,color:'currentColor',sw:2.2}))),
       // body
       h('div',{style:{flex:1,overflowY:'auto',padding:20,display:'flex',flexDirection:'column',gap:16}},
         banner?h('div',{style:{display:'flex',alignItems:'center',gap:9,background:'#FFECEB',border:'1px solid #F8D5D2',borderRadius:12,padding:'11px 13px'}},this.icon('alert',{size:17,color:'#E8615C',sw:2.2}),h('span',{style:{fontSize:13,fontWeight:600,color:'#C0463F'}},banner)):null,
@@ -222,7 +222,7 @@ class Component extends DCLogic {
       footerEl?h('div',{style:{flex:'none',padding:'14px 20px',borderTop:'1px solid #F0F1F4',display:'flex',alignItems:'center',gap:10}},footerEl):null,
       // loading overlay
       loading?h('div',{style:{position:'absolute',inset:0,background:'rgba(255,255,255,.9)',backdropFilter:'blur(3px)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:13,zIndex:10}},
-        h('div',{style:{width:38,height:38,borderRadius:'50%',border:'3.5px solid #DCE6F8',borderTopColor:'#3B7DF0',animation:'scSpin .8s linear infinite'}}),
+        h('div',{style:{width:38,height:38,borderRadius:'50%',border:'3.5px solid #DCE6F8',borderTopColor:'#3172E3',animation:'scSpin .8s linear infinite'}}),
         h('span',{style:{fontSize:14,fontWeight:700,color:'#1B2030'}},loadingText||'저장하는 중…')):null);
   }
 
@@ -236,7 +236,7 @@ class Component extends DCLogic {
   textInput(value,onChange,opts){opts=opts||{};const h=React.createElement;const err=opts.error;
     return h('input',{value:value,placeholder:opts.placeholder||'',onChange:e=>onChange(e.target.value),
       style:{width:'100%',height:opts.h||46,padding:'0 14px',border:'1.5px solid '+(err?'#E8615C':'#E2E5EA'),borderRadius:12,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none',background:err?'#FFFafA':'#fff'},
-      onFocus:e=>{if(!err){e.target.style.borderColor='#3B7DF0';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:e=>{e.target.style.borderColor=err?'#E8615C':'#E2E5EA';e.target.style.boxShadow='none';}});
+      onFocus:e=>{if(!err){e.target.style.borderColor='#3172E3';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:e=>{e.target.style.borderColor=err?'#E8615C':'#E2E5EA';e.target.style.boxShadow='none';}});
   }
   catChips(value,onChange,keys){const h=React.createElement;keys=keys||Object.keys(this.CAT);
     return h('div',{style:{display:'flex',flexWrap:'wrap',gap:7}},keys.map(k=>{const c=this.CAT[k],on=value===k;
@@ -256,10 +256,10 @@ class Component extends DCLogic {
       h('div',{style:{position:'absolute',left:'50%',top:'46%',transform:'translate(-50%,-100%)'}},
         h('div',{style:{width:30,height:30,borderRadius:'50% 50% 50% 3px',background:'#fff',border:'1.5px solid '+c.fg,boxShadow:'0 3px 8px rgba(16,24,40,.2)',display:'flex',alignItems:'center',justifyContent:'center',transform:'rotate(45deg)'}},h('div',{style:{transform:'rotate(-45deg)',display:'flex'}},this.icon(c.icon,{size:14,color:c.fg})))));
     const folderSel=h('div',{style:{display:'flex',flexWrap:'wrap',gap:7}},this.FOLDERS.map(f=>{const on=d.folder===f.k;
-      return h('button',{key:f.k,onClick:()=>this.setD({folder:f.k}),style:{height:34,padding:'0 13px',borderRadius:99,border:'1.5px solid '+(on?'#3B7DF0':'#E6E8EC'),background:on?'#EAF1FE':'#fff',color:on?'#2F6FE0':'#5A606B',fontSize:12.5,fontWeight:on?700:600,cursor:'pointer'}},f.label);}));
+      return h('button',{key:f.k,onClick:()=>this.setD({folder:f.k}),style:{height:34,padding:'0 13px',borderRadius:99,border:'1.5px solid '+(on?'#3172E3':'#E6E8EC'),background:on?'#EAF1FE':'#fff',color:on?'#2F6FE0':'#5A606B',fontSize:12.5,fontWeight:on?700:600,cursor:'pointer'}},f.label);}));
     const memo=h('textarea',{value:d.memo,onChange:e=>this.setD({memo:e.target.value}),placeholder:'함께 보면 좋은 메모를 남겨보세요',rows:3,
       style:{width:'100%',padding:'11px 14px',border:'1.5px solid #E2E5EA',borderRadius:12,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none',resize:'none',lineHeight:1.5},
-      onFocus:e=>{e.target.style.borderColor='#3B7DF0';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';},onBlur:e=>{e.target.style.borderColor='#E2E5EA';e.target.style.boxShadow='none';}});
+      onFocus:e=>{e.target.style.borderColor='#3172E3';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';},onBlur:e=>{e.target.style.borderColor='#E2E5EA';e.target.style.boxShadow='none';}});
     const body=h('div',{style:{display:'flex',flexDirection:'column',gap:16}},
       mapStrip,
       this.fieldWrap('장소명',this.textInput(d.name,v=>this.setD({name:v}),{placeholder:'장소 이름',error:nameErr}),{required:true,error:nameErr}),
@@ -269,7 +269,7 @@ class Component extends DCLogic {
       this.fieldWrap('메모',memo));
     const footer=h('div',{style:{display:'flex',alignItems:'center',gap:10,width:'100%'}},
       h('button',{style:{width:44,height:44,border:'1px solid #F2D5D2',background:'#fff',borderRadius:13,color:'#E8615C',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flex:'none'},onMouseEnter:e=>e.currentTarget.style.background='#FFF5F4',onMouseLeave:e=>e.currentTarget.style.background='#fff'},this.icon('trash',{size:18,color:'#E8615C'})),
-      h('button',{style:{flex:1,height:44,border:'none',borderRadius:13,background:'#3B7DF0',color:'#fff',fontSize:14.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:7,boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'}},this.icon('calendar',{size:17,color:'#fff'}),'일정에 추가'));
+      h('button',{style:{flex:1,height:44,border:'none',borderRadius:13,background:'#3172E3',color:'#fff',fontSize:14.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:7,boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'}},this.icon('calendar',{size:17,color:'#fff'}),'일정에 추가'));
     return this.shell({title:'장소 상세',sub:'저장한 장소 편집',icon:'map-pin',panel:true,width:432,bodyEl:body,footerEl:footer,banner:nameErr?'입력값을 확인해 주세요.':null,loading:this.state.view==='loading',loadingText:'저장하는 중…'});
   }
 
@@ -288,27 +288,27 @@ class Component extends DCLogic {
         h('span',{style:{flex:1,fontSize:13,fontWeight:600,color:'#3A3F4B',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'jero.app/i/tokyo-4d92x'),
         h('button',{style:{height:34,padding:'0 13px 0 11px',border:'1px solid #E6E8EC',background:'#fff',borderRadius:10,color:'#3A3F4B',fontSize:12.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:5,flex:'none'}},this.icon('copy',{size:14,color:'#7B828F'}),'복사')),
       h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
-        h('span',{style:{fontSize:12.5,fontWeight:600,color:'#8A909B'}},'링크로 들어온 사람의 권한'),
+        h('span',{style:{fontSize:12.5,fontWeight:600,color:'#6B7280'}},'링크로 들어온 사람의 권한'),
         isOwner?h('div',{style:{display:'inline-flex',gap:2,background:'#F1F3F6',padding:3,borderRadius:9}},linkSeg('editor','편집 가능'),linkSeg('viewer','읽기 전용')):this.roleBadge(sh.linkRole)));
     // invite
     const invite=isOwner?h('div',{style:{display:'flex',gap:9}},
       h('div',{style:{position:'relative',flex:1,display:'flex',alignItems:'center'}},h('div',{style:{position:'absolute',left:13,pointerEvents:'none'}},this.icon('mail',{size:16,color:'#9AA0AB'})),
-        h('input',{value:sh.emailDraft,onChange:e=>this.setShare({emailDraft:e.target.value}),placeholder:'friend@email.com',style:{width:'100%',height:46,padding:'0 14px 0 38px',border:'1.5px solid '+(this.state.view==='error'&&!sh.emailDraft?'#E8615C':'#E2E5EA'),borderRadius:12,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none'},onFocus:e=>{e.target.style.borderColor='#3B7DF0';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';},onBlur:e=>{e.target.style.borderColor='#E2E5EA';e.target.style.boxShadow='none';}})),
-      h('button',{style:{height:46,padding:'0 18px',border:'none',borderRadius:12,background:'#3B7DF0',color:'#fff',fontSize:13.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:6,flex:'none',boxShadow:'0 3px 8px -1px rgba(59,125,240,.5)'}},this.icon('plus',{size:17,color:'#fff',sw:2.4}),'초대')):null;
+        h('input',{value:sh.emailDraft,onChange:e=>this.setShare({emailDraft:e.target.value}),placeholder:'friend@email.com',style:{width:'100%',height:46,padding:'0 14px 0 38px',border:'1.5px solid '+(this.state.view==='error'&&!sh.emailDraft?'#E8615C':'#E2E5EA'),borderRadius:12,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none'},onFocus:e=>{e.target.style.borderColor='#3172E3';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';},onBlur:e=>{e.target.style.borderColor='#E2E5EA';e.target.style.boxShadow='none';}})),
+      h('button',{style:{height:46,padding:'0 18px',border:'none',borderRadius:12,background:'#3172E3',color:'#fff',fontSize:13.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:6,flex:'none',boxShadow:'0 3px 8px -1px rgba(59,125,240,.5)'}},this.icon('plus',{size:17,color:'#fff',sw:2.4}),'초대')):null;
     // member rows
     const rows=sh.members.map(m=>{const menuOpen=sh.roleMenuId===m.id;
       return h('div',{key:m.id,style:{display:'flex',alignItems:'center',gap:11,padding:'9px 4px'}},
         this.avatar(m,36),
         h('div',{style:{flex:1,minWidth:0}},h('div',{style:{fontSize:13.5,fontWeight:700,color:'#1F2430'}},m.name,m.id==='ji'?h('span',{style:{fontSize:11.5,fontWeight:600,color:'#9AA0AB',marginLeft:6}},'(나)'):null),h('div',{style:{fontSize:12,fontWeight:500,color:'#9097A1',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},m.email)),
         (isOwner&&m.role!=='owner')?h('div',{style:{position:'relative'}},
-          h('button',{onClick:()=>this.setRoleMenu(m.id),style:{display:'inline-flex',alignItems:'center',gap:5,height:32,padding:'0 9px 0 11px',border:'1px solid '+(menuOpen?'#3B7DF0':'#E6E8EC'),background:menuOpen?'#F7FAFF':'#fff',borderRadius:9,color:'#3A3F4B',fontSize:12.5,fontWeight:700,cursor:'pointer'}},this.ROLE[m.role].label,this.icon('chevron-down',{size:14,color:'#A8AEB8'})),
+          h('button',{onClick:()=>this.setRoleMenu(m.id),style:{display:'inline-flex',alignItems:'center',gap:5,height:32,padding:'0 9px 0 11px',border:'1px solid '+(menuOpen?'#3172E3':'#E6E8EC'),background:menuOpen?'#F7FAFF':'#fff',borderRadius:9,color:'#3A3F4B',fontSize:12.5,fontWeight:700,cursor:'pointer'}},this.ROLE[m.role].label,this.icon('chevron-down',{size:14,color:'#A8AEB8'})),
           menuOpen?h('div',{style:{position:'absolute',right:0,top:'calc(100% + 5px)',width:168,background:'#fff',border:'1px solid #ECEEF1',borderRadius:12,boxShadow:'0 12px 30px -8px rgba(16,24,40,.28)',padding:6,zIndex:20}},
             [['editor','편집자','편집 및 추가 가능'],['viewer','뷰어','보기만 가능']].map(([k,t,desc])=>h('button',{key:k,onClick:()=>this.changeRole(m.id,k),style:{display:'flex',flexDirection:'column',gap:1,width:'100%',padding:'8px 10px',border:'none',background:m.role===k?'#F4F6F8':'transparent',borderRadius:8,cursor:'pointer',textAlign:'left'}},h('span',{style:{fontSize:13,fontWeight:700,color:'#1F2430'}},t),h('span',{style:{fontSize:11,fontWeight:500,color:'#9097A1'}},desc))),
             h('div',{style:{height:1,background:'#F0F1F4',margin:'5px 4px'}}),
             h('button',{onClick:()=>this.removeMem(m.id),style:{display:'flex',alignItems:'center',gap:7,width:'100%',padding:'8px 10px',border:'none',background:'transparent',borderRadius:8,cursor:'pointer',color:'#E8615C',fontSize:13,fontWeight:700}},this.icon('trash',{size:14,color:'#E8615C'}),'내보내기')):null)
           :this.roleBadge(m.role));
     });
-    const ownerNotice=!isOwner?h('div',{style:{display:'flex',alignItems:'center',gap:8,background:'#F4F6F8',border:'1px solid #ECEEF1',borderRadius:12,padding:'11px 13px'}},this.icon('lock',{size:15,color:'#8A909B'}),h('span',{style:{fontSize:12.5,fontWeight:600,color:'#7A818D'}},'멤버 초대·권한 변경은 소유자만 할 수 있어요')):null;
+    const ownerNotice=!isOwner?h('div',{style:{display:'flex',alignItems:'center',gap:8,background:'#F4F6F8',border:'1px solid #ECEEF1',borderRadius:12,padding:'11px 13px'}},this.icon('lock',{size:15,color:'#6B7280'}),h('span',{style:{fontSize:12.5,fontWeight:600,color:'#7A818D'}},'멤버 초대·권한 변경은 소유자만 할 수 있어요')):null;
     const body=h('div',{style:{display:'flex',flexDirection:'column',gap:16}},
       linkRow,
       h('div',{style:{height:1,background:'#F0F1F4'}}),
@@ -317,7 +317,7 @@ class Component extends DCLogic {
       h('div',{style:{display:'flex',flexDirection:'column',gap:2}},
         h('div',{style:{display:'flex',alignItems:'center',gap:7,marginBottom:4}},h('span',{style:{fontSize:12.5,fontWeight:700,color:'#3A3F4B'}},'멤버'),h('span',{style:{fontSize:12,fontWeight:700,color:'#9AA0AB'}},sh.members.length+'명')),
         rows));
-    const footer=h('div',{style:{display:'flex',justifyContent:'flex-end',width:'100%'}},h('button',{style:{height:44,padding:'0 22px',border:'none',borderRadius:13,background:'#3B7DF0',color:'#fff',fontSize:14.5,fontWeight:700,cursor:'pointer',boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'}},'완료'));
+    const footer=h('div',{style:{display:'flex',justifyContent:'flex-end',width:'100%'}},h('button',{style:{height:44,padding:'0 22px',border:'none',borderRadius:13,background:'#3172E3',color:'#fff',fontSize:14.5,fontWeight:700,cursor:'pointer',boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'}},'완료'));
     return this.shell({title:'멤버 · 공유 관리',sub:'도쿄, 우리끼리 4일',icon:'users',width:516,height:'min(640px,86%)',bodyEl:body,footerEl:footer,loading:this.state.view==='loading',loadingText:'초대 메일을 보내는 중…'});
   }
 
@@ -335,7 +335,7 @@ class Component extends DCLogic {
         h('span',{style:{position:'absolute',left:16,fontSize:22,fontWeight:800,color:amtErr?'#E8615C':'#1B2030'}},cur==='JPY'?'¥':'₩'),
         h('input',{value:Number(e.amount||0).toLocaleString('ko-KR'),onChange:ev=>{const n=parseInt(ev.target.value.replace(/[^0-9]/g,''))||0;this.setE({amount:n});},inputMode:'numeric',
           style:{width:'100%',height:58,padding:'0 16px 0 40px',border:'1.5px solid '+(amtErr?'#E8615C':'#E2E5EA'),borderRadius:14,fontFamily:'inherit',fontSize:22,fontWeight:800,letterSpacing:'-.02em',color:'#1B2030',outline:'none',background:amtErr?'#FFFafA':'#fff'},
-          onFocus:ev=>{if(!amtErr){ev.target.style.borderColor='#3B7DF0';ev.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:ev=>{ev.target.style.borderColor=amtErr?'#E8615C':'#E2E5EA';ev.target.style.boxShadow='none';}})),
+          onFocus:ev=>{if(!amtErr){ev.target.style.borderColor='#3172E3';ev.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:ev=>{ev.target.style.borderColor=amtErr?'#E8615C':'#E2E5EA';ev.target.style.boxShadow='none';}})),
       h('div',{style:{display:'inline-flex',gap:2,background:'#F1F3F6',padding:4,borderRadius:13,alignItems:'center'}},
         ['KRW','JPY'].map(k=>{const on=cur===k;return h('button',{key:k,onClick:()=>this.setE({currency:k}),style:{height:50,padding:'0 15px',border:'none',borderRadius:10,cursor:'pointer',fontSize:13.5,fontWeight:on?700:600,background:on?'#fff':'transparent',color:on?'#2B61C4':'#7B828F',boxShadow:on?'0 1px 3px rgba(16,24,40,.12)':'none'}},k);})));
     // payer radio
@@ -344,22 +344,22 @@ class Component extends DCLogic {
     // split checks
     const perAmt=e.split.length?Math.round(e.amount/e.split.length):0;
     const split=h('div',{style:{display:'flex',flexWrap:'wrap',gap:9}},this.MEM.map(m=>{const on=e.split.indexOf(m.id)>=0;
-      return h('button',{key:m.id,onClick:()=>this.toggleSplit(m.id),style:{display:'flex',alignItems:'center',gap:8,height:42,padding:'0 13px 0 8px',borderRadius:12,border:'1.5px solid '+(on?'#3B7DF0':'#E6E8EC'),background:on?'#F7FAFF':'#fff',cursor:'pointer'}},
-        h('div',{style:{position:'relative'}},this.avatar(m,28),on?h('div',{style:{position:'absolute',right:-3,bottom:-3,width:15,height:15,borderRadius:'50%',background:'#3B7DF0',border:'1.5px solid #fff',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon('check',{size:9,color:'#fff',sw:3.2})):null),
+      return h('button',{key:m.id,onClick:()=>this.toggleSplit(m.id),style:{display:'flex',alignItems:'center',gap:8,height:42,padding:'0 13px 0 8px',borderRadius:12,border:'1.5px solid '+(on?'#3172E3':'#E6E8EC'),background:on?'#F7FAFF':'#fff',cursor:'pointer'}},
+        h('div',{style:{position:'relative'}},this.avatar(m,28),on?h('div',{style:{position:'absolute',right:-3,bottom:-3,width:15,height:15,borderRadius:'50%',background:'#3172E3',border:'1.5px solid #fff',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon('check',{size:9,color:'#fff',sw:3.2})):null),
         h('span',{style:{fontSize:13,fontWeight:on?700:600,color:on?'#1B2030':'#5A606B'}},m.name));}));
     // day chips
     const days=h('div',{style:{display:'flex',gap:8}},this.DAYS.map(d=>{const on=e.day===d.n;
-      return h('button',{key:d.n,onClick:()=>this.setE({day:d.n}),style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:1,padding:'8px 0',borderRadius:12,border:'1.5px solid '+(on?'#3B7DF0':'#E6E8EC'),background:on?'#EAF1FE':'#fff',cursor:'pointer'}},h('span',{style:{fontSize:11,fontWeight:700,color:on?'#2F6FE0':'#9AA0AB'}},'DAY '+d.n),h('span',{style:{fontSize:13,fontWeight:700,color:on?'#1B2030':'#5A606B'}},d.date));}));
+      return h('button',{key:d.n,onClick:()=>this.setE({day:d.n}),style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:1,padding:'8px 0',borderRadius:12,border:'1.5px solid '+(on?'#3172E3':'#E6E8EC'),background:on?'#EAF1FE':'#fff',cursor:'pointer'}},h('span',{style:{fontSize:11,fontWeight:700,color:on?'#2F6FE0':'#9AA0AB'}},'DAY '+d.n),h('span',{style:{fontSize:13,fontWeight:700,color:on?'#1B2030':'#5A606B'}},d.date));}));
     const body=h('div',{style:{display:'flex',flexDirection:'column',gap:16}},
       this.fieldWrap('금액',amountField,{required:true,error:amtErr}),
       this.fieldWrap('항목명',this.textInput(e.title,v=>this.setE({title:v}),{placeholder:'예: 긴자 식스 쇼핑'})),
       this.fieldWrap('카테고리',this.catChips(e.cat,v=>this.setE({cat:v}),['food','cafe','shopping','transport','museum','hotel'])),
       this.fieldWrap('결제자',payer),
-      this.fieldWrap('분담 인원',h('div',{style:{display:'flex',flexDirection:'column',gap:8}},split,h('span',{style:{fontSize:12,fontWeight:600,color:'#8A909B'}},e.split.length?('1인당 '+this.won(perAmt,cur)+' · '+e.split.length+'명'):' ')),{error:splitErr}),
+      this.fieldWrap('분담 인원',h('div',{style:{display:'flex',flexDirection:'column',gap:8}},split,h('span',{style:{fontSize:12,fontWeight:600,color:'#6B7280'}},e.split.length?('1인당 '+this.won(perAmt,cur)+' · '+e.split.length+'명'):' ')),{error:splitErr}),
       this.fieldWrap('날짜',days));
     const footer=h('div',{style:{display:'flex',gap:10,width:'100%'}},
       h('button',{style:{flex:'none',height:44,padding:'0 20px',border:'1px solid #E6E8EC',background:'#fff',borderRadius:13,color:'#5A606B',fontSize:14,fontWeight:700,cursor:'pointer'}},'취소'),
-      h('button',{style:{flex:1,height:44,border:'none',borderRadius:13,background:'#3B7DF0',color:'#fff',fontSize:14.5,fontWeight:700,cursor:'pointer',boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'}},'저장'));
+      h('button',{style:{flex:1,height:44,border:'none',borderRadius:13,background:'#3172E3',color:'#fff',fontSize:14.5,fontWeight:700,cursor:'pointer',boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'}},'저장'));
     return this.shell({title:'지출 추가',sub:'도쿄, 우리끼리 4일',icon:'wallet',iconBg:'#E1F6EE',iconFg:'#1FA078',width:480,height:'min(660px,88%)',bodyEl:body,footerEl:footer,banner:(amtErr||splitErr)?'입력값을 확인해 주세요.':null,loading:this.state.view==='loading',loadingText:'지출을 저장하는 중…'});
   }
   // wallet icon (defined separately because long)
@@ -417,14 +417,14 @@ class Component extends DCLogic {
     // patch wallet into icon map usage via inline (icon() lacks wallet) -> add quickly
     // DS samples
     const dsModalShell=h('div',{style:{border:'1px solid #ECEEF1',borderRadius:16,overflow:'hidden',width:300}},
-      h('div',{style:{padding:'12px 14px',borderBottom:'1px solid #F0F1F4',display:'flex',alignItems:'center',justifyContent:'space-between'}},h('span',{style:{fontSize:13.5,fontWeight:800,color:'#1B2030'}},'헤더 · 제목'),h('div',{style:{width:28,height:28,borderRadius:8,background:'#F4F6F8',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon('x',{size:15,color:'#8A909B'}))),
+      h('div',{style:{padding:'12px 14px',borderBottom:'1px solid #F0F1F4',display:'flex',alignItems:'center',justifyContent:'space-between'}},h('span',{style:{fontSize:13.5,fontWeight:800,color:'#1B2030'}},'헤더 · 제목'),h('div',{style:{width:28,height:28,borderRadius:8,background:'#F4F6F8',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon('x',{size:15,color:'#6B7280'}))),
       h('div',{style:{padding:14,display:'flex',flexDirection:'column',gap:8}},h('div',{style:{height:34,borderRadius:10,background:'#F4F6F8'}}),h('div',{style:{height:34,borderRadius:10,background:'#F4F6F8'}})),
-      h('div',{style:{padding:'12px 14px',borderTop:'1px solid #F0F1F4',display:'flex',gap:8,justifyContent:'flex-end'}},h('div',{style:{height:36,width:64,borderRadius:11,border:'1px solid #E6E8EC'}}),h('div',{style:{height:36,width:64,borderRadius:11,background:'#3B7DF0'}})));
+      h('div',{style:{padding:'12px 14px',borderTop:'1px solid #F0F1F4',display:'flex',gap:8,justifyContent:'flex-end'}},h('div',{style:{height:36,width:64,borderRadius:11,border:'1px solid #E6E8EC'}}),h('div',{style:{height:36,width:64,borderRadius:11,background:'#3172E3'}})));
     const dsAmount=h('div',{style:{display:'flex',gap:9}},h('div',{style:{flex:1,position:'relative',display:'flex',alignItems:'center'}},h('span',{style:{position:'absolute',left:16,fontSize:22,fontWeight:800,color:'#1B2030'}},'₩'),h('div',{style:{width:'100%',height:58,padding:'0 16px 0 40px',border:'1.5px solid #E2E5EA',borderRadius:14,display:'flex',alignItems:'center',fontSize:22,fontWeight:800,color:'#1B2030'}},'152,000')),h('div',{style:{display:'inline-flex',gap:2,background:'#F1F3F6',padding:4,borderRadius:13}},h('span',{style:{height:50,padding:'0 15px',display:'inline-flex',alignItems:'center',borderRadius:10,background:'#fff',color:'#2B61C4',fontSize:13.5,fontWeight:700,boxShadow:'0 1px 3px rgba(16,24,40,.12)'}},'KRW'),h('span',{style:{height:50,padding:'0 15px',display:'inline-flex',alignItems:'center',borderRadius:10,color:'#7B828F',fontSize:13.5,fontWeight:600}},'JPY')));
     const dsCatChips=this.catChips('shopping',()=>{},['food','cafe','shopping','transport','museum']);
     const dsAvatarPick=h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
       h('div',{style:{display:'flex',gap:9}},this.MEM.slice(0,2).map((m,i)=>h('div',{key:m.id,style:{display:'flex',alignItems:'center',gap:7,height:42,padding:'0 13px 0 7px',borderRadius:99,border:'1.5px solid '+(i===0?m.color:'#E6E8EC'),background:'#fff',boxShadow:i===0?'0 0 0 2px '+m.color+'22':'none'}},this.avatar(m,28),h('span',{style:{fontSize:13,fontWeight:i===0?700:600,color:i===0?'#1B2030':'#5A606B'}},m.name)))),
-      h('div',{style:{display:'flex',gap:9}},this.MEM.slice(0,2).map(m=>h('div',{key:m.id,style:{display:'flex',alignItems:'center',gap:8,height:42,padding:'0 13px 0 8px',borderRadius:12,border:'1.5px solid #3B7DF0',background:'#F7FAFF'}},h('div',{style:{position:'relative'}},this.avatar(m,28),h('div',{style:{position:'absolute',right:-3,bottom:-3,width:15,height:15,borderRadius:'50%',background:'#3B7DF0',border:'1.5px solid #fff',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon('check',{size:9,color:'#fff',sw:3.2}))),h('span',{style:{fontSize:13,fontWeight:700,color:'#1B2030'}},m.name)))));
+      h('div',{style:{display:'flex',gap:9}},this.MEM.slice(0,2).map(m=>h('div',{key:m.id,style:{display:'flex',alignItems:'center',gap:8,height:42,padding:'0 13px 0 8px',borderRadius:12,border:'1.5px solid #3172E3',background:'#F7FAFF'}},h('div',{style:{position:'relative'}},this.avatar(m,28),h('div',{style:{position:'absolute',right:-3,bottom:-3,width:15,height:15,borderRadius:'50%',background:'#3172E3',border:'1.5px solid #fff',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon('check',{size:9,color:'#fff',sw:3.2}))),h('span',{style:{fontSize:13,fontWeight:700,color:'#1B2030'}},m.name)))));
     const dsRole=h('div',{style:{display:'flex',gap:10,alignItems:'center'}},this.roleBadge('owner'),this.roleBadge('editor'),this.roleBadge('viewer'));
 
     return {

@@ -57,7 +57,7 @@
                 </span>
               </sc-if>
             </div>
-            <div style="display:flex;align-items:center;gap:7px;color:#8A909B;font-size:12.5px;font-weight:500;">
+            <div style="display:flex;align-items:center;gap:7px;color:#6B7280;font-size:12.5px;font-weight:500;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
               2026.4.18 – 4.21
               <span style="background:#EEF0F4;color:#6B7280;font-weight:600;font-size:11.5px;padding:1px 7px;border-radius:99px;">3박 4일</span>
@@ -94,7 +94,7 @@
           <div style="width:1px;height:24px;background:#ECEEF1;"></div>
           <sc-if value="{{ notViewer }}" hint-placeholder-val="{{ true }}">
             <div style="display:flex;align-items:center;gap:8px;">
-              <button style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border:none;border-radius:11px;background:#3B7DF0;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
+              <button style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border:none;border-radius:11px;background:#3172E3;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" x2="15.4" y1="13.5" y2="17.5"/><line x1="15.4" x2="8.6" y1="6.5" y2="10.5"/></svg>
                 공유
               </button>
@@ -141,8 +141,8 @@
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5B8DEF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><line x1="12" y1="7" x2="12" y2="13"/><line x1="9" y1="10" x2="15" y2="10"/></svg>
               </div>
               <div style="font-size:16px;font-weight:700;color:#1B2030;">아직 등록된 장소가 없어요</div>
-              <div style="font-size:13px;color:#8A909B;line-height:1.55;max-width:230px;">장소를 추가하면 지도에 순서대로 동선이 그려져요. 첫 장소부터 함께 정해볼까요?</div>
-              <button onClick="{{ goEditing }}" style="margin-top:12px;display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 20px;border:none;border-radius:13px;background:#3B7DF0;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 10px -2px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
+              <div style="font-size:13px;color:#6B7280;line-height:1.55;max-width:230px;">장소를 추가하면 지도에 순서대로 동선이 그려져요. 첫 장소부터 함께 정해볼까요?</div>
+              <button onClick="{{ goEditing }}" style="margin-top:12px;display:inline-flex;align-items:center;gap:7px;height:42px;padding:0 20px;border:none;border-radius:13px;background:#3172E3;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 10px -2px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                 장소 추가하기
               </button>
@@ -182,7 +182,7 @@
                        style="position:relative;display:flex;align-items:center;gap:11px;padding:11px 12px 11px 13px;background:#fff;border:1px solid #ECEEF1;border-radius:14px;cursor:pointer;transition:box-shadow .15s,border-color .15s,transform .12s;"
                        style-hover="box-shadow:0 5px 16px -4px rgba(16,24,40,.14);border-color:#DCE0E6;transform:translateY(-1px);">
                     <sc-if value="{{ item.selected }}" hint-placeholder-val="{{ false }}">
-                      <div style="position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:0 99px 99px 0;background:#3B7DF0;"></div>
+                      <div style="position:absolute;left:0;top:11px;bottom:11px;width:3px;border-radius:0 99px 99px 0;background:#3172E3;"></div>
                     </sc-if>
                     <div style="flex:none;width:25px;height:25px;border-radius:50%;background:#EAF1FE;color:#2F6FE0;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;">{{ item.order }}</div>
                     <div style="flex:none;">{{ item.chipEl }}</div>
@@ -263,7 +263,7 @@
           <!-- legend -->
           <sc-if value="{{ showMain }}" hint-placeholder-val="{{ true }}">
             <div style="position:absolute;left:16px;bottom:16px;display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid #ECEEF1;border-radius:12px;padding:9px 13px;box-shadow:0 4px 14px -4px rgba(16,24,40,.16);font-size:12px;font-weight:600;color:#5A606B;">
-              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:16px;height:16px;border-radius:50%;background:#3B7DF0;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">1</span>일정 순서</span>
+              <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:16px;height:16px;border-radius:50%;background:#3172E3;color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;">1</span>일정 순서</span>
               <span style="width:1px;height:14px;background:#E6E8EC;"></span>
               <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:13px;height:13px;border-radius:50% 50% 50% 2px;background:#fff;border:1.5px solid #C2C8D0;transform:rotate(45deg);"></span>저장한 장소</span>
             </div>
@@ -333,7 +333,7 @@
         <div style="display:flex;flex-wrap:wrap;align-items:center;gap:26px;">
           <div style="display:flex;flex-direction:column;gap:8px;"><span style="font-size:11px;font-weight:600;color:#9AA0AB;">버튼</span>
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:11px;background:#3B7DF0;color:#fff;font-size:13.5px;font-weight:700;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);">기본</span>
+              <span style="display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:11px;background:#3172E3;color:#fff;font-size:13.5px;font-weight:700;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);">기본</span>
               <span style="display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:11px;background:#EAF1FE;color:#2F6FE0;font-size:13.5px;font-weight:700;">보조</span>
               <span style="display:inline-flex;align-items:center;height:36px;padding:0 16px;border-radius:11px;background:#fff;border:1px solid #E6E8EC;color:#5A606B;font-size:13.5px;font-weight:600;">외곽선</span>
             </div>
@@ -346,14 +346,14 @@
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;"><span style="font-size:11px;font-weight:600;color:#9AA0AB;">토글</span>
             <div style="display:flex;align-items:center;gap:10px;">
-              <span style="width:40px;height:23px;border-radius:99px;background:#3B7DF0;position:relative;display:inline-block;"><span style="position:absolute;top:2px;left:19px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);"></span></span>
+              <span style="width:40px;height:23px;border-radius:99px;background:#3172E3;position:relative;display:inline-block;"><span style="position:absolute;top:2px;left:19px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);"></span></span>
               <span style="width:40px;height:23px;border-radius:99px;background:#D7DBE2;position:relative;display:inline-block;"><span style="position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);"></span></span>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;"><span style="font-size:11px;font-weight:600;color:#9AA0AB;">지도 마커</span>
             <div style="display:flex;align-items:center;gap:14px;">
-              <span style="width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid #3B7DF0;color:#2F6FE0;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(59,125,240,.3);">2</span>
-              <span style="width:30px;height:30px;border-radius:50%;background:#3B7DF0;border:2px solid #3B7DF0;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(59,125,240,.35);">3</span>
+              <span style="width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid #3172E3;color:#2F6FE0;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(59,125,240,.3);">2</span>
+              <span style="width:30px;height:30px;border-radius:50%;background:#3172E3;border:2px solid #3172E3;color:#fff;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(59,125,240,.35);">3</span>
               <span style="width:26px;height:26px;border-radius:50% 50% 50% 2px;background:#fff;border:1.5px solid #D7DBE2;transform:rotate(45deg);box-shadow:0 2px 6px rgba(16,24,40,.12);display:inline-block;"></span>
             </div>
           </div>
@@ -378,7 +378,7 @@ class Component extends DCLogic {
       cafe:    {label:'카페',      icon:'coffee',      bg:'#FBF1E4', fg:'#C5893A'},
       gift:    {label:'기념품',    icon:'gift',        bg:'#F1ECFD', fg:'#8B6FE0'},
       shopping:{label:'쇼핑',      icon:'shopping-bag',bg:'#FCE8F1', fg:'#D9609A'},
-      museum:  {label:'명소·박물관',icon:'landmark',   bg:'#E9F1FE', fg:'#3B7DF0'},
+      museum:  {label:'명소·박물관',icon:'landmark',   bg:'#E9F1FE', fg:'#3172E3'},
       hotel:   {label:'숙소',      icon:'bed',         bg:'#E1F6EE', fg:'#1FA078'},
       etc:     {label:'기타',      icon:'circle-dot',  bg:'#EEF0F4', fg:'#7B828F'},
     };
@@ -389,7 +389,7 @@ class Component extends DCLogic {
       {label:'Day 4', date:'4.21', dow:'월'},
     ];
     this.members = [
-      {id:'me', name:'지현', initial:'지', color:'#3B7DF0', online:true},
+      {id:'me', name:'지현', initial:'지', color:'#3172E3', online:true},
       {id:'m2', name:'민준', initial:'민', color:'#FF8A65', online:true},
       {id:'m3', name:'서윤', initial:'서', color:'#3FC4A0', online:true},
       {id:'m4', name:'도윤', initial:'도', color:'#B07CF0', online:false},
@@ -509,7 +509,7 @@ class Component extends DCLogic {
       h('span',{style:{fontSize:12.5,fontWeight:700,color:m.color}}, m.initial),
       h('span',{style:{position:'absolute',right:-1,bottom:-1,width:9,height:9,borderRadius:'50%',background:'#34C759',border:'2px solid #fff'}})
     ));
-    if(off>0) av.push(h('div',{key:'off',style:{width:32,height:32,borderRadius:'50%',background:'#EEF0F4',border:'2px solid #fff',boxShadow:'0 0 0 2.5px #fff',display:'flex',alignItems:'center',justifyContent:'center',marginLeft:-9,color:'#8A909B',fontSize:11.5,fontWeight:700}}, '+'+off));
+    if(off>0) av.push(h('div',{key:'off',style:{width:32,height:32,borderRadius:'50%',background:'#EEF0F4',border:'2px solid #fff',boxShadow:'0 0 0 2.5px #fff',display:'flex',alignItems:'center',justifyContent:'center',marginLeft:-9,color:'#6B7280',fontSize:11.5,fontWeight:700}}, '+'+off));
     return h('div',{style:{display:'flex',alignItems:'center'}}, av);
   }
 
@@ -518,12 +518,12 @@ class Component extends DCLogic {
     const active = this.state.activeDay;
     const pill = (d,i)=>{
       const on = i===active;
-      return h('button',{key:i,onClick:()=>this.setDay(i),style:{flex:1,minWidth:0,display:'flex',flexDirection:'column',alignItems:'center',gap:1,padding:'7px 4px',border:'none',borderRadius:11,cursor:'pointer',background:on?'#3B7DF0':'transparent',transition:'background .15s'}},
+      return h('button',{key:i,onClick:()=>this.setDay(i),style:{flex:1,minWidth:0,display:'flex',flexDirection:'column',alignItems:'center',gap:1,padding:'7px 4px',border:'none',borderRadius:11,cursor:'pointer',background:on?'#3172E3':'transparent',transition:'background .15s'}},
         h('span',{style:{fontSize:10.5,fontWeight:700,letterSpacing:'.03em',color:on?'rgba(255,255,255,.85)':'#9AA0AB'}}, 'DAY '+(i+1)),
         h('span',{style:{fontSize:13,fontWeight:700,color:on?'#fff':'#4A4F5A'}}, d.date+' '+d.dow)
       );
     };
-    const arrow = (dir)=> h('button',{onClick:()=>this.setDay(Math.min(this.days.length-1,Math.max(0,active+dir))),style:{width:30,height:38,flex:'none',border:'1px solid #ECEEF1',background:'#fff',borderRadius:10,color:'#8A909B',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}, this.icon(dir<0?'chevron-left':'chevron-right',{size:17,color:'#8A909B'}));
+    const arrow = (dir)=> h('button',{onClick:()=>this.setDay(Math.min(this.days.length-1,Math.max(0,active+dir))),style:{width:30,height:38,flex:'none',border:'1px solid #ECEEF1',background:'#fff',borderRadius:10,color:'#6B7280',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}}, this.icon(dir<0?'chevron-left':'chevron-right',{size:17,color:'#6B7280'}));
     return h('div',{style:{display:'flex',alignItems:'center',gap:6}},
       arrow(-1),
       h('div',{style:{flex:1,display:'flex',gap:3,background:'#F4F6F8',padding:3,borderRadius:13}}, this.days.map(pill)),
@@ -537,7 +537,7 @@ class Component extends DCLogic {
     return h('button',{onClick:()=>this.toggleToday(),style:{display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',background:'#fff',border:'1px solid #ECEEF1',borderRadius:12,padding:'10px 12px',cursor:'pointer'}},
       h('span',{style:{display:'flex',alignItems:'center',gap:8,fontSize:13,fontWeight:600,color:'#3A3F4B'}},
         this.icon('calendar',{size:15,color:'#6B7280'}), '선택한 날짜 일정만 보기'),
-      h('span',{style:{width:40,height:23,borderRadius:99,background:on?'#3B7DF0':'#D7DBE2',position:'relative',transition:'background .2s',flex:'none'}},
+      h('span',{style:{width:40,height:23,borderRadius:99,background:on?'#3172E3':'#D7DBE2',position:'relative',transition:'background .2s',flex:'none'}},
         h('span',{style:{position:'absolute',top:2,left:on?19:2,width:19,height:19,borderRadius:'50%',background:'#fff',boxShadow:'0 1px 3px rgba(0,0,0,.25)',transition:'left .2s'}}))
     );
   }
@@ -554,7 +554,7 @@ class Component extends DCLogic {
         label);
     });
     const folder = h('button',{key:'folder',style:{flex:'none',display:'inline-flex',alignItems:'center',gap:5,height:32,padding:'0 9px 0 11px',borderRadius:99,border:'1px solid #E6E8EC',background:'#fff',color:'#5A606B',fontSize:12.5,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'}},
-      this.icon('folder',{size:14,color:'#8A909B'}), '전체 폴더', this.icon('chevron-down',{size:14,color:'#A8AEB8'}));
+      this.icon('folder',{size:14,color:'#6B7280'}), '전체 폴더', this.icon('chevron-down',{size:14,color:'#A8AEB8'}));
     return h('div',{style:{display:'flex',gap:7,overflowX:'auto',paddingBottom:2,margin:'0 -2px',scrollbarWidth:'none'}}, [folder].concat(chips));
   }
 
@@ -571,7 +571,7 @@ class Component extends DCLogic {
     if(dayPlaces.length>1){
       const d = 'M '+dayPlaces.map(p=>(p.x*10).toFixed(1)+' '+(p.y*10).toFixed(1)).join(' L ');
       els.push(h('svg',{key:'rt',width:'100%',height:'100%',viewBox:'0 0 1000 1000',preserveAspectRatio:'none',style:{position:'absolute',inset:0,overflow:'visible',pointerEvents:'none'}},
-        h('path',{d:d,fill:'none',stroke:'#3B7DF0',strokeWidth:3,strokeLinecap:'round',strokeLinejoin:'round',strokeDasharray:dash,vectorEffect:'non-scaling-stroke',style:{opacity:.85}})
+        h('path',{d:d,fill:'none',stroke:'#3172E3',strokeWidth:3,strokeLinecap:'round',strokeLinejoin:'round',strokeDasharray:dash,vectorEffect:'non-scaling-stroke',style:{opacity:.85}})
       ));
     }
 
@@ -579,7 +579,7 @@ class Component extends DCLogic {
     if(!S.filterToday){
       this.savedPlaces.forEach(p=> els.push(
         h('button',{key:p.id,onClick:()=>this.select(p.id),style:{position:'absolute',left:p.x+'%',top:p.y+'%',transform:'translate(-50%,-100%)',background:'none',border:'none',padding:0,cursor:'pointer',zIndex:1}},
-          h('div',{style:{width:27,height:27,borderRadius:'50% 50% 50% 3px',background:'#fff',border:'1.5px solid '+(S.selectedId===p.id?'#8A909B':'#D7DBE2'),boxShadow:'0 2px 7px rgba(16,24,40,.16)',display:'flex',alignItems:'center',justifyContent:'center',transform:'rotate(45deg)'}},
+          h('div',{style:{width:27,height:27,borderRadius:'50% 50% 50% 3px',background:'#fff',border:'1.5px solid '+(S.selectedId===p.id?'#6B7280':'#D7DBE2'),boxShadow:'0 2px 7px rgba(16,24,40,.16)',display:'flex',alignItems:'center',justifyContent:'center',transform:'rotate(45deg)'}},
             h('div',{style:{transform:'rotate(-45deg)',display:'flex'}}, this.icon(this.CAT[p.category].icon,{size:13,color:'#9AA0AB',sw:2})))
         )
       ));
@@ -592,7 +592,7 @@ class Component extends DCLogic {
       els.push(h('button',{key:p.id,onClick:()=>this.select(p.id),style:{position:'absolute',left:p.x+'%',top:p.y+'%',transform:'translate(-50%,-50%)',background:'none',border:'none',padding:0,cursor:'pointer',zIndex:sel?6:3,opacity:muted?.32:1,transition:'opacity .2s,transform .12s'}},
         h('div',{style:{position:'relative',width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}},
           sel? h('div',{style:{position:'absolute',inset:-5,borderRadius:'50%',background:'rgba(59,125,240,.18)'}}) : null,
-          h('div',{style:{width:30,height:30,borderRadius:'50%',background:sel?'#3B7DF0':'#fff',border:'2px solid #3B7DF0',color:sel?'#fff':'#2F6FE0',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:14,boxShadow:'0 3px 8px rgba(59,125,240,.32)'}}, String(i+1))
+          h('div',{style:{width:30,height:30,borderRadius:'50%',background:sel?'#3172E3':'#fff',border:'2px solid #3172E3',color:sel?'#fff':'#2F6FE0',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:14,boxShadow:'0 3px 8px rgba(59,125,240,.32)'}}, String(i+1))
         )
       ));
     });
@@ -638,7 +638,7 @@ class Component extends DCLogic {
       h('div',{key:m.id,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:6}},
         h('div',{style:{width:34,height:34,borderRadius:'50%',background:'#fff',border:'2px solid '+m.color,display:'flex',alignItems:'center',justifyContent:'center'}},
           h('span',{style:{fontSize:13,fontWeight:700,color:m.color}}, m.initial)),
-        h('span',{style:{fontSize:11,fontWeight:600,color:'#8A909B'}}, m.color)
+        h('span',{style:{fontSize:11,fontWeight:600,color:'#6B7280'}}, m.color)
       )
     ));
   }
@@ -705,8 +705,8 @@ class Component extends DCLogic {
       this.buildSwatch('카드','#FFFFFF',{border:'1px solid #E6E8EC'}),
       this.buildSwatch('보조면','#F7F8FA'),
       this.buildSwatch('본문','#1B2030'),
-      this.buildSwatch('보조 텍스트','#8A909B'),
-      this.buildSwatch('프라이머리','#3B7DF0'),
+      this.buildSwatch('보조 텍스트','#6B7280'),
+      this.buildSwatch('프라이머리','#3172E3'),
       this.buildSwatch('프라이머리 연','#EAF1FE'),
       this.buildSwatch('민트','#3FC4A0'),
     ];

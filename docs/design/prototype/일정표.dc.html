@@ -54,7 +54,7 @@
                 </span>
               </sc-if>
             </div>
-            <div style="display:flex;align-items:center;gap:7px;color:#8A909B;font-size:12.5px;font-weight:500;">
+            <div style="display:flex;align-items:center;gap:7px;color:#6B7280;font-size:12.5px;font-weight:500;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
               2026.4.18 – 4.21
               <span style="background:#EEF0F4;color:#6B7280;font-weight:600;font-size:11.5px;padding:1px 7px;border-radius:99px;">3박 4일</span>
@@ -90,7 +90,7 @@
           <div style="width:1px;height:24px;background:#ECEEF1;"></div>
           <sc-if value="{{ notViewer }}" hint-placeholder-val="{{ true }}">
             <div style="display:flex;align-items:center;gap:8px;">
-              <button style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border:none;border-radius:11px;background:#3B7DF0;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
+              <button style="display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border:none;border-radius:11px;background:#3172E3;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" x2="15.4" y1="13.5" y2="17.5"/><line x1="15.4" x2="8.6" y1="6.5" y2="10.5"/></svg>
                 공유
               </button>
@@ -125,7 +125,7 @@
         <div style="display:flex;align-items:center;gap:12px;">
           {{ modeSegmentEl }}
           <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
-            <button style="display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 16px 0 13px;border:none;border-radius:11px;background:#3B7DF0;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
+            <button style="display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 16px 0 13px;border:none;border-radius:11px;background:#3172E3;color:#fff;font-size:13.5px;font-weight:700;cursor:pointer;box-shadow:0 3px 8px -1px rgba(59,125,240,.5);" style-hover="background:#2F6FE0;">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
               일정 추가
             </button>
@@ -148,9 +148,9 @@
               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#5B8DEF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M12 15v3"/><path d="M10.5 16.5h3"/></svg>
             </div>
             <div style="font-size:19px;font-weight:800;color:#1B2030;letter-spacing:-.02em;">이 날은 아직 일정이 없어요</div>
-            <div style="font-size:14px;color:#8A909B;line-height:1.6;max-width:330px;">시간과 장소를 더해 하루를 채워보세요. 추가하면 플랜 지도에도 동선이 그려져요.</div>
+            <div style="font-size:14px;color:#6B7280;line-height:1.6;max-width:330px;">시간과 장소를 더해 하루를 채워보세요. 추가하면 플랜 지도에도 동선이 그려져요.</div>
             <sc-if value="{{ canEdit }}" hint-placeholder-val="{{ true }}">
-              <button style="margin-top:14px;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 24px;border:none;border-radius:14px;background:#3B7DF0;color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px -3px rgba(59,125,240,.55);" style-hover="background:#2F6FE0;">
+              <button style="margin-top:14px;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 24px;border:none;border-radius:14px;background:#3172E3;color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 6px 16px -3px rgba(59,125,240,.55);" style-hover="background:#2F6FE0;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                 일정 추가하기
               </button>
@@ -218,11 +218,11 @@ class Component extends DCLogic {
       cafe:{label:'카페',icon:'coffee',bg:'#FBF1E4',fg:'#C5893A'},
       gift:{label:'기념품',icon:'gift',bg:'#F1ECFD',fg:'#8B6FE0'},
       shopping:{label:'쇼핑',icon:'shopping-bag',bg:'#FCE8F1',fg:'#D9609A'},
-      museum:{label:'명소',icon:'landmark',bg:'#E9F1FE',fg:'#3B7DF0'},
+      museum:{label:'명소',icon:'landmark',bg:'#E9F1FE',fg:'#3172E3'},
       hotel:{label:'숙소',icon:'bed',bg:'#E1F6EE',fg:'#1FA078'},
       etc:{label:'기타',icon:'circle-dot',bg:'#EEF0F4',fg:'#7B828F'},
     };
-    this.MEM={ji:{initial:'지',color:'#3B7DF0',name:'지현'},min:{initial:'민',color:'#FF8A65',name:'민준'},seo:{initial:'서',color:'#3FC4A0',name:'서윤'},do:{initial:'도',color:'#B07CF0',name:'도윤'}};
+    this.MEM={ji:{initial:'지',color:'#3172E3',name:'지현'},min:{initial:'민',color:'#FF8A65',name:'민준'},seo:{initial:'서',color:'#3FC4A0',name:'서윤'},do:{initial:'도',color:'#B07CF0',name:'도윤'}};
     this.DOW=['일','월','화','수','목','금','토'];
     // April 2026: Apr 1 = Wednesday. Trip 18(Sat)~21(Tue).
     this.tripDow={18:'토',19:'일',20:'월',21:'화'};
@@ -304,7 +304,7 @@ class Component extends DCLogic {
     for(let n=1;n<=30;n++)cells.push({n:n,inM:true});
     [1,2].forEach(n=>cells.push({n:n,inM:false}));
     const head=h('div',{style:{display:'grid',gridTemplateColumns:'repeat(7,1fr)',marginBottom:6}},this.DOW.map((d,i)=>
-      h('div',{key:i,style:{textAlign:'center',fontSize:12,fontWeight:700,padding:'4px 0',color:i===0?'#E8615C':(i===6?'#3B7DF0':'#9AA0AB')}},d)));
+      h('div',{key:i,style:{textAlign:'center',fontSize:12,fontWeight:700,padding:'4px 0',color:i===0?'#E8615C':(i===6?'#3172E3':'#9AA0AB')}},d)));
     const rows=[];
     for(let w=0;w<5;w++){
       const cellsRow=[];
@@ -316,7 +316,7 @@ class Component extends DCLogic {
         const dots=ev?ev.slice(0,4).map((e,i)=>h('span',{key:i,style:{width:6,height:6,borderRadius:'50%',background:this.CAT[e.cat].fg}})):[];
         cellsRow.push(h('div',{key:c,onClick:cell.inM?()=>this.setState({selDay:cell.n,mode:cell.n>=18&&cell.n<=21?'day':this.state.mode}):null,
           style:{position:'relative',borderRight:c<6?'1px solid #F0F1F4':'none',borderBottom:w<4?'1px solid #F0F1F4':'none',padding:'8px 8px 6px',display:'flex',flexDirection:'column',alignItems:'center',gap:7,cursor:cell.inM?'pointer':'default',background:isTrip&&!isSel?'rgba(91,141,239,.05)':'transparent'}},
-          h('div',{style:{width:26,height:26,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:isSel?'#3B7DF0':'transparent',color:isSel?'#fff':(cell.inM?(c===0?'#E8615C':(c===6?'#3B7DF0':'#3A3F4B')):'#C8CDD5'),fontSize:13.5,fontWeight:isSel?800:(isTrip?700:600)}},cell.n),
+          h('div',{style:{width:26,height:26,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:isSel?'#3172E3':'transparent',color:isSel?'#fff':(cell.inM?(c===0?'#E8615C':(c===6?'#3172E3':'#3A3F4B')):'#C8CDD5'),fontSize:13.5,fontWeight:isSel?800:(isTrip?700:600)}},cell.n),
           ev?h('div',{style:{display:'flex',gap:4}},dots):null,
           ev?h('span',{style:{fontSize:10,fontWeight:600,color:'#A8AEB8'}},ev.length+'개 일정'):null
         ));
@@ -337,12 +337,12 @@ class Component extends DCLogic {
       days.map(day=>{
         const isTrip=day.n<=21,isSel=day.n===sel;
         return h('div',{key:day.n,style:{flex:1,textAlign:'center',padding:'8px 0'}},
-          h('div',{style:{fontSize:11,fontWeight:700,color:isTrip?'#5A606B':'#B6BCC6'}},day.d),
-          h('div',{style:{margin:'3px auto 0',width:28,height:28,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:isSel?'#3B7DF0':'transparent',color:isSel?'#fff':(isTrip?'#1B2030':'#C2C8D0'),fontSize:14,fontWeight:isSel?800:700}},day.n));
+          h('div',{style:{fontSize:11,fontWeight:700,color:isTrip?'#5A606B':'#71767F'}},day.d),
+          h('div',{style:{margin:'3px auto 0',width:28,height:28,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:isSel?'#3172E3':'transparent',color:isSel?'#fff':(isTrip?'#1B2030':'#C2C8D0'),fontSize:14,fontWeight:isSel?800:700}},day.n));
       }));
     // gutter labels
     const labels=[];
-    for(let hh=startH;hh<endH;hh++)labels.push(h('div',{key:hh,style:{position:'absolute',top:(hh-startH)*hourH-7,right:8,fontSize:10.5,fontWeight:600,color:'#B6BCC6'}},(hh<10?'0'+hh:hh)+':00'));
+    for(let hh=startH;hh<endH;hh++)labels.push(h('div',{key:hh,style:{position:'absolute',top:(hh-startH)*hourH-7,right:8,fontSize:10.5,fontWeight:600,color:'#71767F'}},(hh<10?'0'+hh:hh)+':00'));
     const gutter=h('div',{style:{width:52,flex:'none',position:'relative',height:gridH}},labels);
     // day columns
     const cols=days.map(day=>{
@@ -369,7 +369,7 @@ class Component extends DCLogic {
           // time gutter
           h('div',{style:{width:48,flex:'none',textAlign:'right',paddingTop:13}},
             h('div',{style:{fontSize:13,fontWeight:700,color:'#3A3F4B'}},this.tstr(e.s)),
-            h('div',{style:{fontSize:11,fontWeight:500,color:'#B6BCC6'}},this.tstr(e.s+e.dur))),
+            h('div',{style:{fontSize:11,fontWeight:500,color:'#71767F'}},this.tstr(e.s+e.dur))),
           // connector
           h('div',{style:{flex:'none',display:'flex',flexDirection:'column',alignItems:'center',paddingTop:15}},
             h('div',{style:{width:11,height:11,borderRadius:'50%',background:'#fff',border:'2.5px solid '+c.fg,flex:'none'}}),
@@ -381,7 +381,7 @@ class Component extends DCLogic {
               h('div',{style:{display:'flex',alignItems:'center',gap:8}},
                 h('span',{style:{fontSize:15,fontWeight:700,color:'#1B2030'}},e.name),
                 h('span',{style:{background:c.bg,color:c.fg,fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:99}},c.label)),
-              e.note?h('div',{style:{fontSize:12.5,fontWeight:500,color:'#8A909B'}},e.note):null),
+              e.note?h('div',{style:{fontSize:12.5,fontWeight:500,color:'#6B7280'}},e.note):null),
             h('div',{style:{display:'flex',alignItems:'center',gap:6,flex:'none'}},
               h('span',{style:{fontSize:11,fontWeight:600,color:'#A8AEB8'}},'추가'),this.avatar(e.by,24)))
         );
@@ -449,15 +449,15 @@ class Component extends DCLogic {
     // DS samples
     const h=React.createElement;
     const dsCell=(opts)=>h('div',{style:{width:74,height:80,border:'1px solid #ECEEF1',borderRadius:12,display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'9px 0',background:opts.trip?'rgba(91,141,239,.05)':'#fff'}},
-      h('div',{style:{width:26,height:26,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:opts.sel?'#3B7DF0':'transparent',color:opts.sel?'#fff':'#3A3F4B',fontSize:13.5,fontWeight:opts.sel?800:600}},opts.n),
-      opts.dots?h('div',{style:{display:'flex',gap:4}},[['#E8615C'],['#3B7DF0'],['#C5893A']].map((c,i)=>h('span',{key:i,style:{width:6,height:6,borderRadius:'50%',background:c[0]}}))):null);
+      h('div',{style:{width:26,height:26,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:opts.sel?'#3172E3':'transparent',color:opts.sel?'#fff':'#3A3F4B',fontSize:13.5,fontWeight:opts.sel?800:600}},opts.n),
+      opts.dots?h('div',{style:{display:'flex',gap:4}},[['#E8615C'],['#3172E3'],['#C5893A']].map((c,i)=>h('span',{key:i,style:{width:6,height:6,borderRadius:'50%',background:c[0]}}))):null);
     const dsCells=h('div',{style:{display:'flex',gap:10}},dsCell({n:18,sel:true,trip:true,dots:true}),dsCell({n:20,trip:true,dots:true}),dsCell({n:24}));
     const dsWeekBlocks=h('div',{style:{display:'flex',gap:10}},['food','museum','cafe'].map(k=>{const c=this.CAT[k];return h('div',{key:k,style:{width:96,height:58,background:c.bg,borderLeft:'3px solid '+c.fg,borderRadius:'4px 8px 8px 4px',padding:'6px 9px'}},h('div',{style:{fontSize:10,fontWeight:700,color:c.fg}},'13:00'),h('div',{style:{fontSize:11.5,fontWeight:600,color:'#1B2030'}},c.label));}));
     const dsTimelineItem=h('div',{style:{display:'flex',gap:12}},
-      h('div',{style:{width:42,textAlign:'right',paddingTop:13}},h('div',{style:{fontSize:13,fontWeight:700,color:'#3A3F4B'}},'13:00'),h('div',{style:{fontSize:11,color:'#B6BCC6'}},'14:48')),
+      h('div',{style:{width:42,textAlign:'right',paddingTop:13}},h('div',{style:{fontSize:13,fontWeight:700,color:'#3A3F4B'}},'13:00'),h('div',{style:{fontSize:11,color:'#71767F'}},'14:48')),
       h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',paddingTop:15}},h('div',{style:{width:11,height:11,borderRadius:'50%',background:'#fff',border:'2.5px solid #D9609A'}}),h('div',{style:{width:2,flex:1,background:'#ECEEF1',marginTop:2,minHeight:24}})),
       h('div',{style:{flex:1,background:'#fff',border:'1px solid #ECEEF1',borderRadius:15,padding:'13px 15px',display:'flex',alignItems:'center',gap:13}},this.chip('shopping',40),
-        h('div',{style:{flex:1}},h('div',{style:{display:'flex',gap:8,alignItems:'center'}},h('span',{style:{fontSize:15,fontWeight:700,color:'#1B2030'}},'긴자 식스'),h('span',{style:{background:'#FCE8F1',color:'#D9609A',fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:99}},'쇼핑')),h('div',{style:{fontSize:12.5,color:'#8A909B',marginTop:3}},'점심 + 쇼핑'))));
+        h('div',{style:{flex:1}},h('div',{style:{display:'flex',gap:8,alignItems:'center'}},h('span',{style:{fontSize:15,fontWeight:700,color:'#1B2030'}},'긴자 식스'),h('span',{style:{background:'#FCE8F1',color:'#D9609A',fontSize:11,fontWeight:700,padding:'2px 8px',borderRadius:99}},'쇼핑')),h('div',{style:{fontSize:12.5,color:'#6B7280',marginTop:3}},'점심 + 쇼핑'))));
 
     return {
       isViewer,notViewer:!isViewer,isLoading,isEmpty,canEdit,

@@ -68,7 +68,7 @@
           <!-- header -->
           <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:24px;">
             <span style="font-size:25px;font-weight:800;color:#161B28;letter-spacing:-.03em;">{{ titleText }}</span>
-            <span style="font-size:14px;font-weight:500;color:#8A909B;">{{ subtitleText }}</span>
+            <span style="font-size:14px;font-weight:500;color:#6B7280;">{{ subtitleText }}</span>
           </div>
 
           <!-- google -->
@@ -89,7 +89,7 @@
 
           <!-- toggle login/signup -->
           <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:22px;font-size:13.5px;">
-            <span style="color:#8A909B;font-weight:500;">{{ toggleHint }}</span>
+            <span style="color:#6B7280;font-weight:500;">{{ toggleHint }}</span>
             <button onClick="{{ onToggle }}" style="border:none;background:none;color:#2F6FE0;font-size:13.5px;font-weight:700;cursor:pointer;padding:0;">{{ toggleAction }}</button>
           </div>
 
@@ -105,7 +105,7 @@
         <!-- loading overlay -->
         <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
           <div style="position:absolute;inset:0;background:rgba(255,255,255,.9);backdrop-filter:blur(3px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
-            <div style="width:38px;height:38px;border-radius:50%;border:3.5px solid #DCE6F8;border-top-color:#3B7DF0;animation:scSpin .8s linear infinite;"></div>
+            <div style="width:38px;height:38px;border-radius:50%;border:3.5px solid #DCE6F8;border-top-color:#3172E3;animation:scSpin .8s linear infinite;"></div>
             <span style="font-size:14px;font-weight:700;color:#1B2030;">{{ loadingText }}</span>
           </div>
         </sc-if>
@@ -188,8 +188,8 @@ class Component extends DCLogic {
         h('div',{style:{position:'absolute',left:13,pointerEvents:'none'}},this.icon(opts.icon,{size:16,color:err?'#E8615C':'#9AA0AB'})),
         h('input',{type:opts.type||'text',value:value,placeholder:opts.placeholder||'',onChange:e=>onChange(e.target.value),
           style:{width:'100%',height:48,padding:'0 14px 0 38px',border:'1.5px solid '+(err?'#E8615C':'#E2E5EA'),borderRadius:13,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none',background:err?'#FFFafA':'#fff'},
-          onFocus:e=>{if(!err){e.target.style.borderColor='#3B7DF0';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:e=>{e.target.style.borderColor=err?'#E8615C':'#E2E5EA';e.target.style.boxShadow='none';}}),
-        opts.type==='password'?h('div',{style:{position:'absolute',right:13,color:'#B6BCC6',display:'flex'}},this.icon('eye',{size:16,color:'#B6BCC6'})):null),
+          onFocus:e=>{if(!err){e.target.style.borderColor='#3172E3';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:e=>{e.target.style.borderColor=err?'#E8615C':'#E2E5EA';e.target.style.boxShadow='none';}}),
+        opts.type==='password'?h('div',{style:{position:'absolute',right:13,color:'#71767F',display:'flex'}},this.icon('eye',{size:16,color:'#71767F'})):null),
       err?h('span',{style:{fontSize:11.5,fontWeight:600,color:'#E8615C'}},err):null);
   }
 
@@ -203,8 +203,8 @@ class Component extends DCLogic {
     fields.push(this.authInput('비밀번호',f.pw,v=>this.setF({pw:v}),{icon:'lock',type:'password',placeholder:signup?'6자 이상':'비밀번호',error:pwErr}));
     return h('div',{style:{display:'flex',flexDirection:'column',gap:14}},
       fields,
-      !signup?h('div',{style:{display:'flex',justifyContent:'flex-end',marginTop:-4}},h('button',{style:{border:'none',background:'none',color:'#8A909B',fontSize:12.5,fontWeight:600,cursor:'pointer',padding:0}},'비밀번호를 잊으셨나요?')):null,
-      h('button',{onClick:()=>this.submit(),style:{height:50,border:'none',borderRadius:13,background:'#3B7DF0',color:'#fff',fontSize:15,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:8,boxShadow:'0 5px 14px -3px rgba(59,125,240,.55)',marginTop:4}},
+      !signup?h('div',{style:{display:'flex',justifyContent:'flex-end',marginTop:-4}},h('button',{style:{border:'none',background:'none',color:'#6B7280',fontSize:12.5,fontWeight:600,cursor:'pointer',padding:0}},'비밀번호를 잊으셨나요?')):null,
+      h('button',{onClick:()=>this.submit(),style:{height:50,border:'none',borderRadius:13,background:'#3172E3',color:'#fff',fontSize:15,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:8,boxShadow:'0 5px 14px -3px rgba(59,125,240,.55)',marginTop:4}},
         signup?'가입하고 시작하기':'로그인',this.icon('arrow-right',{size:18,color:'#fff',sw:2.3})));
   }
 
@@ -249,7 +249,7 @@ class Component extends DCLogic {
     const dsAuthBtns=h('div',{style:{display:'flex',flexDirection:'column',gap:10,maxWidth:320}},
       h('div',{style:{height:50,border:'1px solid #E2E5EA',borderRadius:13,display:'flex',alignItems:'center',justifyContent:'center',gap:10,fontSize:14.5,fontWeight:700,color:'#3A3F4B'}},
         h('svg',{width:19,height:19,viewBox:'0 0 24 24'},h('path',{fill:'#4285F4',d:'M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1Z'}),h('path',{fill:'#34A853',d:'M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z'}),h('path',{fill:'#FBBC05',d:'M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84Z'}),h('path',{fill:'#EA4335',d:'M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z'})),'Google로 계속하기'),
-      h('div',{style:{height:50,borderRadius:13,background:'#3B7DF0',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontSize:15,fontWeight:700,boxShadow:'0 5px 14px -3px rgba(59,125,240,.55)'}},'로그인',this.icon('arrow-right',{size:18,color:'#fff',sw:2.3})));
+      h('div',{style:{height:50,borderRadius:13,background:'#3172E3',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontSize:15,fontWeight:700,boxShadow:'0 5px 14px -3px rgba(59,125,240,.55)'}},'로그인',this.icon('arrow-right',{size:18,color:'#fff',sw:2.3})));
     const dsAuthInput=h('div',{style:{display:'flex',flexDirection:'column',gap:5,maxWidth:320}},
       h('div',{style:{position:'relative',display:'flex',alignItems:'center'}},h('div',{style:{position:'absolute',left:13}},this.icon('mail',{size:16,color:'#E8615C'})),h('div',{style:{width:'100%',height:48,padding:'0 14px 0 38px',border:'1.5px solid #E8615C',borderRadius:13,background:'#FFFafA',display:'flex',alignItems:'center',fontSize:14,color:'#1F2430'}},'you@email')),
       h('span',{style:{fontSize:11.5,fontWeight:600,color:'#E8615C'}},'올바른 이메일 주소를 입력해 주세요'));

@@ -67,7 +67,7 @@
         <!-- loading overlay -->
         <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
           <div style="position:absolute;inset:0;background:rgba(255,255,255,.9);backdrop-filter:blur(3px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;">
-            <div style="width:38px;height:38px;border-radius:50%;border:3.5px solid #DCE6F8;border-top-color:#3B7DF0;animation:scSpin .8s linear infinite;"></div>
+            <div style="width:38px;height:38px;border-radius:50%;border:3.5px solid #DCE6F8;border-top-color:#3172E3;animation:scSpin .8s linear infinite;"></div>
             <span style="font-size:14px;font-weight:700;color:#1B2030;">{{ loadingText }}</span>
           </div>
         </sc-if>
@@ -164,26 +164,26 @@ class Component extends DCLogic {
         h('div',{style:{position:'absolute',left:13,pointerEvents:'none'}},this.icon(opts.icon,{size:16,color:err?'#E8615C':(ok?'#1FA078':'#9AA0AB')})),
         h('input',{type:opts.type||'text',value:value,placeholder:opts.placeholder||'',onChange:e=>onChange&&onChange(e.target.value),
           style:{width:'100%',height:48,padding:opts.type==='password'?'0 40px 0 38px':'0 14px 0 38px',border:'1.5px solid '+bc,borderRadius:13,fontFamily:'inherit',fontSize:14,fontWeight:500,color:'#1F2430',outline:'none',background:err?'#FFFafA':'#fff'},
-          onFocus:e=>{if(!err){e.target.style.borderColor='#3B7DF0';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:e=>{e.target.style.borderColor=bc;e.target.style.boxShadow='none';}}),
-        opts.type==='password'?h('div',{style:{position:'absolute',right:13,color:'#B6BCC6',display:'flex'}},this.icon('eye',{size:16,color:'#B6BCC6'})):null,
+          onFocus:e=>{if(!err){e.target.style.borderColor='#3172E3';e.target.style.boxShadow='0 0 0 3px rgba(59,125,240,.13)';}},onBlur:e=>{e.target.style.borderColor=bc;e.target.style.boxShadow='none';}}),
+        opts.type==='password'?h('div',{style:{position:'absolute',right:13,color:'#71767F',display:'flex'}},this.icon('eye',{size:16,color:'#71767F'})):null,
         ok?h('div',{style:{position:'absolute',right:13,display:'flex'}},this.icon('check',{size:16,color:'#1FA078',sw:2.6})):null),
       err?h('span',{style:{fontSize:11.5,fontWeight:600,color:'#E8615C'}},err):null);
   }
 
   primaryBtn(label,icon,onClick,accent){
-    const h=React.createElement;const c=accent||'#3B7DF0';
+    const h=React.createElement;const c=accent||'#3172E3';
     return h('button',{onClick:onClick,style:{height:50,border:'none',borderRadius:13,background:c,color:'#fff',fontSize:15,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:8,boxShadow:'0 5px 14px -3px '+c+'8C',width:'100%',fontFamily:'inherit'}},label,icon?this.icon(icon,{size:18,color:'#fff',sw:2.3}):null);
   }
   backLink(){
     const h=React.createElement;
-    return h('button',{onClick:()=>this.go('reset'),style:{marginTop:22,alignSelf:'center',border:'none',background:'none',color:'#8A909B',fontSize:13.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:6,padding:0}},this.icon('arrow-left',{size:15,color:'#8A909B',sw:2.2}),'로그인으로 돌아가기');
+    return h('button',{onClick:()=>this.go('reset'),style:{marginTop:22,alignSelf:'center',border:'none',background:'none',color:'#6B7280',fontSize:13.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:6,padding:0}},this.icon('arrow-left',{size:15,color:'#6B7280',sw:2.2}),'로그인으로 돌아가기');
   }
 
   header(title,sub){
     const h=React.createElement;
     return h('div',{style:{display:'flex',flexDirection:'column',gap:6,marginBottom:24}},
       h('span',{style:{fontSize:25,fontWeight:800,color:'#161B28',letterSpacing:'-.03em'}},title),
-      h('span',{style:{fontSize:14,fontWeight:500,color:'#8A909B',lineHeight:1.55}},sub));
+      h('span',{style:{fontSize:14,fontWeight:500,color:'#6B7280',lineHeight:1.55}},sub));
   }
   badge(icon,tint,accent,size){
     const h=React.createElement;const d=size||64;
@@ -198,7 +198,7 @@ class Component extends DCLogic {
   resendRow(){
     const h=React.createElement;
     return h('div',{style:{marginTop:20,display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontSize:13.5}},
-      h('span',{style:{color:'#8A909B',fontWeight:500}},'메일을 못 받으셨나요?'),
+      h('span',{style:{color:'#6B7280',fontWeight:500}},'메일을 못 받으셨나요?'),
       h('button',{onClick:()=>{},style:{border:'none',background:'none',color:'#2F6FE0',fontSize:13.5,fontWeight:700,cursor:'pointer',padding:0,display:'inline-flex',alignItems:'center',gap:4}},this.icon('refresh',{size:14,color:'#2F6FE0',sw:2.2}),'다시 보내기'));
   }
 
@@ -284,8 +284,8 @@ class Component extends DCLogic {
     const dsBadges=h('div',{style:{display:'flex',gap:14}},
       [['key','#EAF1FE','#2F6FE0'],['mail-check','#E1F6EE','#1FA078'],['lock-open','#F1ECFD','#8B6FE0'],['mail','#EAF1FE','#2F6FE0'],['clock','#FBF1E4','#C5893A']].map((b,i)=>h('div',{key:i},this.badge(b[0],b[1],b[2],52))));
     const dsResend=h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
-      h('div',{style:{display:'flex',alignItems:'center',gap:6,fontSize:13.5}},h('span',{style:{color:'#8A909B',fontWeight:500}},'메일을 못 받으셨나요?'),h('span',{style:{color:'#2F6FE0',fontWeight:700,display:'inline-flex',alignItems:'center',gap:4}},this.icon('refresh',{size:14,color:'#2F6FE0',sw:2.2}),'다시 보내기')),
-      h('div',{style:{display:'inline-flex',alignItems:'center',gap:6,fontSize:13,color:'#A8AEB8',fontWeight:600}},this.icon('clock',{size:14,color:'#B6BCC6',sw:2}),'재전송까지 0:42'));
+      h('div',{style:{display:'flex',alignItems:'center',gap:6,fontSize:13.5}},h('span',{style:{color:'#6B7280',fontWeight:500}},'메일을 못 받으셨나요?'),h('span',{style:{color:'#2F6FE0',fontWeight:700,display:'inline-flex',alignItems:'center',gap:4}},this.icon('refresh',{size:14,color:'#2F6FE0',sw:2.2}),'다시 보내기')),
+      h('div',{style:{display:'inline-flex',alignItems:'center',gap:6,fontSize:13,color:'#A8AEB8',fontWeight:600}},this.icon('clock',{size:14,color:'#71767F',sw:2}),'재전송까지 0:42'));
     const dsRules=this.pwRule(true,false);
     const map=[['재설정 요청','이메일 → 링크 발송','key'],['발송 완료','메일함 확인 안내','mail-check'],['새 비밀번호','길이·일치 검증','lock-open'],['이메일 인증','가입 직후 안내','mail'],['만료','일반화 에러','clock']];
     const dsMap=h('div',{style:{border:'1px solid #ECEEF1',borderRadius:14,overflow:'hidden'}},map.map((m,i)=>h('div',{key:m[0],style:{display:'flex',alignItems:'center',gap:12,padding:'11px 15px',borderBottom:i===4?'none':'1px solid #F2F3F6'}},

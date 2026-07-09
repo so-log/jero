@@ -66,7 +66,7 @@
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div style="font-size:13px;font-weight:700;color:#1B2030;">일러스트 — 톤 원형 + 라인 아이콘 + 액센트 배지</div>
         {{ dsIlloRow }}
-        <div style="font-size:12.5px;font-weight:500;color:#8A909B;line-height:1.6;">상태별 톤 컬러(블루·앰버·퍼플·그린) 위에 동일한 라인 아이콘 + 작은 흰색 배지를 얹어 차분하게. 코드 칩 → 제목 → 설명 → 액션 순서로 항상 가운데 정렬.</div>
+        <div style="font-size:12.5px;font-weight:500;color:#6B7280;line-height:1.6;">상태별 톤 컬러(블루·앰버·퍼플·그린) 위에 동일한 라인 아이콘 + 작은 흰색 배지를 얹어 차분하게. 코드 칩 → 제목 → 설명 → 액션 순서로 항상 가운데 정렬.</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:14px;">
         <div style="font-size:13px;font-weight:700;color:#1B2030;">상태 매핑</div>
@@ -103,7 +103,7 @@ class Component extends DCLogic {
       clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
     };
     this.S={
-      '404':{tint:'#EAF1FE',glow:'rgba(59,125,240,.16)',accent:'#3B7DF0',codeBg:'#EAF1FE',codeFg:'#2F6FE0',code:'404 · NOT FOUND',
+      '404':{tint:'#EAF1FE',glow:'rgba(59,125,240,.16)',accent:'#3172E3',codeBg:'#EAF1FE',codeFg:'#2F6FE0',code:'404 · NOT FOUND',
         title:'길을 잃은 것 같아요',desc:'주소가 바뀌었거나 삭제된 여행일 수 있어요.',
         big:'map-pin',badge:'help',
         actions:[{label:'내 여행 목록으로',icon:'home',kind:'primary'},{label:'이전으로',icon:'arrow-left',kind:'secondary'}],helper:''},
@@ -154,7 +154,7 @@ class Component extends DCLogic {
 
   renderVals(){
     const h=React.createElement;const cfg=this.S[this.state.view];
-    const helperEl = cfg.helper ? h('div',{style:{marginTop:22,display:'inline-flex',alignItems:'center',gap:6,fontSize:12,fontWeight:600,color:'#A8AEB8'}},this.icon('clock',13,'#B6BCC6',2),cfg.helper) : null;
+    const helperEl = cfg.helper ? h('div',{style:{marginTop:22,display:'inline-flex',alignItems:'center',gap:6,fontSize:12,fontWeight:600,color:'#A8AEB8'}},this.icon('clock',13,'#71767F',2),cfg.helper) : null;
 
     // DS illo row
     const dsIlloRow=h('div',{style:{display:'flex',gap:16}},this.ORDER.map(k=>h('div',{key:k,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:8}},this.illo(this.S[k],92),h('span',{style:{fontSize:11.5,fontWeight:700,color:'#7B828F'}},this.S[k].code.split(' · ')[0]))));

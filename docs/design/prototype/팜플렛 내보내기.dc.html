@@ -104,7 +104,7 @@ class Component extends DCLogic {
       cherry:{key:'cherry',name:'벚꽃',ink:'#7A2E4E',accent:'#E87BA6',accent2:'#F4B8B0',wash:'#FBE9F1',soft:'#FDF4F8',line:'#F2D6E2',chipBg:'#F8DEEA',pattern:'petals'},
       snow:{key:'snow',name:'설경',ink:'#2E4159',accent:'#5E86C4',accent2:'#8FB7DE',wash:'#EAF0F7',soft:'#F5F8FC',line:'#DCE6F1',chipBg:'#E1EBF6',pattern:'flakes'},
       food:{key:'food',name:'미식',ink:'#6B2E1E',accent:'#D9603B',accent2:'#E0A93B',wash:'#FBECE4',soft:'#FDF5F0',line:'#F0D8CC',chipBg:'#F7DECF',pattern:'dots'},
-      basic:{key:'basic',name:'기본',ink:'#1B2030',accent:'#3B7DF0',accent2:'#3FC4A0',wash:'#EAF1FE',soft:'#F7FAFF',line:'#DCE6F8',chipBg:'#E4EDFB',pattern:'grid'},
+      basic:{key:'basic',name:'기본',ink:'#1B2030',accent:'#3172E3',accent2:'#3FC4A0',wash:'#EAF1FE',soft:'#F7FAFF',line:'#DCE6F8',chipBg:'#E4EDFB',pattern:'grid'},
       sky:{key:'sky',name:'해 · 하늘',ink:'#1E5A8A',accent:'#3FAEF0',accent2:'#FFC24D',wash:'#E4F3FE',soft:'#F2FAFF',line:'#D3E9F9',chipBg:'#DBEEFC',scene:'sky'},
       meadow:{key:'meadow',name:'잔디 들판',ink:'#2E6B3A',accent:'#5BC46A',accent2:'#FF9BB6',wash:'#EAF7E1',soft:'#F4FBEF',line:'#D8EDCB',chipBg:'#E1F3D6',scene:'meadow'},
       forest:{key:'forest',name:'숲',ink:'#23553F',accent:'#3FA679',accent2:'#E2A24C',wash:'#E6F4EC',soft:'#F2FAF5',line:'#D2E8DB',chipBg:'#DBEFE3',scene:'forest'},
@@ -444,7 +444,7 @@ class Component extends DCLogic {
   }
 
   // ===== EXPORT SCREEN =====
-  checkbox(on){const h=React.createElement;return h('span',{style:{width:20,height:20,borderRadius:6,border:'2px solid '+(on?'#3B7DF0':'#D3D8E0'),background:on?'#3B7DF0':'#fff',display:'inline-flex',alignItems:'center',justifyContent:'center',flex:'none'}},on?this.icon('check',12,'#fff',3.2):null);}
+  checkbox(on){const h=React.createElement;return h('span',{style:{width:20,height:20,borderRadius:6,border:'2px solid '+(on?'#3172E3':'#D3D8E0'),background:on?'#3172E3':'#fff',display:'inline-flex',alignItems:'center',justifyContent:'center',flex:'none'}},on?this.icon('check',12,'#fff',3.2):null);}
 
   buildExport(){
     const h=React.createElement;const th=this.THEMES[this.state.theme];const empty=this.state.empty;
@@ -479,7 +479,7 @@ class Component extends DCLogic {
           this.settingBlock('준비물 체크리스트','펼침면 뒷쪽에 인쇄돼요',prepEditor))),
       h('div',{style:{flex:'none',borderTop:'1px solid #ECEEF1',padding:'16px 22px',display:'flex',gap:10}},
         h('button',{style:{height:48,padding:'0 16px',border:'1px solid #E6E8EC',borderRadius:12,background:'#fff',color:'#5A606B',fontSize:13.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:7}},this.icon('file-text',17,'#5A606B',2),'미리보기'),
-        h('button',{onClick:()=>this.doExport(),disabled:this.state.exporting,style:{flex:1,height:48,border:'none',borderRadius:12,background:this.state.exporting?'#9DBEF6':'#3B7DF0',color:'#fff',fontSize:14.5,fontWeight:700,cursor:this.state.exporting?'default':'pointer',boxShadow:'0 5px 14px -3px rgba(59,125,240,.55)',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:8}},
+        h('button',{onClick:()=>this.doExport(),disabled:this.state.exporting,style:{flex:1,height:48,border:'none',borderRadius:12,background:this.state.exporting?'#9DBEF6':'#3172E3',color:'#fff',fontSize:14.5,fontWeight:700,cursor:this.state.exporting?'default':'pointer',boxShadow:'0 5px 14px -3px rgba(59,125,240,.55)',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:8}},
           this.state.exporting?h('span',{style:{width:17,height:17,borderRadius:'50%',border:'2.5px solid rgba(255,255,255,.45)',borderTopColor:'#fff',display:'inline-block',animation:'scSpin .8s linear infinite'}}):this.icon('download',18,'#fff',2.3),
           this.state.exporting?'PDF 만드는 중…':'PDF 내보내기')));
 
@@ -496,7 +496,7 @@ class Component extends DCLogic {
     return h('div',{style:{width:1280,height:760,background:'#fff',borderRadius:22,border:'1px solid #E8EAEF',boxShadow:'0 1px 3px rgba(16,24,40,.05),0 24px 60px -26px rgba(16,24,40,.28)',overflow:'hidden',display:'flex',flexDirection:'column'}},
       // top bar
       h('div',{style:{height:62,flex:'none',display:'flex',alignItems:'center',gap:13,padding:'0 20px',borderBottom:'1px solid #ECEEF1'}},
-        h('button',{style:{display:'inline-flex',alignItems:'center',gap:5,height:34,padding:'0 11px 0 8px',border:'1px solid #E6E8EC',background:'#fff',borderRadius:10,color:'#5A606B',fontSize:13,fontWeight:600,cursor:'pointer'}},this.icon('chevron',15,'#8A909B',2.2,true),'플랜으로'),
+        h('button',{style:{display:'inline-flex',alignItems:'center',gap:5,height:34,padding:'0 11px 0 8px',border:'1px solid #E6E8EC',background:'#fff',borderRadius:10,color:'#5A606B',fontSize:13,fontWeight:600,cursor:'pointer'}},this.icon('chevron',15,'#6B7280',2.2,true),'플랜으로'),
         h('div',{style:{width:1,height:24,background:'#ECEEF1'}}),
         h('span',{style:{fontSize:17,fontWeight:800,color:'#1B2030',letterSpacing:'-.02em'}},'팜플렛 내보내기'),
         h('span',{style:{marginLeft:2,fontSize:13,fontWeight:600,color:'#9AA0AB'}},'· '+this.TRIP.title),
@@ -544,7 +544,7 @@ class Component extends DCLogic {
   }
   buildEmptyToggle(){
     const h=React.createElement;const on=this.state.empty;
-    return h('button',{onClick:()=>this.setState({empty:!on}),style:{display:'inline-flex',alignItems:'center',gap:7,height:32,padding:'0 11px',border:'none',borderRadius:10,cursor:'pointer',background:on?'#3B7DF0':'rgba(255,255,255,.08)'}},
+    return h('button',{onClick:()=>this.setState({empty:!on}),style:{display:'inline-flex',alignItems:'center',gap:7,height:32,padding:'0 11px',border:'none',borderRadius:10,cursor:'pointer',background:on?'#3172E3':'rgba(255,255,255,.08)'}},
       h('span',{style:{fontSize:11.5,fontWeight:700,color:on?'#fff':'#9298A6'}},'빈 상태'),
       h('span',{style:{width:30,height:17,borderRadius:99,background:on?'rgba(255,255,255,.35)':'rgba(255,255,255,.16)',position:'relative',display:'inline-block'}},h('span',{style:{position:'absolute',top:2,left:on?15:2,width:13,height:13,borderRadius:'50%',background:'#fff',transition:'left .15s'}})));
   }

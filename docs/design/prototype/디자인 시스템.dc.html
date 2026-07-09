@@ -35,8 +35,8 @@
           <span style="font-size:14.5px;font-weight:500;color:#6B7280;letter-spacing:-.01em;">디자인 시스템 · J(계획형) + 路(길·동선) · 친구들과 함께 짜는 여행 계획</span>
         </div>
         <div style="margin-left:auto;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-          <span style="font-size:12px;font-weight:700;color:#B6BCC6;letter-spacing:.02em;">VERSION</span>
-          <span style="font-size:15px;font-weight:800;color:#3B7DF0;">v1.0</span>
+          <span style="font-size:12px;font-weight:700;color:#71767F;letter-spacing:.02em;">VERSION</span>
+          <span style="font-size:15px;font-weight:800;color:#3172E3;">v1.0</span>
         </div>
       </div>
       <!-- logo lockups -->
@@ -96,7 +96,7 @@
       </div>
     </div>
 
-    <div style="text-align:center;font-size:12.5px;font-weight:500;color:#B6BCC6;padding-top:4px;">jero design system · Pretendard · Lucide icons · 모든 화면 공통 토큰</div>
+    <div style="text-align:center;font-size:12.5px;font-weight:500;color:#71767F;padding-top:4px;">jero design system · Pretendard · Lucide icons · 모든 화면 공통 토큰</div>
   </div>
 </div>
 </x-dc>
@@ -136,13 +136,13 @@ class Component extends DCLogic {
       cafe:{label:'카페',icon:'coffee',bg:'#FBF1E4',fg:'#C5893A'},
       gift:{label:'기념품',icon:'gift',bg:'#F1ECFD',fg:'#8B6FE0'},
       shopping:{label:'쇼핑',icon:'shopping-bag',bg:'#FCE8F1',fg:'#D9609A'},
-      museum:{label:'명소',icon:'landmark',bg:'#E9F1FE',fg:'#3B7DF0'},
+      museum:{label:'명소',icon:'landmark',bg:'#E9F1FE',fg:'#3172E3'},
       hotel:{label:'숙소',icon:'bed',bg:'#E1F6EE',fg:'#1FA078'},
       transport:{label:'교통',icon:'bus',bg:'#E6F3FA',fg:'#3E97CC'},
       etc:{label:'기타',icon:'circle-dot',bg:'#EEF0F4',fg:'#7B828F'},
     };
     this.MEM=[
-      {initial:'지',color:'#3B7DF0',name:'지현'},
+      {initial:'지',color:'#3172E3',name:'지현'},
       {initial:'민',color:'#FF8A65',name:'민준'},
       {initial:'서',color:'#3FC4A0',name:'서윤'},
       {initial:'도',color:'#B07CF0',name:'도윤'},
@@ -183,7 +183,7 @@ class Component extends DCLogic {
     const h=React.createElement;
     const base={height:44,padding:'0 20px',borderRadius:13,fontSize:14,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:8,fontFamily:'inherit'};
     let st={};let ic='#fff';
-    if(kind==='primary'){st={border:'none',background:'#3B7DF0',color:'#fff',boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'};ic='#fff';}
+    if(kind==='primary'){st={border:'none',background:'#3172E3',color:'#fff',boxShadow:'0 4px 10px -2px rgba(59,125,240,.5)'};ic='#fff';}
     else if(kind==='secondary'){st={border:'1px solid #E6E8EC',background:'#fff',color:'#3A3F4B'};ic='#5A606B';}
     else if(kind==='ghost'){st={border:'none',background:'#F1F3F6',color:'#5A606B'};ic='#5A606B';}
     else if(kind==='danger'){st={border:'none',background:'#E8615C',color:'#fff',boxShadow:'0 4px 10px -2px rgba(232,97,92,.45)'};ic='#fff';}
@@ -196,12 +196,12 @@ class Component extends DCLogic {
     const heroMark=this.pinMark(48,'#ffffff',3.2);
     const lockLightBox=this.box(40,13,22);
     const lockLightBox2=this.box(40,13,22);
-    const monoMarkA=h('div',{style:{display:'inline-flex'}},this.pinMark(40,'#3B7DF0',3.2));
+    const monoMarkA=h('div',{style:{display:'inline-flex'}},this.pinMark(40,'#3172E3',3.2));
     const monoMarkB=h('div',{style:{display:'inline-flex'}},this.pinMark(40,'#1B2030',3.2));
 
     // colors
-    const primaryRow=this.swatchRow([['Primary','#3B7DF0'],['Hover','#2F6FE0'],['Tint 50','#EAF1FE'],['Wash','#F7FAFF']]);
-    const neutralRow=this.swatchRow([['Ink','#1B2030'],['Body','#2B313D'],['Muted','#5A606B'],['Subtle','#8A909B'],['Faint','#B6BCC6'],['Line','#ECEEF1'],['Surface','#FBFBFC'],['Canvas','#EEF0F4']]);
+    const primaryRow=this.swatchRow([['Primary','#3172E3'],['Hover','#2F6FE0'],['Tint 50','#EAF1FE'],['Wash','#F7FAFF']]);
+    const neutralRow=this.swatchRow([['Ink','#1B2030'],['Body','#2B313D'],['Muted','#5A606B'],['Subtle','#6B7280'],['Faint','#71767F'],['Line','#ECEEF1'],['Surface','#FBFBFC'],['Canvas','#EEF0F4']]);
     const semanticRow=this.swatchRow([['Success','#1FA078'],['Success 50','#E1F6EE'],['Danger','#E8615C'],['Danger 50','#FFECEB'],['Warn','#C5893A'],['Warn 50','#FBF1E4']]);
     const memberRow=h('div',{style:{display:'flex',gap:18,flexWrap:'wrap'}},this.MEM.map(m=>h('div',{key:m.name,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:7}},
       h('div',{style:{width:44,height:44,borderRadius:'50%',background:m.color,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:'0 2px 6px -1px '+m.color+'66'}},h('span',{style:{fontSize:17,fontWeight:800,color:'#fff'}},m.initial)),
@@ -246,9 +246,9 @@ class Component extends DCLogic {
     const inputBase={width:'100%',height:46,padding:'0 14px',borderRadius:12,fontFamily:'inherit',fontSize:14,fontWeight:500,outline:'none'};
     const inputsEl=h('div',{style:{display:'flex',flexDirection:'column',gap:11}},
       h('input',{readOnly:true,value:'기본 입력',style:Object.assign({},inputBase,{border:'1.5px solid #E2E5EA',background:'#fff',color:'#1F2430'})}),
-      h('div',{style:{display:'flex',flexDirection:'column',gap:5}},h('input',{readOnly:true,value:'포커스 상태',style:Object.assign({},inputBase,{border:'1.5px solid #3B7DF0',background:'#fff',color:'#1F2430',boxShadow:'0 0 0 3px rgba(59,125,240,.13)'})})),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:5}},h('input',{readOnly:true,value:'포커스 상태',style:Object.assign({},inputBase,{border:'1.5px solid #3172E3',background:'#fff',color:'#1F2430',boxShadow:'0 0 0 3px rgba(59,125,240,.13)'})})),
       h('div',{style:{display:'flex',flexDirection:'column',gap:5}},h('input',{readOnly:true,value:'',placeholder:'필수 항목이에요',style:Object.assign({},inputBase,{border:'1.5px solid #E8615C',background:'#FFFAFA',color:'#1F2430'})}),h('span',{style:{fontSize:11.5,fontWeight:600,color:'#E8615C'}},'필수 항목을 입력해 주세요')),
-      h('div',{style:{position:'relative',display:'flex',alignItems:'center'}},h('input',{readOnly:true,value:'jihyun@trip.co',style:Object.assign({},inputBase,{border:'1.5px solid #E2E5EA',background:'#F7F8FA',color:'#8A909B'})}),h('span',{style:{position:'absolute',right:13,display:'inline-flex'}},this.icon('eye',14,'#B6BCC6',2))));
+      h('div',{style:{position:'relative',display:'flex',alignItems:'center'}},h('input',{readOnly:true,value:'jihyun@trip.co',style:Object.assign({},inputBase,{border:'1.5px solid #E2E5EA',background:'#F7F8FA',color:'#6B7280'})}),h('span',{style:{position:'absolute',right:13,display:'inline-flex'}},this.icon('eye',14,'#71767F',2))));
 
     // chips
     const chip=(k)=>{const c=this.CAT[k];return h('span',{key:k,style:{display:'inline-flex',alignItems:'center',gap:6,height:30,padding:'0 12px 0 9px',borderRadius:99,background:c.bg,color:c.fg,fontSize:12.5,fontWeight:700}},this.icon(c.icon,14,c.fg,2.2),c.label);};
@@ -257,7 +257,7 @@ class Component extends DCLogic {
     // avatars + presence
     const av=(m,size,ring)=>h('div',{key:m.initial,style:{width:size,height:size,borderRadius:'50%',background:m.color,display:'flex',alignItems:'center',justifyContent:'center',boxShadow:ring?'0 0 0 2px #fff, 0 0 0 4px '+m.color:'0 2px 6px -1px '+m.color+'66',marginLeft:ring===2?-10:0}},h('span',{style:{fontSize:size*0.42,fontWeight:800,color:'#fff'}},m.initial));
     const presence=h('div',{style:{display:'flex',alignItems:'center'}},this.MEM.slice(0,4).map((m,i)=>h('div',{key:i,style:{marginLeft:i===0?0:-10,borderRadius:'50%',boxShadow:'0 0 0 2.5px #fff'}},av(m,34,0))),
-      h('div',{style:{marginLeft:-10,width:34,height:34,borderRadius:'50%',background:'#EEF0F4',boxShadow:'0 0 0 2.5px #fff',display:'flex',alignItems:'center',justifyContent:'center'}},h('span',{style:{fontSize:12,fontWeight:700,color:'#8A909B'}},'+2')));
+      h('div',{style:{marginLeft:-10,width:34,height:34,borderRadius:'50%',background:'#EEF0F4',boxShadow:'0 0 0 2.5px #fff',display:'flex',alignItems:'center',justifyContent:'center'}},h('span',{style:{fontSize:12,fontWeight:700,color:'#6B7280'}},'+2')));
     const avatarEl=h('div',{style:{display:'flex',flexDirection:'column',gap:14}},
       h('div',{style:{display:'flex',gap:12,alignItems:'center'}},av(this.MEM[0],44,0),av(this.MEM[1],34,0),av(this.MEM[2],28,0)),
       h('div',{style:{display:'flex',alignItems:'center',gap:12}},presence,h('span',{style:{display:'inline-flex',alignItems:'center',gap:6,fontSize:12,fontWeight:700,color:'#1FA078',background:'#E1F6EE',padding:'4px 10px',borderRadius:99}},h('span',{style:{width:7,height:7,borderRadius:'50%',background:'#1FA078'}}),'4명 접속 중')));
@@ -265,7 +265,7 @@ class Component extends DCLogic {
     // roles + toggle
     const ROLE={owner:{label:'소유자',icon:'crown',bg:'#EAF1FE',fg:'#2F6FE0'},editor:{label:'편집자',icon:'pencil',bg:'#E1F6EE',fg:'#1FA078'},viewer:{label:'뷰어',icon:'eye',bg:'#F1F3F6',fg:'#7A818D'}};
     const roleBadge=(r)=>{const x=ROLE[r];return h('span',{key:r,style:{display:'inline-flex',alignItems:'center',gap:5,height:26,padding:'0 10px 0 8px',borderRadius:99,background:x.bg,color:x.fg,fontSize:12,fontWeight:700}},this.icon(x.icon,13,x.fg,2.2),x.label);};
-    const tog=(on)=>h('span',{style:{width:46,height:27,borderRadius:99,background:on?'#3B7DF0':'#D7DBE2',position:'relative',display:'inline-block',flex:'none'}},h('span',{style:{position:'absolute',top:3,left:on?22:3,width:21,height:21,borderRadius:'50%',background:'#fff',boxShadow:'0 1px 3px rgba(0,0,0,.25)'}}));
+    const tog=(on)=>h('span',{style:{width:46,height:27,borderRadius:99,background:on?'#3172E3':'#D7DBE2',position:'relative',display:'inline-block',flex:'none'}},h('span',{style:{position:'absolute',top:3,left:on?22:3,width:21,height:21,borderRadius:'50%',background:'#fff',boxShadow:'0 1px 3px rgba(0,0,0,.25)'}}));
     const rolesEl=h('div',{style:{display:'flex',flexDirection:'column',gap:14}},
       h('div',{style:{display:'flex',gap:8}},roleBadge('owner'),roleBadge('editor'),roleBadge('viewer')),
       h('div',{style:{display:'flex',gap:14,alignItems:'center'}},tog(true),tog(false)));
@@ -274,21 +274,21 @@ class Component extends DCLogic {
     const numPin=(n,color)=>h('div',{style:{position:'relative',width:34,height:34,flex:'none'}},
       h('div',{style:{width:34,height:34,borderRadius:'50% 50% 50% 2px',transform:'rotate(45deg)',background:color,boxShadow:'0 3px 8px -1px '+color+'88'}}),
       h('span',{style:{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:800,color:'#fff'}},n));
-    const savedPin=h('div',{style:{width:26,height:26,borderRadius:'50%',background:'#fff',border:'2.5px solid #B6BCC6',display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},h('span',{style:{width:8,height:8,borderRadius:'50%',background:'#B6BCC6'}}));
+    const savedPin=h('div',{style:{width:26,height:26,borderRadius:'50%',background:'#fff',border:'2.5px solid #71767F',display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},h('span',{style:{width:8,height:8,borderRadius:'50%',background:'#71767F'}}));
     const markersEl=h('div',{style:{display:'flex',flexDirection:'column',gap:16}},
       h('div',{style:{display:'flex',alignItems:'center',gap:0}},
-        numPin('1','#3B7DF0'),
-        h('span',{style:{width:30,height:3,background:'#3B7DF0',borderRadius:99,opacity:.5}}),
-        numPin('2','#3B7DF0'),
-        h('span',{style:{width:30,height:3,background:'#3B7DF0',borderRadius:99,opacity:.5}}),
-        numPin('3','#3B7DF0')),
+        numPin('1','#3172E3'),
+        h('span',{style:{width:30,height:3,background:'#3172E3',borderRadius:99,opacity:.5}}),
+        numPin('2','#3172E3'),
+        h('span',{style:{width:30,height:3,background:'#3172E3',borderRadius:99,opacity:.5}}),
+        numPin('3','#3172E3')),
       h('div',{style:{display:'flex',alignItems:'center',gap:16}},
-        h('div',{style:{display:'flex',alignItems:'center',gap:8}},numPin('4','#3B7DF0'),h('span',{style:{fontSize:12,fontWeight:600,color:'#7B828F'}},'일정 등록 · 순서')),
+        h('div',{style:{display:'flex',alignItems:'center',gap:8}},numPin('4','#3172E3'),h('span',{style:{fontSize:12,fontWeight:600,color:'#7B828F'}},'일정 등록 · 순서')),
         h('div',{style:{display:'flex',alignItems:'center',gap:8}},savedPin,h('span',{style:{fontSize:12,fontWeight:600,color:'#7B828F'}},'저장만 됨'))));
 
     // status
     const statusEl=h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
-      h('div',{style:{display:'flex',alignItems:'center',gap:9}},h('span',{style:{width:18,height:18,borderRadius:'50%',border:'2.5px solid #DCE6F8',borderTopColor:'#3B7DF0',display:'inline-block',animation:'scSpin .8s linear infinite'}}),h('span',{style:{fontSize:13.5,fontWeight:600,color:'#5A606B'}},'불러오는 중…')),
+      h('div',{style:{display:'flex',alignItems:'center',gap:9}},h('span',{style:{width:18,height:18,borderRadius:'50%',border:'2.5px solid #DCE6F8',borderTopColor:'#3172E3',display:'inline-block',animation:'scSpin .8s linear infinite'}}),h('span',{style:{fontSize:13.5,fontWeight:600,color:'#5A606B'}},'불러오는 중…')),
       h('div',{style:{display:'flex',alignItems:'center',gap:8}},h('span',{style:{width:22,height:22,borderRadius:'50%',background:'#E1F6EE',display:'inline-flex',alignItems:'center',justifyContent:'center'}},this.icon('check',14,'#1FA078',2.8)),h('span',{style:{fontSize:13.5,fontWeight:700,color:'#1FA078'}},'저장되었어요')),
       h('div',{style:{display:'flex',alignItems:'center',gap:8}},h('span',{style:{width:22,height:22,borderRadius:'50%',background:'#FFECEB',display:'inline-flex',alignItems:'center',justifyContent:'center'}},this.icon('alert',14,'#E8615C',2.4)),h('span',{style:{fontSize:13.5,fontWeight:700,color:'#D6453F'}},'문제가 생겼어요')));
 
