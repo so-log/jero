@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* Pretendard Variable — dynamic-subset 자체호스팅(92 청크, unicode-range 분할).
+   외부 CDN 미사용(§8.6, font-src 'self'). 사용처는 @theme --font-sans 토큰 그대로. */
+@import "./fonts/pretendard.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -10,7 +13,8 @@
    · 색·radius·그림자 하드코딩 금지 — 이 토큰만 사용 (CLAUDE.md §7.1)
    ============================================================ */
 @theme {
-  /* ── Typography — Pretendard self-host (next/font/local, CDN 미사용) ── */
+  /* ── Typography — Pretendard Variable dynamic-subset 자체호스팅(@font-face 는 위 @import) ── */
+  --font-pretendard: "Pretendard Variable";
   --font-sans: var(--font-pretendard), -apple-system, BlinkMacSystemFont,
     "Segoe UI", "Apple SD Gothic Neo", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;

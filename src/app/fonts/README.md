@@ -1,19 +1,21 @@
-# 폰트 (self-host)
+# Pretendard Variable — dynamic-subset (자체호스팅)
 
-이 폴더에 **Pretendard Variable** 폰트 파일을 배치하세요. 외부 CDN을 쓰지 않습니다(보안 §8.6 / CSP `font-src 'self'`).
+`next/font/local` 단일 full woff2(2MB) 방식을 **Pretendard 공식 dynamic-subset**으로 교체했다.
 
-## 필요한 파일
+- **`pretendard.css`** — 92개 `@font-face`(각 `unicode-range` 분할, `font-display: swap`, `format('woff2-variations')`). `globals.css` 상단에서 `@import`. `font-family: 'Pretendard Variable'` → `@theme --font-pretendard`/`--font-sans` 토큰이 그대로 참조하므로 **사용처 무변경**.
+- **woff2 청크** — `public/fonts/pretendard/PretendardVariable.subset.*.woff2` (자체호스팅, 외부 CDN 미사용 → CSP `font-src 'self'`). 브라우저는 렌더된 글리프의 `unicode-range`에 매칭되는 청크만 내려받는다(full 2MB 대체).
+- **preload** — `src/app/layout.tsx`에서 가장 흔한 청크(91=라틴+기본 한글, 90=상용 한글)만 `react-dom` `preload`로 FCP 보전.
+- 폰트 파일이 없어도 **build/dev 는 실패하지 않는다**(fallback 폰트로 렌더). full woff2 및 `fonts.ts`(next/font/local)는 제거됨.
 
+## 재생성 (버전 업 시)
+
+```bash
+npm pack pretendard          # 릴리스 tarball (dependency 추가 아님)
+tar -xzf pretendard-*.tgz
+cp package/dist/web/variable/woff2-dynamic-subset/*.woff2 public/fonts/pretendard/
+# pretendardvariable-dynamic-subset.css 의 src 경로만 자체호스팅 위치로 치환:
+sed 's#\./woff2-dynamic-subset/#/fonts/pretendard/#g' \
+  package/dist/web/variable/pretendardvariable-dynamic-subset.css > src/app/fonts/pretendard.css
 ```
-src/app/fonts/PretendardVariable.woff2
-```
 
-- 다운로드: https://github.com/orioncactus/pretendard/releases
-  - 릴리스 압축 안 `dist/web/variable/PretendardVariable.woff2` (또는 `static` 가 아닌 **variable** woff2)
-- `src/app/fonts.ts` 가 이 파일을 `next/font/local` 로 로드합니다 (`weight: "100 900"`).
-
-## 주의
-
-- **파일이 없으면 `yarn dev` / `yarn build` 가 실패**합니다. (`yarn typecheck` 은 영향 없음)
-- 번들 용량(full ≈ 1.1MB)이 부담되면 한글 subset woff2 적용을 검토하세요. subset 적용 시 `fonts.ts` 의 `src` 경로만 교체하면 됩니다.
-- 이 woff2 파일은 바이너리이므로 저장소 커밋 정책(LFS 여부 등)은 별도로 결정하세요.
+출처: https://github.com/orioncactus/pretendard (SIL Open Font License 1.1 — `pretendard.css` 상단 고지 유지)
