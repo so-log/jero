@@ -4,12 +4,13 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, hasSupabase } from "@/lib/supabase/env";
 
 /**
- * 세션 갱신 + 보호 라우트 가드(계약 B3). 미인증이 보호 라우트 접근 시 `/`(01)로 리다이렉트하며
- * `returnTo` 를 보존한다. env 가드: 키 없으면 스킵(스텁 유지 — /trips 등 열림).
+ * 세션 갱신 + 보호 라우트 가드(계약 B3). Next 16 proxy 규약(구 middleware, 기능 동일).
+ * 미인증이 보호 라우트 접근 시 `/`(01)로 리다이렉트하며 `returnTo` 를 보존한다.
+ * env 가드: 키 없으면 스킵(스텁 유지 — /trips 등 열림).
  */
 const PROTECTED = ["/trips", "/settings"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   if (!hasSupabase) return NextResponse.next();
 
   let response = NextResponse.next({ request });
@@ -49,7 +50,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // 정적 자산 제외 전 경로에서 세션 갱신. 보호 판정은 미들웨어 내부에서.
+  // 정적 자산 제외 전 경로에서 세션 갱신. 보호 판정은 proxy 내부에서.
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
