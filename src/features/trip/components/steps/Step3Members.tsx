@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 
 import { Icon } from "@/components/ui/icon";
+import { useProfileQuery } from "@/features/account";
 import { cn } from "@/lib/utils";
 
 import { inviteSchema, type CreateTripInput, type InviteRole } from "../../lib/tripSchema";
@@ -11,11 +12,17 @@ import { inviteSchema, type CreateTripInput, type InviteRole } from "../../lib/t
 /**
  * Step3 — 멤버 초대(선택). 이메일 추가/제거 + 역할 토글(편집 가능/읽기 전용, owner 불가) + 초대 링크.
  * 생성자(나)는 owner 로 고정 표시(목록엔 미포함 — 서버가 owner 추가). 시안 step3.
+ * owner 프로필은 useProfileQuery 경유(§7.1) — 하드코딩 금지.
  */
-const ME = { name: "지현", email: "jihyun@trip.co", color: "#3B7DF0" };
 const MEMBER_COLORS = ["#FF8A65", "#3FC4A0", "#B07CF0", "#F0A93C", "#E0609A", "#4FA8D8"];
 
 export function Step3Members() {
+  const { data: profile } = useProfileQuery();
+  const me = {
+    name: profile?.name ?? "나",
+    email: profile?.email ?? "",
+    color: profile?.avatarColor ?? "#3B7DF0",
+  };
   const { control } = useFormContext<CreateTripInput>();
   const { fields, append, remove, update } = useFieldArray({
     control,
@@ -85,9 +92,9 @@ export function Step3Members() {
       {/* 멤버 목록 */}
       <div className="flex flex-col gap-2">
         <MemberRow
-          name={ME.name}
-          email={ME.email}
-          color={ME.color}
+          name={me.name}
+          email={me.email}
+          color={me.color}
           isOwner
         />
         {fields.map((field, i) => (

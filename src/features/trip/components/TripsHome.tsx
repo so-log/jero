@@ -9,6 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs";
+import { useProfileQuery } from "@/features/account";
 import { toISODate } from "@/lib/tripDate";
 
 import {
@@ -36,7 +37,13 @@ const FILTER_ITEMS = [
 export function TripsHome({ tab }: { tab: TripFilter }) {
   const router = useRouter();
   const { data: trips, isLoading } = useTripsQuery();
+  const { data: profile } = useProfileQuery();
   useSeedTripDetails(trips);
+
+  // 실제 프로필 → 헤더. 로딩 중엔 undefined(중립 표시).
+  const headerUser = profile
+    ? { initial: profile.name.slice(0, 1), name: profile.name, color: profile.avatarColor }
+    : undefined;
 
   const [search, setSearch] = useState("");
   const [today] = useState(() => toISODate(new Date()));
@@ -55,7 +62,7 @@ export function TripsHome({ tab }: { tab: TripFilter }) {
 
   return (
     <div className="flex h-screen flex-col">
-      <AppHeader search={search} onSearchChange={setSearch} />
+      <AppHeader search={search} onSearchChange={setSearch} user={headerUser} />
 
       <div className="flex min-h-0 flex-1 flex-col bg-surface">
         {/* page head */}

@@ -6,18 +6,17 @@ import { Icon } from "@/components/ui/icon";
 
 /**
  * 전역 헤더(로그인 후 공통) — 로고 + 검색 + 알림 + 사용자 메뉴. 시안 global header.
- * 표현 전용: 검색은 제어 props(목록 페이지가 클라 필터), 사용자/알림은 데모. 알림은 MVP 비활성(02 §12).
- * 워크스페이스(/trips/[id])는 이 헤더 대신 WorkspaceTopBar 사용(설계 §2 F2).
+ * 표현 전용: 검색은 제어 props(목록 페이지가 클라 필터). **사용자는 props 로 주입**(상위가 useProfileQuery 경유, §7.1).
+ * user 미지정(로딩)이면 중립 스켈레톤. 알림은 MVP 비활성(02 §12). 워크스페이스는 WorkspaceTopBar 사용(설계 §2 F2).
  */
 interface AppHeaderProps {
   search?: string;
   onSearchChange?: (value: string) => void;
+  /** 실제 프로필(없으면 로딩 중립 표시). */
   user?: { initial: string; name: string; color: string };
 }
 
-const DEMO_USER = { initial: "지", name: "지현", color: "#3B7DF0" };
-
-export function AppHeader({ search, onSearchChange, user = DEMO_USER }: AppHeaderProps) {
+export function AppHeader({ search, onSearchChange, user }: AppHeaderProps) {
   return (
     <header className="flex h-16 flex-none items-center justify-between border-b border-line bg-background px-[22px]">
       <Link href="/trips" className="flex flex-none items-center gap-2.5">
@@ -50,19 +49,30 @@ export function AppHeader({ search, onSearchChange, user = DEMO_USER }: AppHeade
         >
           <Icon name="bell" size={18} strokeWidth={2} />
         </button>
-        <Link
-          href="/settings"
-          className="flex h-[38px] items-center gap-2 rounded-pill border border-line-strong bg-background py-[3px] pr-2.5 pl-[3px] hover:bg-secondary"
-        >
-          <span
-            className="flex size-[30px] items-center justify-center rounded-full border-2 bg-background text-[12.5px] font-bold"
-            style={{ borderColor: user.color, color: user.color }}
+        {user ? (
+          <Link
+            href="/settings"
+            className="flex h-[38px] items-center gap-2 rounded-pill border border-line-strong bg-background py-[3px] pr-2.5 pl-[3px] hover:bg-secondary"
           >
-            {user.initial}
-          </span>
-          <span className="text-[13px] font-semibold text-body">{user.name}</span>
-          <Icon name="chevron-down" size={15} strokeWidth={2.2} className="text-mute" />
-        </Link>
+            <span
+              className="flex size-[30px] items-center justify-center rounded-full border-2 bg-background text-[12.5px] font-bold"
+              style={{ borderColor: user.color, color: user.color }}
+            >
+              {user.initial}
+            </span>
+            <span className="text-[13px] font-semibold text-body">{user.name}</span>
+            <Icon name="chevron-down" size={15} strokeWidth={2.2} className="text-mute" />
+          </Link>
+        ) : (
+          // 로딩 중립 — 하드코딩 이름 노출 방지.
+          <div
+            aria-hidden
+            className="flex h-[38px] items-center gap-2 rounded-pill border border-line-strong bg-background py-[3px] pr-3 pl-[3px]"
+          >
+            <span className="size-[30px] animate-pulse rounded-full bg-secondary" />
+            <span className="h-3 w-14 animate-pulse rounded bg-secondary" />
+          </div>
+        )}
       </div>
     </header>
   );
