@@ -27,18 +27,17 @@ import { Step4Mode } from "./steps/Step4Mode";
 const STEPS = ["여행 정보", "여행 기간", "멤버 초대", "시작 방식"];
 
 const DEFAULTS: CreateTripInput = {
-  title: "도쿄, 우리끼리 4일",
+  // 데모 프리필 없음 — 제목·나라·지역은 빈 값(placeholder 안내). 커버/아이콘 기본 선택만 유지.
+  title: "",
   icon: "building",
   cover: "blue",
-  country: "일본",
-  region: "도쿄",
+  country: "",
+  region: "",
   // 기본 날짜 없음 — 사용자가 시작·종료를 필수 선택(과거 기본값 방지, 종료≥시작).
   start_date: "",
   end_date: "",
-  members: [
-    { email: "minjun@gmail.com", role: "editor" },
-    { email: "seoyoon@gmail.com", role: "viewer" },
-  ],
+  // 초대 멤버 프리필 없음 — 소유자(=실제 나)만 기본(Step3 가 useProfileQuery 로 표시).
+  members: [],
   startMode: "blank",
   templateId: null,
 };
