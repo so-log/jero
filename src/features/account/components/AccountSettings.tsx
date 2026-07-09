@@ -125,7 +125,7 @@ export function AccountSettings() {
         )}
       </header>
 
-      <div className="flex min-h-0 flex-1">
+      <main className="flex min-h-0 flex-1">
         <SettingsNav active={active} onSelect={goSection} />
 
         <div className="flex min-w-0 flex-1 flex-col">
@@ -149,7 +149,7 @@ export function AccountSettings() {
             onSave={onSave}
           />
         </div>
-      </div>
+      </main>
     </div>
   );
 }

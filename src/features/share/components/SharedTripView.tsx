@@ -113,7 +113,7 @@ export function SharedTripView({ token }: { token: string }) {
       </div>
 
       {/* 본문: 일정(읽기 전용) + 지도 */}
-      <div className="flex min-h-0 flex-1">
+      <main className="flex min-h-0 flex-1">
         <ItineraryPanel
           days={days}
           dayPlaces={dayPlaces}
@@ -131,7 +131,7 @@ export function SharedTripView({ token }: { token: string }) {
             routeStyle="solid"
           />
         </div>
-      </div>
+      </main>
 
       {/* 워터마크 */}
       <div className="flex flex-none items-center justify-center border-t border-line bg-surface py-2.5 text-xs font-medium text-faint">

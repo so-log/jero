@@ -33,7 +33,7 @@ export function PamphletExportView({ tripId }: { tripId: string }) {
   const canEdit = trip ? roleCanEdit(trip.my_role) : true;
   if (trip && !canEdit) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-surface">
+      <main className="flex h-full w-full items-center justify-center bg-surface">
         <div className="flex flex-col items-center gap-3 text-center">
           <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-faint">
             <Icon name="lock" size={22} strokeWidth={2} />
@@ -43,7 +43,7 @@ export function PamphletExportView({ tripId }: { tripId: string }) {
             플랜으로 돌아가기
           </Link>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -69,7 +69,7 @@ export function PamphletExportView({ tripId }: { tripId: string }) {
         </span>
       </header>
 
-      <div className="flex min-h-0 flex-1">
+      <main className="flex min-h-0 flex-1">
         {/* 좌측 설정 */}
         <div className="flex w-[372px] flex-none flex-col border-r border-line">
           <div className="flex-1 overflow-y-auto p-[24px_22px]">
@@ -114,7 +114,7 @@ export function PamphletExportView({ tripId }: { tripId: string }) {
             />
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

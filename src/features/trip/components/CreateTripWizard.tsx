@@ -84,7 +84,7 @@ export function CreateTripWizard() {
   const isLast = step === 4;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas p-6">
+    <main className="flex min-h-screen items-center justify-center bg-canvas p-6">
       <div className="relative flex w-[692px] flex-col overflow-hidden rounded-card border border-line bg-background shadow-modal">
         {/* 헤더 */}
         <div className="flex items-center justify-between px-[22px] pt-[18px]">
@@ -183,6 +183,6 @@ export function CreateTripWizard() {
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

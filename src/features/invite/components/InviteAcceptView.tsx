@@ -50,7 +50,7 @@ export function InviteAcceptView({ token }: { token: string }) {
   const busy = preview.isLoading || loggedIn === null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas p-6">
+    <main className="flex min-h-screen items-center justify-center bg-canvas p-6">
       <div className="w-[420px]">
         {busy ? (
           <Center>
@@ -122,7 +122,7 @@ export function InviteAcceptView({ token }: { token: string }) {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 

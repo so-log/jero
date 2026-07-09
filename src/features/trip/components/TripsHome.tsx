@@ -64,7 +64,7 @@ export function TripsHome({ tab }: { tab: TripFilter }) {
     <div className="flex h-screen flex-col">
       <AppHeader search={search} onSearchChange={setSearch} user={headerUser} />
 
-      <div className="flex min-h-0 flex-1 flex-col bg-surface">
+      <main className="flex min-h-0 flex-1 flex-col bg-surface">
         {/* page head */}
         <div className="flex flex-none flex-col gap-[18px] px-7 pt-[26px]">
           <div className="flex items-end justify-between">
@@ -157,7 +157,7 @@ export function TripsHome({ tab }: { tab: TripFilter }) {
             </div>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

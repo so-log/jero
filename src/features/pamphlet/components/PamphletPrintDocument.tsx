@@ -93,17 +93,19 @@ export function PamphletPrintDocument({
         </button>
       </div>
 
-      {[front, back].map((cells, pi) =>
-        cells.length === 0 ? null : (
-          <div key={pi} className="pf-page">
-            <div className="pf-row">
-              {cells.map((cell, i) => (
-                <div key={i}>{renderCell(cell)}</div>
-              ))}
+      <main>
+        {[front, back].map((cells, pi) =>
+          cells.length === 0 ? null : (
+            <div key={pi} className="pf-page">
+              <div className="pf-row">
+                {cells.map((cell, i) => (
+                  <div key={i}>{renderCell(cell)}</div>
+                ))}
+              </div>
             </div>
-          </div>
-        ),
-      )}
+          ),
+        )}
+      </main>
     </div>
   );
 }
