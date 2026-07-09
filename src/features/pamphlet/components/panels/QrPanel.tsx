@@ -8,13 +8,16 @@ export function QrPanel({
   theme,
   w,
   tripId,
+  token,
 }: {
   theme: PamphletTheme;
   w: number;
   tripId: string;
+  /** 인쇄 라우트에서 쿼리로 받은 토큰(재발급 없이 인코딩). */
+  token?: string;
 }) {
   const s = w / 232;
-  const { svg } = useQrCode(tripId, theme.ink);
+  const { svg } = useQrCode(tripId, theme.ink, token);
   const qrSize = 110 * s;
 
   return (

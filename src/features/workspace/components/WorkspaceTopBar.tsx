@@ -1,5 +1,8 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Presence } from "@/components/ui/avatar";
@@ -25,6 +28,7 @@ export function WorkspaceTopBar({ trip, members, canEdit }: WorkspaceTopBarProps
   const period = formatPeriod(trip.start_date, trip.end_date);
   const { label: nightsLabel } = nightsDays(trip.start_date, trip.end_date);
   const openOverlay = useOverlayStore((s) => s.open);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   return (
     <header className="relative flex h-[66px] flex-none items-center justify-between border-b border-line bg-background px-[18px]">
@@ -88,14 +92,39 @@ export function WorkspaceTopBar({ trip, members, canEdit }: WorkspaceTopBarProps
               <Icon name="share" size={16} strokeWidth={2} />
               공유
             </Button>
-            <Button
-              variant="secondary"
-              size="icon-sm"
-              aria-label="더보기"
-              className="px-0"
-            >
-              <Icon name="more-horizontal" size={18} strokeWidth={2.2} />
-            </Button>
+            <div className="relative">
+              <Button
+                variant="secondary"
+                size="icon-sm"
+                aria-label="더보기"
+                aria-expanded={moreOpen}
+                onClick={() => setMoreOpen((v) => !v)}
+                className="px-0"
+              >
+                <Icon name="more-horizontal" size={18} strokeWidth={2.2} />
+              </Button>
+              {moreOpen && (
+                <>
+                  <button
+                    type="button"
+                    aria-hidden
+                    tabIndex={-1}
+                    className="fixed inset-0 z-10 cursor-default"
+                    onClick={() => setMoreOpen(false)}
+                  />
+                  <div className="absolute top-[calc(100%+6px)] right-0 z-20 w-[168px] rounded-lg border border-line bg-popover p-1.5 shadow-modal">
+                    <Link
+                      href={`/trips/${trip.id}/pamphlet`}
+                      onClick={() => setMoreOpen(false)}
+                      className="flex items-center gap-2 rounded-md px-2.5 py-2 text-[13px] font-semibold text-body hover:bg-secondary"
+                    >
+                      <Icon name="file-text" size={15} strokeWidth={2} />
+                      팜플렛 만들기
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         ) : (
           <span className="inline-flex h-9 items-center gap-1.5 rounded-md border border-line-strong bg-surface px-3.5 text-[13px] font-semibold text-faint">

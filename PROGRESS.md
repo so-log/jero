@@ -180,7 +180,21 @@
 - 검증: 유닛(faces) + 컴포넌트(SettingPanel 토글·테마·빈, PamphletPreview 렌더/토글/빈) + e2e pamphlet.spec(진입·렌더·테마전환).
   시안 대조(1280px 스크린샷) 일치. 전체 e2e 18/18, `yarn run check`(125)·build 그린.
 
+## 팜플렛 내보내기 2단계 (2026-07-09)
+
+`docs/architecture/팜플렛_설계.md` §5 PDF · 진입 버튼. **PDF = window.print() 폴백**(설계 §5) 채택 —
+서버 puppeteer 는 이 환경 Node 20 vs 스택 node22 요구 충돌 + Vercel 빌드 파손 위험으로 배제(사용자 승인).
+- 인쇄 라우트 `app/trips/[id]/pamphlet/print/page.tsx`(서버, **멤버십 재검증**·비멤버 리다이렉트) →
+  `PamphletPrintDocument`(미리보기와 동일 패널/faces 재사용, `@page{size:A4 landscape;margin:0}` print CSS,
+  로드 후 자동 window.print). 쿼리 theme·sections·token. 준비물은 기본 목록(쿼리 범위 밖 — 후속).
+- `useExportPdf`(인쇄 라우트 새 탭 열기 + 토큰 재사용), PamphletExportView "PDF 내보내기" 버튼 배선(생성 중 상태).
+- `useQrCode`/QrPanel/PamphletPreview 에 token override 추가(인쇄 라우트가 쿼리 토큰으로 QR 인코딩).
+- 진입: WorkspaceTopBar 더보기(⋯) 드롭다운 + ShareOverlay 푸터 → "팜플렛 만들기" `/trips/[id]/pamphlet`(editor+).
+- **AI 테마 추천(§7)은 후속**(LLM 인프라 미구성). 새 마이그레이션 없음, 새 의존성 없음.
+- 검증: e2e pamphlet.spec(진입버튼·미리보기·테마·인쇄 라우트 멤버렌더·비멤버 차단·QR /share 열림). 인쇄 스크린샷 시안 일치.
+  전체 e2e 21/21, `yarn run check`(125)·build 그린.
+
 ## 남은 후속
 
-- **팜플렛 2단계**: 인쇄 라우트 + PDF 내보내기(서버 headless 또는 print 폴백, §5) · AI 테마 추천(§7) · 워크스페이스 진입 버튼.
-- **2차 D**(OAuth·설정) — `docs/architecture/2차_구현_설계.md`. (A·B·C·E·F + 팜플렛 1단계 완료)
+- **팜플렛**: AI 테마 추천(§7) · 서버 PDF 승격(Node 22 시) · 준비물 편집분 인쇄 반영.
+- **2차 D**(OAuth·설정) — `docs/architecture/2차_구현_설계.md`. (A·B·C·E·F + 팜플렛 1·2단계 완료)

@@ -8,6 +8,7 @@ import { useTripQuery } from "@/features/trip";
 import { PAMPHLET_THEMES } from "@/lib/constants/pamphletThemes";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
 
+import { useExportPdf } from "../api/useExportPdf";
 import { usePamphletData } from "../api/usePamphletData";
 import { usePamphletStore } from "../store/pamphletStore";
 import { PamphletPreview } from "./PamphletPreview";
@@ -22,6 +23,7 @@ export function PamphletExportView({ tripId }: { tripId: string }) {
   const data = usePamphletData(tripId);
   const { sections, themeKey, prep, toggleSection } = usePamphletStore();
   const theme = PAMPHLET_THEMES[themeKey];
+  const { exportPdf, exporting } = useExportPdf(tripId);
 
   // 일정 0건이면 일정표 섹션 자동 해제(빈 면 방지). 로딩 중엔 isEmpty 가 임시 true 이므로 제외.
   useEffect(() => {
@@ -76,12 +78,12 @@ export function PamphletExportView({ tripId }: { tripId: string }) {
           <div className="flex flex-none gap-2.5 border-t border-line p-[16px_22px]">
             <button
               type="button"
-              disabled
-              title="PDF 내보내기는 다음 단계에서 제공돼요"
-              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md bg-primary/50 text-[14.5px] font-bold text-primary-foreground"
+              disabled={exporting}
+              onClick={() => void exportPdf(themeKey, sections)}
+              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-md bg-primary text-[14.5px] font-bold text-primary-foreground shadow-primary hover:bg-primary-hover disabled:opacity-60"
             >
               <Icon name="download" size={18} strokeWidth={2.3} />
-              PDF 내보내기 (준비 중)
+              {exporting ? "PDF 준비 중…" : "PDF 내보내기"}
             </button>
           </div>
         </div>

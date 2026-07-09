@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -128,7 +129,15 @@ export function ShareOverlay({
       loading={share.invite.isPending}
       loadingText="초대 메일을 보내는 중…"
       footer={
-        <div className="flex w-full justify-end">
+        <div className="flex w-full items-center justify-between">
+          <Link
+            href={`/trips/${tripId}/pamphlet`}
+            onClick={onClose}
+            className="inline-flex h-11 items-center gap-1.5 rounded-md border border-line-strong bg-background px-4 text-[13px] font-bold text-subtle hover:bg-secondary"
+          >
+            <Icon name="file-text" size={16} strokeWidth={2} />
+            팜플렛 만들기
+          </Link>
           <Button variant="primary" onClick={onClose} className="h-11">
             완료
           </Button>

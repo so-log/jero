@@ -22,6 +22,7 @@ export function PamphletPreview({
   prep,
   sections,
   panelWidth = 150,
+  shareToken,
 }: {
   tripId: string;
   theme: PamphletTheme;
@@ -29,6 +30,8 @@ export function PamphletPreview({
   prep: PrepItem[];
   sections: PamphletSections;
   panelWidth?: number;
+  /** QR 토큰(인쇄 라우트에서 쿼리로 전달). 없으면 QrPanel 이 발급. */
+  shareToken?: string;
 }) {
   const { front, back } = faces(sections, data.days.length);
   const dayLabels = data.days.map((d) => d.label);
@@ -50,7 +53,7 @@ export function PamphletPreview({
       case "intro":
         return <IntroPanel theme={theme} w={panelWidth} intro={data.intro} highlights={data.highlights} />;
       case "qr":
-        return <QrPanel theme={theme} w={panelWidth} tripId={tripId} />;
+        return <QrPanel theme={theme} w={panelWidth} tripId={tripId} token={shareToken} />;
     }
   };
 

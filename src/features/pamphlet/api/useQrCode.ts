@@ -12,11 +12,16 @@ import { usePamphletStore } from "../store/pamphletStore";
  * 토큰 없으면 1회 발급(읽기 전용 스코프·만료, §8.2) 후 pamphletStore 캐시. 색은 테마 ink.
  * 컴포넌트 직접 fetch 금지(§7.1) — issueShareLink 뮤테이션 경유. 반환 SVG 문자열(qrcode 라이브러리).
  */
-export function useQrCode(tripId: string, color: string): { svg: string | null } {
-  const token = usePamphletStore((s) => s.shareToken);
+export function useQrCode(
+  tripId: string,
+  color: string,
+  overrideToken?: string,
+): { svg: string | null } {
+  const storeToken = usePamphletStore((s) => s.shareToken);
   const setShareToken = usePamphletStore((s) => s.setShareToken);
   const { mutateAsync } = useShareActions(tripId).issueShareLink;
   const [svg, setSvg] = useState<string | null>(null);
+  const token = overrideToken ?? storeToken;
 
   useEffect(() => {
     let cancelled = false;

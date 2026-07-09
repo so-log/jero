@@ -4,4 +4,7 @@
  */
 export { PamphletExportView } from "./components/PamphletExportView";
 export { PamphletPreview } from "./components/PamphletPreview";
+export { PamphletPrintDocument } from "./components/PamphletPrintDocument";
 export { usePamphletData } from "./api/usePamphletData";
+export { useExportPdf } from "./api/useExportPdf";
+export type { PamphletSections } from "./lib/faces";
