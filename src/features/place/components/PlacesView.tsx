@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import { reverseGeocode, TripMap } from "@/components/map";
+import { getPlaceDetails, reverseGeocode, TripMap } from "@/components/map";
 import {
   deriveDays,
   useMembersQuery,
@@ -45,9 +45,26 @@ export function PlacesView({ tripId }: { tripId: string }) {
     [data],
   );
 
-  // 지도 빈 곳 클릭 → 좌표·주소(reverse geocoding) 확보 후 "장소 추가" 프리필로 오버레이 오픈.
+  // 지도 클릭 → "장소 추가" 프리필. POI 라벨(placeId) 클릭이면 이름·주소·좌표까지,
+  // 빈 곳 클릭이면 reverse geocoding(좌표+주소, 이름 빈값).
   const onMapClick = canEdit
-    ? async (position: { lat: number; lng: number }) => {
+    ? async (position: { lat: number; lng: number }, placeId?: string) => {
+        if (placeId) {
+          const d = await getPlaceDetails(placeId);
+          if (d) {
+            openOverlay("place", {
+              placePrefill: {
+                name: d.name,
+                address: d.address,
+                lat: d.lat,
+                lng: d.lng,
+                googlePlaceId: d.placeId,
+              },
+            });
+            return;
+          }
+          // 상세 조회 실패 → 좌표 기반 폴백(아래 공통 경로).
+        }
         const geo = await reverseGeocode(position);
         openOverlay("place", {
           placePrefill: {

@@ -5,7 +5,12 @@
 export { TripMap } from "./TripMap";
 export { MapFallback } from "./MapFallback";
 export { clusterMarkers } from "./stubs";
-export { reverseGeocode, type GeocodeResult } from "./geocode";
+export {
+  reverseGeocode,
+  getPlaceDetails,
+  type GeocodeResult,
+  type PlaceDetails,
+} from "./geocode";
 export {
   usePlacesAutocomplete,
   type PlaceSelection,

@@ -63,8 +63,11 @@ export interface TripMapProps {
   zoom?: number;
   /** 마커/동선 선택 → selectedId 후보 전달. */
   onSelect?: (id: string) => void;
-  /** 지도 빈 곳 클릭 → 좌표(lat/lng). 상위에서 reverse geocoding 후 "장소 추가" 프리필에 사용. */
-  onMapClick?: (position: LatLng) => void;
+  /**
+   * 지도 클릭 → 좌표(lat/lng)와, POI 라벨 클릭 시 그 장소의 `placeId`.
+   * placeId 있으면 상위가 장소 상세(이름·주소·좌표)를, 없으면 reverse geocoding 으로 "장소 추가" 프리필.
+   */
+  onMapClick?: (position: LatLng, placeId?: string) => void;
   /** 지도 포인터 이동 → 지도 좌표(lat/lng). 실시간 커서 송신용(도메인 무관, 상위에서 throttle). */
   onPointerMove?: (position: LatLng) => void;
   /** 지도에서 포인터 이탈. 실시간 커서 leave 송신용. */

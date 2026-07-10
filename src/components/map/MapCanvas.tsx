@@ -121,8 +121,16 @@ export function MapCanvas({
         onClick={
           onMapClick
             ? (e) => {
-                if (e.latLng)
-                  onMapClick({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+                if (!e.latLng) return;
+                const pos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
+                // POI 라벨 클릭이면 placeId 동반 — 기본 인포윈도 억제하고 placeId 전달.
+                const icon = e as google.maps.IconMouseEvent;
+                if (icon.placeId) {
+                  icon.stop();
+                  onMapClick(pos, icon.placeId);
+                  return;
+                }
+                onMapClick(pos);
               }
             : undefined
         }

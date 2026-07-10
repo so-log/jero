@@ -29,7 +29,8 @@ export const DEFAULT_ZOOM = 12;
 /** 기본 UI 끄고 커스텀 줌/범례를 얹는다. mapId 있으면 AdvancedMarker 경로 활성. */
 export const MAP_OPTIONS: google.maps.MapOptions = {
   disableDefaultUI: true,
-  clickableIcons: false,
+  // 지도에 표시된 실제 장소(가게·명소) 라벨 클릭 허용 → placeId 로 장소 추가(H 보강).
+  clickableIcons: true,
   gestureHandling: "greedy",
   ...(MAP_ID ? { mapId: MAP_ID } : {}),
 };
