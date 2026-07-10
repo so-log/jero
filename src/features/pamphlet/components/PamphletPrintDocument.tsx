@@ -6,7 +6,7 @@ import { PAMPHLET_THEMES, type PamphletThemeKey } from "@/lib/constants/pamphlet
 
 import { usePamphletData } from "../api/usePamphletData";
 import { faces, type FaceCell, type PamphletSections } from "../lib/faces";
-import { DEFAULT_PREP } from "../lib/prep";
+import { DEFAULT_PREP, type PrepItem } from "../lib/prep";
 import { CoverPanel } from "./panels/CoverPanel";
 import { DayPanel } from "./panels/DayPanel";
 import { IntroPanel } from "./panels/IntroPanel";
@@ -34,11 +34,14 @@ export function PamphletPrintDocument({
   themeKey,
   sections,
   token,
+  prep = DEFAULT_PREP,
 }: {
   tripId: string;
   themeKey: PamphletThemeKey;
   sections: PamphletSections;
   token?: string;
+  /** 편집된 준비물(없으면 기본 목록). 프리뷰와 동일 데이터로 렌더(§13). */
+  prep?: PrepItem[];
 }) {
   const data = usePamphletData(tripId);
   const theme = PAMPHLET_THEMES[themeKey];
@@ -69,7 +72,7 @@ export function PamphletPrintDocument({
       case "day":
         return <DayPanel theme={theme} w={PRINT_W} day={data.days[cell.dayIndex] ?? null} />;
       case "prep":
-        return <PrepPanel theme={theme} w={PRINT_W} prep={DEFAULT_PREP} />;
+        return <PrepPanel theme={theme} w={PRINT_W} prep={prep} />;
       case "intro":
         return <IntroPanel theme={theme} w={PRINT_W} intro={data.intro} highlights={data.highlights} />;
       case "qr":

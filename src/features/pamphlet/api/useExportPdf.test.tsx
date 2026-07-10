@@ -11,7 +11,11 @@ vi.mock("@/features/workspace/api/useShareActions", () => ({
 }));
 vi.mock("../store/pamphletStore", () => ({
   usePamphletStore: (sel: (s: unknown) => unknown) =>
-    sel({ shareToken: "tok-1", setShareToken: vi.fn() }),
+    sel({
+      shareToken: "tok-1",
+      setShareToken: vi.fn(),
+      prep: [{ label: "여권", on: true }],
+    }),
 }));
 
 const SECTIONS: PamphletSections = {
@@ -62,6 +66,7 @@ describe("useExportPdf", () => {
           theme: "beach",
           sections: "cover,schedule,qr",
           token: "tok-1",
+          prep: JSON.stringify([{ label: "여권", on: true }]),
         }),
       }),
     );

@@ -7,4 +7,5 @@ export { PamphletPreview } from "./components/PamphletPreview";
 export { PamphletPrintDocument } from "./components/PamphletPrintDocument";
 export { usePamphletData } from "./api/usePamphletData";
 export { useExportPdf } from "./api/useExportPdf";
+export { decodePrep, encodePrep, type PrepItem } from "./lib/prep";
 export type { PamphletSections } from "./lib/faces";

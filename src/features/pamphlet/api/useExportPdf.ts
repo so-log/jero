@@ -6,6 +6,7 @@ import { useShareActions } from "@/features/workspace/api/useShareActions";
 import type { PamphletThemeKey } from "@/lib/constants/pamphletThemes";
 
 import type { PamphletSections } from "../lib/faces";
+import { encodePrep } from "../lib/prep";
 import { usePamphletStore } from "../store/pamphletStore";
 
 /**
@@ -17,6 +18,7 @@ export function useExportPdf(tripId: string) {
   const { mutateAsync } = useShareActions(tripId).issueShareLink;
   const storeToken = usePamphletStore((s) => s.shareToken);
   const setShareToken = usePamphletStore((s) => s.setShareToken);
+  const prep = usePamphletStore((s) => s.prep);
   const [exporting, setExporting] = useState(false);
 
   const exportPdf = async (
@@ -28,6 +30,8 @@ export function useExportPdf(tripId: string) {
       .filter(([, on]) => on)
       .map(([k]) => k)
       .join(",");
+    // 편집된 준비물을 인쇄 렌더로 전달(§13) — 프리뷰와 동일 데이터.
+    const prepStr = encodePrep(prep);
     try {
       let token = storeToken;
       if (!token) {
@@ -45,6 +49,7 @@ export function useExportPdf(tripId: string) {
             theme: themeKey,
             sections: secStr,
             token,
+            prep: prepStr,
           }),
         });
         if (!res.ok) throw new Error(`export_failed_${res.status}`);
@@ -63,6 +68,7 @@ export function useExportPdf(tripId: string) {
           theme: themeKey,
           sections: secStr,
           token,
+          prep: prepStr,
         });
         window.open(
           `/trips/${tripId}/pamphlet/print?${params.toString()}`,

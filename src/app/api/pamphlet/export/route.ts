@@ -21,6 +21,7 @@ interface ExportBody {
   theme?: string;
   sections?: string; // csv (cover,schedule,prep,intro,qr)
   token?: string;
+  prep?: string; // 편집된 준비물(JSON 문자열, §13) — 인쇄 라우트로 그대로 전달.
 }
 
 async function launchBrowser(): Promise<Browser> {
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
   } catch {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
-  const { tripId, theme, sections, token } = body;
+  const { tripId, theme, sections, token, prep } = body;
   if (!tripId || !theme || !sections) {
     return NextResponse.json({ error: "bad_request" }, { status: 400 });
   }
@@ -89,6 +90,7 @@ export async function POST(request: NextRequest) {
   const origin = resolveOrigin(request);
   const params = new URLSearchParams({ theme, sections });
   if (token) params.set("token", token);
+  if (prep) params.set("prep", prep);
   const printUrl = `${origin}/trips/${tripId}/pamphlet/print?${params.toString()}`;
 
   let browser: Browser | null = null;

@@ -7,7 +7,7 @@ import {
 } from "@/lib/constants/pamphletThemes";
 import { hasSupabase } from "@/lib/supabase/env";
 import { createServerSupabase } from "@/lib/supabase/server";
-import type { PamphletSections } from "@/features/pamphlet";
+import { decodePrep, type PamphletSections } from "@/features/pamphlet";
 
 /**
  * 팜플렛 인쇄 전용 라우트(2차 2단계, 팜플렛_설계 §5) — 미리보기와 동일 컴포넌트를 A4 landscape print CSS 로 렌더.
@@ -64,6 +64,7 @@ export default async function PamphletPrintPage({
       themeKey={parseTheme(sp.theme)}
       sections={parseSections(sp.sections)}
       token={token}
+      prep={decodePrep(sp.prep)}
     />
   );
 }
