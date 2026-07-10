@@ -1,14 +1,16 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 
 import { getPlaceDetails, reverseGeocode, TripMap } from "@/components/map";
+import { Icon } from "@/components/ui/icon";
 import {
   deriveDays,
   useMembersQuery,
   usePlacesQuery,
 } from "@/features/itinerary";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
+import { cn } from "@/lib/utils";
 import { useOverlayStore } from "@/store/overlayStore";
 
 import {
@@ -18,6 +20,8 @@ import {
   toSavedMapMarkers,
 } from "../lib/selectors";
 import { useDeleteFolder, useUpsertFolder } from "../api/useFolders";
+import { useResizableMap } from "../hooks/useResizableMap";
+import { MAP_MIN_WIDTH } from "../lib/resize";
 import { usePlacesStore } from "../store/placesStore";
 import { ALL_FOLDER } from "../types";
 import { FolderSidebar } from "./FolderSidebar";
@@ -36,6 +40,10 @@ export function PlacesView({ tripId }: { tripId: string }) {
   const upsertFolder = useUpsertFolder(tripId);
   const deleteFolder = useDeleteFolder(tripId);
   const openOverlay = useOverlayStore((s) => s.open);
+
+  // 지도 패널 가변 폭/접기(설계 §6 UX). 컨테이너 기준으로 폭 클램프.
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const map = useResizableMap(containerRef);
 
   const saved = useMemo(() => data?.saved_places ?? [], [data]);
   const folders = data?.folders ?? [];
@@ -94,39 +102,97 @@ export function PlacesView({ tripId }: { tripId: string }) {
             : { name: "전체 장소", icon: "layers" as const, color: "#5A606B" };
         })();
 
+  const { collapsed, width, dragging } = map;
+
   return (
-    <div className="flex h-full min-h-0 w-full">
-      <FolderSidebar
-        folders={folders}
-        saved={saved}
-        folderId={folderId}
-        canEdit={canEdit}
-        onSelect={setFolder}
-        onCreateFolder={
-          canEdit ? (name) => upsertFolder.mutate({ name }) : undefined
-        }
-        onRenameFolder={
-          canEdit ? (id, name) => upsertFolder.mutate({ id, name }) : undefined
-        }
-        onDeleteFolder={
-          canEdit
-            ? (id) => {
-                if (folderId === id) setFolder(ALL_FOLDER); // 활성 폴더 삭제 → 전체로
-                deleteFolder.mutate(id);
-              }
-            : undefined
-        }
-      />
-      <PlaceList
-        tripId={tripId}
-        places={visible}
-        members={members}
-        days={days}
-        folder={folderMeta}
-        canEdit={canEdit}
-        isLoading={isLoading}
-      />
-      <div className="relative w-[356px] flex-none border-l border-line bg-canvas">
+    <div ref={containerRef} className="flex h-full min-h-0 w-full">
+      {!collapsed && (
+        <FolderSidebar
+          key="folders"
+          folders={folders}
+          saved={saved}
+          folderId={folderId}
+          canEdit={canEdit}
+          onSelect={setFolder}
+          onCreateFolder={
+            canEdit ? (name) => upsertFolder.mutate({ name }) : undefined
+          }
+          onRenameFolder={
+            canEdit ? (id, name) => upsertFolder.mutate({ id, name }) : undefined
+          }
+          onDeleteFolder={
+            canEdit
+              ? (id) => {
+                  if (folderId === id) setFolder(ALL_FOLDER); // 활성 폴더 삭제 → 전체로
+                  deleteFolder.mutate(id);
+                }
+              : undefined
+          }
+        />
+      )}
+      {!collapsed && (
+        <PlaceList
+          key="list"
+          tripId={tripId}
+          places={visible}
+          members={members}
+          days={days}
+          folder={folderMeta}
+          canEdit={canEdit}
+          isLoading={isLoading}
+        />
+      )}
+
+      {/* 리사이즈 핸들(수직 splitter) + 접기/펼치기 토글 */}
+      <div
+        key="splitter"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="지도 패널 크기 조절"
+        aria-valuenow={collapsed ? undefined : width}
+        aria-valuemin={MAP_MIN_WIDTH}
+        tabIndex={collapsed ? -1 : 0}
+        onPointerDown={map.onHandlePointerDown}
+        onPointerMove={map.onHandlePointerMove}
+        onPointerUp={map.onHandlePointerUp}
+        onKeyDown={map.onHandleKeyDown}
+        className={cn(
+          "group relative z-10 flex w-2 flex-none items-center justify-center border-l border-line bg-canvas transition-colors outline-none",
+          !collapsed &&
+            "cursor-col-resize hover:bg-primary-tint focus-visible:bg-primary-tint",
+        )}
+      >
+        {!collapsed && (
+          <Icon
+            name="grip-vertical"
+            size={14}
+            className="pointer-events-none text-mute group-hover:text-primary-hover group-focus-visible:text-primary-hover"
+          />
+        )}
+        <button
+          type="button"
+          aria-label={collapsed ? "리스트 펼치기" : "지도 넓게 보기 (리스트 접기)"}
+          onClick={map.toggleCollapsed}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="absolute top-3 left-1/2 flex size-7 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full border border-line-strong bg-background text-subtle shadow-card hover:bg-secondary hover:text-body"
+        >
+          <Icon
+            name={collapsed ? "chevrons-right" : "chevrons-left"}
+            size={15}
+            strokeWidth={2.2}
+          />
+        </button>
+      </div>
+
+      <div
+        key="mapPanel"
+        className="relative min-w-0 bg-canvas"
+        style={collapsed ? { flex: "1 1 0%" } : { flex: "0 0 auto", width }}
+      >
+        {/* 드래그 중 지도 위 포인터 이벤트 차단(경계 드래그 안정) */}
+        {dragging && (
+          <div className="absolute inset-0 z-20 cursor-col-resize" aria-hidden />
+        )}
         <TripMap
           scheduled={[]}
           saved={markers}

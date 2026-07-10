@@ -39,6 +39,8 @@ export type IconName =
   | "chevron-left"
   | "chevron-down"
   | "chevron-up"
+  | "chevrons-right"
+  | "chevrons-left"
   | "arrow-right"
   | "arrow-left"
   | "mail"
