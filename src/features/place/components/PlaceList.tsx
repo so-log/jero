@@ -92,7 +92,7 @@ export function PlaceList({
             <button
               type="button"
               onClick={toggleSort}
-              className="inline-flex h-10 items-center gap-1.5 rounded-md border border-line-strong bg-background pr-3 pl-3.5 text-[13px] font-semibold text-subtle hover:bg-secondary"
+              className="inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border border-line-strong bg-background pr-3 pl-3.5 text-[13px] font-semibold text-subtle hover:bg-secondary"
             >
               {SORT_LABEL[sort]}
               <Icon name="chevron-down" size={15} strokeWidth={2.2} className="text-mute" />
