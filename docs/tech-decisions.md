@@ -244,7 +244,8 @@ const Card = styled.div`
 | 프레임워크 청크(react-dom) | 70.8 KB gz (228 KB raw) |
 | 상위 4개 청크 gzip 합 | ≈ 336 KB gz |
 
-- **해석**: 가장 무거운 단일 청크가 **Recharts**다. 차트를 쓰는 화면(예산·통계)에 한정되므로, 해당 라우트에서만 로드되도록 코드 스플리팅(동적 import) 여지가 있다 — 개선 후보로 기록.
+- **해석**: 가장 무거운 단일 청크가 **Recharts**였다. 차트를 쓰는 화면(예산·통계)에 한정되므로 해당 화면에서만 로드되도록 코드 스플리팅했다.
+- **개선 완료(2026-07-09, `8b535e0`)**: Recharts 파트를 `*Chart.tsx`로 분리 → 부모 카드가 `next/dynamic(ssr:false)`로 지연 로드(로딩 중 고정 크기 스켈레톤). 차트 없는 워크스페이스 뷰(플랜·일정·장소)의 초기 번들에서 **Recharts 401KB raw / 115KB gz가 빠지고**, 예산·통계 진입 시에만 온디맨드 청크로 로드된다. Next 16이 라우트별 First Load JS를 출력하지 않아 `react-loadable-manifest.json`(빌드타임·확정적)으로 측정 — `/trips/[id]`의 lazy 모듈 1(지도)→5(지도+차트 4). 공개 API·차트 외형 무변경.
 - 지도(Google Maps)·Supabase 클라이언트도 상위 청크에 분산돼 있으나 minify로 서명 식별은 제한적이다.
 
 ### 8.2 빌드 측정값 (`next build`, Turbopack, 2026-07-09)
