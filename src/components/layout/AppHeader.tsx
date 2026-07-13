@@ -18,7 +18,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ search, onSearchChange, user }: AppHeaderProps) {
   return (
-    <header className="flex h-16 flex-none items-center justify-between border-b border-line bg-background px-[22px]">
+    <header className="flex h-16 flex-none items-center justify-between border-b border-line bg-background px-4 sm:px-[22px]">
       <Link href="/trips" className="flex flex-none items-center gap-2.5">
         <span className="flex size-[34px] items-center justify-center rounded-md bg-gradient-to-br from-[#6E9CF2] to-[#8FBCF7] text-white shadow-[0_4px_10px_-2px_color-mix(in_srgb,#5B8DEF_50%,transparent)]">
           <Icon name="map-pin" size={20} strokeWidth={2.4} />
@@ -28,7 +28,7 @@ export function AppHeader({ search, onSearchChange, user }: AppHeaderProps) {
         </span>
       </Link>
 
-      <div className="flex flex-1 justify-center px-7">
+      <div className="flex min-w-0 flex-1 justify-center px-2 sm:px-7">
         <div className="flex h-10 w-full max-w-[420px] items-center gap-2 rounded-md border border-transparent bg-secondary px-3.5 text-faint focus-within:border-primary/40 focus-within:bg-background">
           <Icon name="search" size={17} strokeWidth={2.2} />
           <input
@@ -52,7 +52,7 @@ export function AppHeader({ search, onSearchChange, user }: AppHeaderProps) {
         {user ? (
           <Link
             href="/settings"
-            className="flex h-[38px] items-center gap-2 rounded-pill border border-line-strong bg-background py-[3px] pr-2.5 pl-[3px] hover:bg-secondary"
+            className="flex h-[38px] items-center gap-2 rounded-pill border border-line-strong bg-background py-[3px] pr-[3px] pl-[3px] hover:bg-secondary sm:pr-2.5"
           >
             <span
               className="flex size-[30px] items-center justify-center rounded-full border-2 bg-background text-[12.5px] font-bold"
@@ -60,8 +60,15 @@ export function AppHeader({ search, onSearchChange, user }: AppHeaderProps) {
             >
               {user.initial}
             </span>
-            <span className="text-[13px] font-semibold text-body">{user.name}</span>
-            <Icon name="chevron-down" size={15} strokeWidth={2.2} className="text-mute" />
+            <span className="hidden text-[13px] font-semibold text-body sm:inline">
+              {user.name}
+            </span>
+            <Icon
+              name="chevron-down"
+              size={15}
+              strokeWidth={2.2}
+              className="hidden text-mute sm:block"
+            />
           </Link>
         ) : (
           // 로딩 중립 — 하드코딩 이름 노출 방지.

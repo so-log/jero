@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { preload } from "react-dom";
 import { Providers } from "./providers";
 import "./globals.css";
@@ -7,6 +7,12 @@ export const metadata: Metadata = {
   title: "jero — 함께 짜는 여행 계획",
   description:
     "친구들과 함께 여행 일정·동선·예산을 짜는 협업 여행 플래너. 위치 저장에 그치지 않고 순서·동선·예산·역할까지 함께 관리합니다.",
+};
+
+/** 반응형 기반 — 모바일 뷰포트 보장(Next 기본값 명시). */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 /** Pretendard dynamic-subset 중 가장 흔한 청크(라틴+기본 한글)만 preload → FCP 보전(§8.3).

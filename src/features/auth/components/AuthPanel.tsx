@@ -91,8 +91,8 @@ export function AuthPanel() {
   };
 
   return (
-    <div className="relative flex flex-1 items-center justify-center p-10">
-      <div className="flex w-[380px] flex-col">
+    <div className="relative flex flex-1 items-center justify-center p-6 sm:p-10">
+      <div className="flex w-full max-w-[380px] flex-col">
         <div className="mb-6 flex flex-col gap-1.5">
           <h1 className="text-[25px] font-extrabold tracking-tight text-ink">
             {signup ? "제이로 계정 만들기" : "다시 오신 걸 환영해요"}
@@ -202,7 +202,7 @@ export function AuthPanel() {
         <div className="mt-[26px] flex justify-center border-t border-line pt-[22px]">
           <Link
             href="/share/demo"
-            className="inline-flex h-[42px] items-center gap-1.5 rounded-md border border-line-strong bg-background px-[18px] text-[13.5px] font-bold text-subtle hover:bg-secondary"
+            className="inline-flex h-11 items-center gap-1.5 rounded-md border border-line-strong bg-background px-[18px] text-[13.5px] font-bold text-subtle hover:bg-secondary"
           >
             <Icon name="eye" size={16} strokeWidth={2} />
             공유 링크로 둘러보기

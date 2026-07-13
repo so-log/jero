@@ -66,7 +66,7 @@ export function TripsHome({ tab }: { tab: TripFilter }) {
 
       <main className="flex min-h-0 flex-1 flex-col bg-surface">
         {/* page head */}
-        <div className="flex flex-none flex-col gap-[18px] px-7 pt-[26px]">
+        <div className="flex flex-none flex-col gap-[18px] px-4 pt-[26px] sm:px-7">
           <div className="flex items-end justify-between">
             <div className="flex flex-col gap-1">
               <h1 className="text-2xl font-extrabold tracking-tight text-ink">
@@ -105,9 +105,9 @@ export function TripsHome({ tab }: { tab: TripFilter }) {
         </div>
 
         {/* scroll area */}
-        <div className="flex-1 overflow-y-auto px-7 pt-[22px] pb-7">
+        <div className="flex-1 overflow-y-auto px-4 pt-[22px] pb-7 sm:px-7">
           {isLoading ? (
-            <div className="grid grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
@@ -147,7 +147,7 @@ export function TripsHome({ tab }: { tab: TripFilter }) {
                       {group.trips.length}
                     </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                     {group.trips.map((trip) => (
                       <TripCard key={trip.id} trip={trip} todayISO={today} />
                     ))}
