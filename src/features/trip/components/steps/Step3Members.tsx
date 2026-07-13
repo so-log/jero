@@ -5,6 +5,7 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 
 import { Icon } from "@/components/ui/icon";
 import { useProfileQuery } from "@/features/account";
+import { copyToClipboard } from "@/lib/clipboard";
 import { cn } from "@/lib/utils";
 
 import { inviteSchema, type CreateTripInput, type InviteRole } from "../../lib/tripSchema";
@@ -15,6 +16,9 @@ import { inviteSchema, type CreateTripInput, type InviteRole } from "../../lib/t
  * owner 프로필은 useProfileQuery 경유(§7.1) — 하드코딩 금지.
  */
 const MEMBER_COLORS = ["#FF8A65", "#3FC4A0", "#B07CF0", "#F0A93C", "#E0609A", "#4FA8D8"];
+
+/** 초대 링크(생성 전 안내용 예시). 실 발급 링크 복사는 워크스페이스 ShareOverlay 경유. */
+const INVITE_LINK = "jero.app/i/tokyo-4d92x";
 
 export function Step3Members() {
   const { data: profile } = useProfileQuery();
@@ -30,6 +34,19 @@ export function Step3Members() {
   });
   const [draft, setDraft] = useState("");
   const [draftError, setDraftError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+
+  const copyInviteLink = async () => {
+    setCopyError(false);
+    const ok = await copyToClipboard(INVITE_LINK);
+    if (ok) {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } else {
+      setCopyError(true);
+    }
+  };
 
   const add = () => {
     const parsed = inviteSchema.shape.email.safeParse(draft);
@@ -111,23 +128,37 @@ export function Step3Members() {
       </div>
 
       {/* 초대 링크 */}
-      <div className="flex items-center gap-3 rounded-panel border border-dashed border-line-strong bg-primary-wash px-3.5 py-3">
-        <span className="flex size-[34px] flex-none items-center justify-center rounded-md bg-primary-tint text-primary-hover">
-          <Icon name="link" size={17} strokeWidth={2} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="text-[13px] font-bold text-body">초대 링크로 공유</div>
-          <div className="truncate text-xs font-medium text-faint">
-            jero.app/i/tokyo-4d92x · 읽기 전용
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-3 rounded-panel border border-dashed border-line-strong bg-primary-wash px-3.5 py-3">
+          <span className="flex size-[34px] flex-none items-center justify-center rounded-md bg-primary-tint text-primary-hover">
+            <Icon name="link" size={17} strokeWidth={2} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-bold text-body">초대 링크로 공유</div>
+            <div className="truncate text-xs font-medium text-faint">
+              {INVITE_LINK} · 읽기 전용
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={copyInviteLink}
+            aria-label={copied ? "복사됨" : "초대 링크 복사"}
+            className="inline-flex h-9 flex-none items-center gap-1.5 rounded-md border border-line-strong bg-background pr-3.5 pl-3 text-[13px] font-bold text-body hover:bg-secondary"
+          >
+            <Icon
+              name={copied ? "check" : "copy"}
+              size={15}
+              strokeWidth={2}
+              className={copied ? "text-success" : "text-faint"}
+            />
+            {copied ? "복사됨" : "복사"}
+          </button>
         </div>
-        <button
-          type="button"
-          className="inline-flex h-9 flex-none items-center gap-1.5 rounded-md border border-line-strong bg-background pr-3.5 pl-3 text-[13px] font-bold text-body hover:bg-secondary"
-        >
-          <Icon name="copy" size={15} strokeWidth={2} className="text-faint" />
-          복사
-        </button>
+        {copyError && (
+          <span className="text-[11.5px] font-semibold text-danger">
+            복사하지 못했어요. 링크를 길게 눌러 직접 복사해 주세요.
+          </span>
+        )}
       </div>
     </div>
   );

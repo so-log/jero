@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Presence } from "@/components/ui/avatar";
 import type { MemberDto, TripDto } from "@/features/itinerary/types";
@@ -34,10 +34,17 @@ export function WorkspaceTopBar({ trip, members, canEdit }: WorkspaceTopBarProps
     <header className="relative flex h-[66px] flex-none items-center justify-between border-b border-line bg-background px-[18px]">
       {/* 좌: 목록 + 여행 정보 */}
       <div className="flex min-w-0 items-center gap-3.5">
-        <Button variant="secondary" size="sm" className="gap-1.5 pr-[11px] pl-2">
+        <Link
+          href="/trips"
+          className={buttonVariants({
+            variant: "secondary",
+            size: "sm",
+            className: "gap-1.5 pr-[11px] pl-2",
+          })}
+        >
           <Icon name="arrow-left" size={17} strokeWidth={2} />
           목록
-        </Button>
+        </Link>
         <span className="h-6 w-px bg-line" />
         <span className="flex size-[42px] flex-none items-center justify-center rounded-lg bg-gradient-to-br from-[#6E9CF2] to-[#8FBCF7] text-white shadow-[0_4px_10px_-2px_color-mix(in_srgb,#5B8DEF_50%,transparent)]">
           <Icon name={trip.cover_icon} size={22} strokeWidth={2.1} />
