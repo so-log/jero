@@ -1,8 +1,14 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 
-import { getPlaceDetails, reverseGeocode, TripMap } from "@/components/map";
+import {
+  getPlaceDetails,
+  type LatLng,
+  type PlaceSelection,
+  reverseGeocode,
+  TripMap,
+} from "@/components/map";
 import { Icon } from "@/components/ui/icon";
 import {
   deriveDays,
@@ -25,6 +31,7 @@ import { MAP_MIN_WIDTH } from "../lib/resize";
 import { usePlacesStore } from "../store/placesStore";
 import { ALL_FOLDER } from "../types";
 import { FolderSidebar } from "./FolderSidebar";
+import { MapSearchBox } from "./MapSearchBox";
 import { PlaceList } from "./PlaceList";
 
 /**
@@ -44,6 +51,10 @@ export function PlacesView({ tripId }: { tripId: string }) {
   // 지도 패널 가변 폭/접기(설계 §6 UX). 컨테이너 기준으로 폭 클램프.
   const containerRef = useRef<HTMLDivElement | null>(null);
   const map = useResizableMap(containerRef);
+  // 검색 결과 선택 시 지도 이동 대상(값이 바뀔 때만 panTo).
+  const [flyTo, setFlyTo] = useState<{ position: LatLng; zoom?: number } | null>(
+    null,
+  );
 
   const saved = useMemo(() => data?.saved_places ?? [], [data]);
   const folders = data?.folders ?? [];
@@ -84,6 +95,20 @@ export function PlacesView({ tripId }: { tripId: string }) {
         });
       }
     : undefined;
+
+  // 지도 검색창 결과 선택 → 지도 이동 + "장소 추가" 프리필(POI 클릭과 동일 경로).
+  const onSearchSelect = (sel: PlaceSelection) => {
+    setFlyTo({ position: { lat: sel.lat, lng: sel.lng }, zoom: 16 });
+    openOverlay("place", {
+      placePrefill: {
+        name: sel.name,
+        address: sel.address,
+        lat: sel.lat,
+        lng: sel.lng,
+        googlePlaceId: sel.placeId,
+      },
+    });
+  };
 
   // 폴더 → 검색 → 정렬: 리스트·지도가 공유하는 단일 가시 집합.
   const visible = useMemo(
@@ -189,6 +214,7 @@ export function PlacesView({ tripId }: { tripId: string }) {
         className="relative min-w-0 bg-canvas"
         style={collapsed ? { flex: "1 1 0%" } : { flex: "0 0 auto", width }}
       >
+        {canEdit && <MapSearchBox onSelect={onSearchSelect} />}
         {/* 드래그 중 지도 위 포인터 이벤트 차단(경계 드래그 안정) */}
         {dragging && (
           <div className="absolute inset-0 z-20 cursor-col-resize" aria-hidden />
@@ -200,6 +226,7 @@ export function PlacesView({ tripId }: { tripId: string }) {
           selectedId={selectedId}
           onSelect={select}
           onMapClick={onMapClick}
+          flyTo={flyTo}
           legend={
             <div className="absolute bottom-3.5 left-3.5 flex items-center gap-2 rounded-md border border-line bg-white/90 px-3 py-2 text-xs font-semibold text-subtle shadow-[0_4px_14px_-4px_color-mix(in_srgb,var(--color-ink)_16%,transparent)] backdrop-blur">
               <span

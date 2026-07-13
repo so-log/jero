@@ -37,6 +37,7 @@ export function MapCanvas({
   routeStyle = "solid",
   center,
   zoom,
+  flyTo,
   onSelect,
   onMapClick,
   onPointerMove,
@@ -94,6 +95,13 @@ export function MapCanvas({
     allPositions.forEach((p) => bounds.extend(p));
     map.fitBounds(bounds, 64);
   }, [map, center, zoom, allPositions]);
+
+  // 검색 결과 선택 등 → 명령형 이동(사용자 드래그·fitBounds 와 충돌 없이). flyTo 가 바뀔 때만.
+  useEffect(() => {
+    if (!map || !flyTo) return;
+    map.panTo(flyTo.position);
+    if (flyTo.zoom != null) map.setZoom(flyTo.zoom);
+  }, [map, flyTo]);
 
   const onLoad = useCallback((instance: google.maps.Map) => setMap(instance), []);
   const onUnmount = useCallback(() => setMap(null), []);

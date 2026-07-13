@@ -61,6 +61,8 @@ export interface TripMapProps {
   /** 명시하면 fitBounds 대신 이 중심/줌 사용. */
   center?: LatLng;
   zoom?: number;
+  /** 검색 결과 등으로 지도를 명령형 이동(panTo). 값이 바뀔 때마다 해당 좌표로 부드럽게 이동. */
+  flyTo?: { position: LatLng; zoom?: number } | null;
   /** 마커/동선 선택 → selectedId 후보 전달. */
   onSelect?: (id: string) => void;
   /**
