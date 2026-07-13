@@ -37,4 +37,6 @@ yarn-error.log*
 .claude/settings.local.json
 
 # 디자인 툴(prototype) 산출물 — 커밋하지 않음
-d
+docs/design/prototype/.thumbnail
+docs/design/prototype/uploads/
+docs/design/prototype/*(standalone).html
