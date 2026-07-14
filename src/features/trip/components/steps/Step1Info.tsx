@@ -34,7 +34,7 @@ export function Step1Info() {
           <Icon name={icon} size={22} strokeWidth={2} />
         </span>
         <div className="absolute right-4 bottom-3.5 flex flex-col items-end gap-0.5 text-right">
-          <span className="max-w-[360px] truncate text-lg font-extrabold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.18)]">
+          <span className="max-w-[200px] truncate text-lg font-extrabold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.18)] sm:max-w-[360px]">
             {values.title?.trim() || "여행 제목"}
           </span>
           <span className="text-[12.5px] font-semibold text-white/90 drop-shadow-[0_1px_2px_rgba(0,0,0,0.18)]">
@@ -61,7 +61,7 @@ export function Step1Info() {
       </div>
 
       {/* 나라 / 지역 (콤보박스 — 제안 선택 + 자유 입력) */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label className="text-[12.5px] font-bold text-body">나라</label>
           <Controller
@@ -99,14 +99,14 @@ export function Step1Info() {
       </div>
 
       {/* 대표 아이콘 / 커버 색 (꾸미기) */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Controller
           control={control}
           name="icon"
           render={({ field }) => (
             <div className="flex flex-col gap-2">
               <label className="text-[12.5px] font-bold text-body">대표 아이콘</label>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {TRIP_ICONS.map((name) => {
                   const on = field.value === name;
                   return (
@@ -136,7 +136,7 @@ export function Step1Info() {
           render={({ field }) => (
             <div className="flex flex-col gap-2">
               <label className="text-[12.5px] font-bold text-body">커버 색</label>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {TRIP_COVERS.map((key) => {
                   const on = field.value === key;
                   return (

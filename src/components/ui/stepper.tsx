@@ -45,7 +45,7 @@ export function Stepper({
               </div>
               <span
                 className={cn(
-                  "text-xs font-semibold",
+                  "hidden whitespace-nowrap text-xs font-semibold sm:block",
                   active ? "text-ink" : done ? "text-subtle" : "text-mute",
                 )}
               >

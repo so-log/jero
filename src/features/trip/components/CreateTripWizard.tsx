@@ -83,10 +83,10 @@ export function CreateTripWizard() {
   const isLast = step === 4;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-canvas p-6">
-      <div className="relative flex w-[692px] flex-col overflow-hidden rounded-card border border-line bg-background shadow-modal">
+    <main className="flex min-h-screen items-stretch justify-center bg-canvas p-0 sm:items-center sm:p-6">
+      <div className="relative flex min-h-screen w-full flex-col overflow-hidden border-0 bg-background shadow-none sm:min-h-0 sm:w-[692px] sm:rounded-card sm:border sm:border-line sm:shadow-modal">
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-[22px] pt-[18px]">
+        <div className="flex items-center justify-between px-4 pt-4 sm:px-[22px] sm:pt-[18px]">
           <div className="flex items-center gap-2.5">
             <span className="flex size-[30px] items-center justify-center rounded-md bg-gradient-to-br from-[#6E9CF2] to-[#8FBCF7] text-white shadow-[0_3px_8px_-2px_color-mix(in_srgb,#5B8DEF_50%,transparent)]">
               <Icon name="map-pin" size={16} strokeWidth={2.1} />
@@ -99,20 +99,20 @@ export function CreateTripWizard() {
             type="button"
             aria-label="닫기"
             onClick={close}
-            className="flex size-[34px] items-center justify-center rounded-md bg-secondary text-faint hover:bg-line hover:text-subtle"
+            className="flex size-11 items-center justify-center rounded-md bg-secondary text-faint hover:bg-line hover:text-subtle sm:size-[34px]"
           >
             <Icon name="x" size={18} strokeWidth={2.2} />
           </button>
         </div>
 
         {/* 스테퍼 */}
-        <div className="px-[26px] pt-5 pb-[18px]">
+        <div className="px-4 pt-5 pb-[18px] sm:px-[26px]">
           <Stepper steps={STEPS} current={step} />
         </div>
         <div className="h-px bg-line" />
 
         {/* 본문 */}
-        <div className="relative min-h-[392px] p-[26px]">
+        <div className="relative min-h-[392px] flex-1 p-4 sm:p-[26px]">
           <FormProvider {...methods}>
             {bannerMessage && (
               <div className="mb-[18px] flex items-center gap-2.5 rounded-md border border-danger/30 bg-danger-tint px-3.5 py-2.5">
@@ -149,7 +149,7 @@ export function CreateTripWizard() {
         <div className="h-px bg-line" />
 
         {/* 푸터 */}
-        <div className="flex items-center justify-between px-[26px] py-4">
+        <div className="flex items-center justify-between px-4 py-4 sm:px-[26px]">
           {step > 1 ? (
             <button
               type="button"

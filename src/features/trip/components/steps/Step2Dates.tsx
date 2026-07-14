@@ -146,7 +146,7 @@ export function Step2Dates() {
 
   return (
     <div className="flex flex-col gap-[18px]">
-      <div className="flex gap-3.5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:gap-3.5">
         <DateField
           label="시작일"
           iso={startISO}
