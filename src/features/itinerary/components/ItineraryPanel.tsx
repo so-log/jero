@@ -95,8 +95,9 @@ export function ItineraryPanel({
   };
 
   return (
-    <aside className="flex w-[392px] flex-none flex-col border-r border-line bg-surface">
-      <div className="flex-none border-b border-line bg-background p-4">
+    <aside className="flex h-full w-full flex-col bg-surface md:border-r md:border-line">
+      {/* 데스크톱 Day 스위처 — 모바일은 상위 MobilePlanControls 가 담당(반응형 3-B). */}
+      <div className="hidden flex-none border-b border-line bg-background p-4 md:block">
         <DaySwitcher days={days} activeDay={activeDay} onSelect={setActiveDay} />
       </div>
 

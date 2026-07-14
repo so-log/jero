@@ -1,7 +1,7 @@
 "use client";
 
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -74,7 +74,7 @@ export function MapCanvas({
   );
 
   // 중심: center prop 우선, 없으면 마커에 fitBounds, 마커도 없으면 기본 도쿄.
-  useEffect(() => {
+  const applyView = useCallback(() => {
     if (!map) return;
     if (center) {
       map.setCenter(center);
@@ -95,6 +95,26 @@ export function MapCanvas({
     allPositions.forEach((p) => bounds.extend(p));
     map.fitBounds(bounds, 64);
   }, [map, center, zoom, allPositions]);
+
+  useEffect(() => {
+    applyView();
+  }, [applyView]);
+
+  // 컨테이너가 숨김(0px)→표시로 전환될 때(모바일 리스트↔지도 토글·패널 리사이즈) 타일 리레이아웃 + 뷰 재적용.
+  // display:none 상태로 초기화된 지도가 회색 타일로 남는 문제 방지. 데스크톱(항상 표시)에선 트리거되지 않음.
+  const containerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!map || !el || typeof ResizeObserver === "undefined") return;
+    let prevZero = el.offsetWidth === 0 || el.offsetHeight === 0;
+    const ro = new ResizeObserver(() => {
+      const zero = el.offsetWidth === 0 || el.offsetHeight === 0;
+      if (prevZero && !zero) applyView();
+      prevZero = zero;
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [map, applyView]);
 
   // 검색 결과 선택 등 → 명령형 이동(사용자 드래그·fitBounds 와 충돌 없이). flyTo 가 바뀔 때만.
   useEffect(() => {
@@ -118,7 +138,10 @@ export function MapCanvas({
   const isEmpty = scheduled.length === 0 && (filterToday || saved.length === 0);
 
   return (
-    <div className={cn("relative h-full w-full overflow-hidden", className)}>
+    <div
+      ref={containerRef}
+      className={cn("relative h-full w-full overflow-hidden", className)}
+    >
       <GoogleMap
         mapContainerStyle={{ width: "100%", height: "100%" }}
         options={MAP_OPTIONS}

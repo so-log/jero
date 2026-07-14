@@ -74,6 +74,7 @@ export type IconName =
   | "trash"
   | "more-horizontal"
   | "menu"
+  | "list"
   | "log-out"
   | "plane"
   | "arrow-up-down"

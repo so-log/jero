@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { TripMap, type LatLng } from "@/components/map";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
+import { cn } from "@/lib/utils";
 import { throttle } from "@/lib/throttle";
 import { useCursorStore } from "@/store/cursorStore";
 
@@ -20,6 +21,7 @@ import {
 import { usePlanStore } from "../store/planStore";
 import { useSelectionStore } from "../store/selectionStore";
 import { ItineraryPanel } from "./ItineraryPanel";
+import { MobilePlanControls, type PlanMode } from "./MobilePlanControls";
 
 /** 커서 송신 throttle 주기(ms) — mousemove 폭주를 브로드캐스트 절감(2차 A). */
 const CURSOR_THROTTLE_MS = 60;
@@ -33,8 +35,11 @@ export function PlanView({ tripId }: { tripId: string }) {
   const { data, isLoading } = usePlacesQuery(tripId);
   const { data: members = [] } = useMembersQuery(tripId);
 
-  const { activeDay, filterToday, activeCategory, selectedId, select } =
+  const { activeDay, filterToday, activeCategory, selectedId, select, setActiveDay } =
     usePlanStore();
+
+  // 모바일 전용: 리스트 ↔ 지도 토글(데스크톱은 2단이라 무관). 기본 리스트.
+  const [mobileMode, setMobileMode] = useState<PlanMode>("list");
 
   const days = useMemo(
     () => (data ? deriveDays(data.trip.start_date, data.trip.end_date) : []),
@@ -101,16 +106,44 @@ export function PlanView({ tripId }: { tripId: string }) {
   const unassignPlace = useUnassignPlace(tripId);
 
   return (
-    <div className="flex h-full min-h-0 w-full">
-      <ItineraryPanel
+    <div className="flex h-full min-h-0 w-full flex-col md:flex-row">
+      {/* 모바일 전용: Day 스위처 + 리스트/지도 세그먼트(토글 위 고정) */}
+      <MobilePlanControls
         days={days}
-        dayPlaces={dayPlaces}
-        isLoading={isLoading}
-        canEdit={canEdit}
-        onReorder={onReorder}
-        onUnassign={canEdit ? (placeId) => unassignPlace.mutate(placeId) : undefined}
+        activeDay={activeDay}
+        onDayChange={setActiveDay}
+        mode={mobileMode}
+        onModeChange={setMobileMode}
       />
-      <div className="relative min-w-0 flex-1 bg-canvas">
+
+      {/* 리스트 패널 — 모바일: 리스트 모드일 때만 / 데스크톱: 항상 좌측 392px */}
+      <div
+        className={cn(
+          "min-h-0",
+          mobileMode === "list" ? "flex flex-1" : "hidden",
+          "md:flex md:w-[392px] md:flex-none",
+        )}
+      >
+        <ItineraryPanel
+          days={days}
+          dayPlaces={dayPlaces}
+          isLoading={isLoading}
+          canEdit={canEdit}
+          onReorder={onReorder}
+          onUnassign={
+            canEdit ? (placeId) => unassignPlace.mutate(placeId) : undefined
+          }
+        />
+      </div>
+
+      {/* 지도 — 모바일: 지도 모드일 때만 / 데스크톱: 항상 우측 flex-1 */}
+      <div
+        className={cn(
+          "relative min-w-0 bg-canvas",
+          mobileMode === "map" ? "flex flex-1" : "hidden",
+          "md:flex md:flex-1",
+        )}
+      >
         <TripMap
           scheduled={scheduledMarkers}
           saved={savedMarkers}
