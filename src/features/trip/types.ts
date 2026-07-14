@@ -1,4 +1,4 @@
-import type { CoverColor } from "@/lib/constants/covers";
+import type { CoverValue } from "@/lib/constants/covers";
 import type { IconName } from "@/lib/constants/icons";
 import type { Role } from "@/lib/constants/roles";
 
@@ -14,7 +14,7 @@ export interface TripMemberAvatar {
 export interface TripSummaryDto {
   id: string;
   title: string;
-  cover_color: CoverColor;
+  cover_color: CoverValue;
   cover_icon: IconName;
   /** 'YYYY-MM-DD'. */
   start_date: string;

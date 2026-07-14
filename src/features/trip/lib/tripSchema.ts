@@ -18,7 +18,7 @@ export const TRIP_ICONS = [
   "waves",
 ] as const satisfies readonly IconName[];
 
-/** 커버 색 5종(lib/constants/covers 와 동일). */
+/** 커버 색 프리셋 5종(lib/constants/covers 와 동일). 이 외 임의 hex 도 저장 가능(coverSchema). */
 export const TRIP_COVERS = [
   "blue",
   "mint",
@@ -26,6 +26,12 @@ export const TRIP_COVERS = [
   "purple",
   "amber",
 ] as const satisfies readonly CoverColor[];
+
+/** 커버 값 검증 — 프리셋 키 또는 임의 hex('#RGB'/'#RRGGBB'). cover_color 는 text 라 스키마 변경 없음. */
+export const coverSchema = z.union([
+  z.enum(TRIP_COVERS),
+  z.string().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "올바른 색을 선택해 주세요"),
+]);
 
 /** 초대 역할 — UI 기본 editor, **owner 초대 불가**(결정 C). 생성자만 서버가 owner 로 추가. */
 export const inviteSchema = z.object({
@@ -40,7 +46,7 @@ export const tripSchema = z
   .object({
     title: z.string().trim().min(1, "여행 제목을 입력해 주세요"),
     icon: z.enum(TRIP_ICONS),
-    cover: z.enum(TRIP_COVERS),
+    cover: coverSchema,
     country: z.string().trim().max(40),
     region: z.string().trim().max(40),
     // 캘린더 선택값(ISO). 미선택이면 빈 문자열 → 검증 실패.

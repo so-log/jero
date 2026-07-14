@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 import type { TripDto } from "@/features/itinerary";
-import type { CoverColor } from "@/lib/constants/covers";
 import type { IconName } from "@/lib/constants/icons";
 import type { Role } from "@/lib/constants/roles";
 import { createClient } from "@/lib/supabase/client";
@@ -43,6 +42,7 @@ interface TripHeaderRow {
     start_date: string;
     end_date: string;
     cover_icon: string;
+    cover_color: string;
   } | null;
 }
 
@@ -56,7 +56,8 @@ function rowToSummary(row: TripMemberRow): TripSummaryDto | null {
   return {
     id: t.id,
     title: t.title,
-    cover_color: t.cover_color as CoverColor,
+    // text 컬럼 — 프리셋 키 또는 hex 를 그대로 보존(coverGradient resolver 가 해석).
+    cover_color: t.cover_color,
     cover_icon: t.cover_icon as IconName,
     start_date: t.start_date,
     end_date: t.end_date,
@@ -102,6 +103,7 @@ function toTripDto(summary: TripSummaryDto): TripDto {
     end_date: summary.end_date,
     my_role: summary.my_role,
     cover_icon: summary.cover_icon,
+    cover_color: summary.cover_color,
   };
 }
 
@@ -120,7 +122,9 @@ export function useTripQuery(tripId: string) {
       if (!user) throw new Error("로그인이 필요해요.");
       const { data, error } = await supabase
         .from("trip_member")
-        .select("role, trip:trip_id ( id, title, start_date, end_date, cover_icon )")
+        .select(
+          "role, trip:trip_id ( id, title, start_date, end_date, cover_icon, cover_color )",
+        )
         .eq("trip_id", tripId)
         .eq("user_id", user.id)
         .limit(1)
@@ -134,6 +138,7 @@ export function useTripQuery(tripId: string) {
         end_date: row.trip.end_date,
         my_role: row.role,
         cover_icon: row.trip.cover_icon as IconName,
+        cover_color: row.trip.cover_color,
       };
     },
   });

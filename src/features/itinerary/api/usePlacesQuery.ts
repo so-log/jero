@@ -53,6 +53,7 @@ interface TripHeaderRow {
     start_date: string;
     end_date: string;
     cover_icon: string;
+    cover_color: string;
     country: string | null;
     region: string | null;
   } | null;
@@ -80,7 +81,7 @@ export function usePlacesQuery(tripId: string) {
         supabase
           .from("trip_member")
           .select(
-            "role, trip:trip_id ( id, title, start_date, end_date, cover_icon, country, region )",
+            "role, trip:trip_id ( id, title, start_date, end_date, cover_icon, cover_color, country, region )",
           )
           .eq("trip_id", tripId)
           .eq("user_id", user.id)
@@ -114,6 +115,7 @@ export function usePlacesQuery(tripId: string) {
         end_date: header.trip.end_date,
         my_role: header.role,
         cover_icon: header.trip.cover_icon as IconName,
+        cover_color: header.trip.cover_color,
         country: header.trip.country,
         region: header.trip.region,
       };

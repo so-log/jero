@@ -48,6 +48,7 @@ export function useCreateTrip() {
         end_date: input.end_date,
         my_role: "owner",
         cover_icon: input.icon,
+        cover_color: input.cover,
         // 입력한 나라·지역을 즉시 캐시에도 반영(진입 직후 유실 방지, B2).
         country: input.country || null,
         region: input.region || null,

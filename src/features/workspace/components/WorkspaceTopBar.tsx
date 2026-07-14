@@ -9,6 +9,7 @@ import { Presence } from "@/components/ui/avatar";
 import type { MemberDto, TripDto } from "@/features/itinerary/types";
 import { TripDatesDialog } from "@/features/trip";
 
+import { coverGradient } from "@/lib/constants/covers";
 import { cn } from "@/lib/utils";
 import { formatPeriod, nightsDays } from "@/lib/tripDate";
 import { useOverlayStore } from "@/store/overlayStore";
@@ -51,7 +52,10 @@ export function WorkspaceTopBar({ trip, members, canEdit }: WorkspaceTopBarProps
           목록
         </Link>
         <span className="h-6 w-px bg-line" />
-        <span className="flex size-[42px] flex-none items-center justify-center rounded-lg bg-gradient-to-br from-[#6E9CF2] to-[#8FBCF7] text-white shadow-[0_4px_10px_-2px_color-mix(in_srgb,#5B8DEF_50%,transparent)]">
+        <span
+          className="flex size-[42px] flex-none items-center justify-center rounded-lg text-white shadow-[0_4px_10px_-2px_color-mix(in_srgb,var(--color-ink)_28%,transparent)]"
+          style={{ background: coverGradient(trip.cover_color) }}
+        >
           <Icon name={trip.cover_icon} size={22} strokeWidth={2.1} />
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">

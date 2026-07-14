@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Presence } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 import { RoleBadge } from "@/components/ui/role-badge";
-import { COVER } from "@/lib/constants/covers";
+import { coverGradient } from "@/lib/constants/covers";
 import { ddayLabel, formatPeriod, nightsDays } from "@/lib/tripDate";
 
 import type { TripSummaryDto } from "../types";
@@ -33,7 +33,7 @@ export function TripCard({
       {/* 커버 */}
       <div
         className="relative h-32 overflow-hidden"
-        style={{ background: COVER[trip.cover_color].gradient }}
+        style={{ background: coverGradient(trip.cover_color) }}
       >
         <svg
           className="absolute inset-0 opacity-20"

@@ -50,6 +50,8 @@ export interface TripDto {
   end_date: string;
   my_role: Role;
   cover_icon: IconName;
+  /** 커버 색(프리셋 키 또는 hex, 헤더 메달리언). 누락 시 resolver 가 기본색으로(하위호환). */
+  cover_color?: string | null;
   /** 나라·지역(표지·헤더 표시용, 선택). 팜플렛(2차)에서 사용. */
   country?: string | null;
   region?: string | null;

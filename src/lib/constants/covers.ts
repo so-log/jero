@@ -19,3 +19,28 @@ export const COVER_COLORS: CoverColor[] = [
   "purple",
   "amber",
 ];
+
+/**
+ * 저장되는 커버 값 — 프리셋 키 또는 임의 hex('#RRGGBB'/'#RGB'). DB(text)와 동일하게 열려 있다.
+ * `(string & {})` 로 프리셋 키 자동완성은 유지하면서 임의 문자열도 허용.
+ */
+export type CoverValue = CoverColor | (string & {});
+
+const HEX_RE = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
+/** value 가 프리셋 키인지. */
+export function isCoverPreset(value: string | null | undefined): value is CoverColor {
+  return !!value && value in COVER;
+}
+
+/**
+ * 커버 그라데이션 단일 resolver — 모든 커버 렌더 지점이 경유한다(§7.1, COVER 직접 인덱싱 금지).
+ * 프리셋 키 → 고정 그라데이션. hex → 그 색 기반(밝은 2번째 스톱, color-mix). 그 외/누락 → blue 기본(크래시 방지).
+ */
+export function coverGradient(value: CoverValue | null | undefined): string {
+  if (isCoverPreset(value)) return COVER[value].gradient;
+  if (value && HEX_RE.test(value)) {
+    return `linear-gradient(140deg, ${value}, color-mix(in srgb, ${value} 60%, #ffffff))`;
+  }
+  return COVER.blue.gradient;
+}

@@ -5,7 +5,7 @@ import { Controller, useFormContext, useWatch } from "react-hook-form";
 import { Combobox } from "@/components/ui/combobox";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import { COVER } from "@/lib/constants/covers";
+import { coverGradient } from "@/lib/constants/covers";
 import { citiesForCountry, COUNTRIES } from "@/lib/constants/regions";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,6 @@ export function Step1Info() {
   } = useFormContext<CreateTripInput>();
   const values = useWatch<CreateTripInput>({ control });
 
-  const cover = (values.cover ?? "blue") as keyof typeof COVER;
   const icon = values.icon ?? "building";
 
   return (
@@ -28,7 +27,7 @@ export function Step1Info() {
       {/* 라이브 프리뷰 */}
       <div
         className="relative h-[108px] overflow-hidden rounded-panel"
-        style={{ background: COVER[cover].gradient }}
+        style={{ background: coverGradient(values.cover) }}
       >
         <span className="absolute bottom-3.5 left-4 flex size-11 items-center justify-center rounded-lg bg-white/90 text-subtle shadow-[0_4px_12px_-2px_color-mix(in_srgb,var(--color-ink)_20%,transparent)] backdrop-blur">
           <Icon name={icon} size={22} strokeWidth={2} />
@@ -133,30 +132,62 @@ export function Step1Info() {
         <Controller
           control={control}
           name="cover"
-          render={({ field }) => (
-            <div className="flex flex-col gap-2">
-              <label className="text-[12.5px] font-bold text-body">커버 색</label>
-              <div className="flex flex-wrap gap-2">
-                {TRIP_COVERS.map((key) => {
-                  const on = field.value === key;
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      aria-label={key}
-                      aria-pressed={on}
-                      onClick={() => field.onChange(key)}
-                      className={cn(
-                        "size-10 flex-none rounded-md ring-2 ring-offset-2 transition-all",
-                        on ? "ring-primary" : "ring-transparent",
-                      )}
-                      style={{ background: COVER[key].gradient }}
+          render={({ field }) => {
+            const value = field.value ?? "";
+            const isCustom =
+              !!value && !(TRIP_COVERS as readonly string[]).includes(value);
+            // 네이티브 color input 은 6자리 hex 만 허용 — 아니면 기본 파랑으로 시작.
+            const pickerValue = /^#[0-9a-fA-F]{6}$/.test(value) ? value : "#3B7DF0";
+            return (
+              <div className="flex flex-col gap-2">
+                <label className="text-[12.5px] font-bold text-body">커버 색</label>
+                <div className="flex flex-wrap gap-2">
+                  {TRIP_COVERS.map((key) => {
+                    const on = field.value === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        aria-label={key}
+                        aria-pressed={on}
+                        onClick={() => field.onChange(key)}
+                        className={cn(
+                          "size-10 flex-none rounded-md ring-2 ring-offset-2 transition-all",
+                          on ? "ring-primary" : "ring-transparent",
+                        )}
+                        style={{ background: coverGradient(key) }}
+                      />
+                    );
+                  })}
+
+                  {/* 직접 선택 — 네이티브 color picker. 커스텀 hex 저장. */}
+                  <label
+                    aria-label="직접 선택"
+                    className={cn(
+                      "relative flex size-10 flex-none cursor-pointer items-center justify-center rounded-md ring-2 ring-offset-2 transition-all",
+                      isCustom ? "ring-primary" : "ring-transparent",
+                    )}
+                    style={{
+                      background: isCustom
+                        ? coverGradient(value)
+                        : "conic-gradient(from 180deg, #F2A98E, #E9B45C, #4FC9A6, #6E9CF2, #9D8DF0, #F2A98E)",
+                    }}
+                  >
+                    <input
+                      type="color"
+                      aria-label="커버 색 직접 선택"
+                      value={pickerValue}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      className="absolute inset-0 size-full cursor-pointer opacity-0"
                     />
-                  );
-                })}
+                    <span className="pointer-events-none flex size-5 items-center justify-center rounded-full bg-white/90 text-subtle shadow-sm">
+                      <Icon name="pencil" size={12} strokeWidth={2.4} />
+                    </span>
+                  </label>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          }}
         />
       </div>
     </div>
