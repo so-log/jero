@@ -65,6 +65,40 @@ export function Step3Members() {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* 초대 링크 공유 — 목록 최상위(U1) */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-3 rounded-panel border border-dashed border-line-strong bg-primary-wash px-3.5 py-3">
+          <span className="flex size-[34px] flex-none items-center justify-center rounded-md bg-primary-tint text-primary-hover">
+            <Icon name="link" size={17} strokeWidth={2} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-[13px] font-bold text-body">초대 링크로 공유</div>
+            <div className="truncate text-xs font-medium text-faint">
+              {INVITE_LINK} · 읽기 전용
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={copyInviteLink}
+            aria-label={copied ? "복사됨" : "초대 링크 복사"}
+            className="inline-flex h-9 flex-none items-center gap-1.5 rounded-md border border-line-strong bg-background pr-3.5 pl-3 text-[13px] font-bold text-body hover:bg-secondary"
+          >
+            <Icon
+              name={copied ? "check" : "copy"}
+              size={15}
+              strokeWidth={2}
+              className={copied ? "text-success" : "text-faint"}
+            />
+            {copied ? "복사됨" : "복사"}
+          </button>
+        </div>
+        {copyError && (
+          <span className="text-[11.5px] font-semibold text-danger">
+            복사하지 못했어요. 링크를 길게 눌러 직접 복사해 주세요.
+          </span>
+        )}
+      </div>
+
       {/* 이메일 초대 */}
       <div className="flex flex-col gap-1.5">
         <label className="text-[12.5px] font-bold text-body">이메일로 초대</label>
@@ -125,40 +159,6 @@ export function Step3Members() {
             onRemove={() => remove(i)}
           />
         ))}
-      </div>
-
-      {/* 초대 링크 */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center gap-3 rounded-panel border border-dashed border-line-strong bg-primary-wash px-3.5 py-3">
-          <span className="flex size-[34px] flex-none items-center justify-center rounded-md bg-primary-tint text-primary-hover">
-            <Icon name="link" size={17} strokeWidth={2} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="text-[13px] font-bold text-body">초대 링크로 공유</div>
-            <div className="truncate text-xs font-medium text-faint">
-              {INVITE_LINK} · 읽기 전용
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={copyInviteLink}
-            aria-label={copied ? "복사됨" : "초대 링크 복사"}
-            className="inline-flex h-9 flex-none items-center gap-1.5 rounded-md border border-line-strong bg-background pr-3.5 pl-3 text-[13px] font-bold text-body hover:bg-secondary"
-          >
-            <Icon
-              name={copied ? "check" : "copy"}
-              size={15}
-              strokeWidth={2}
-              className={copied ? "text-success" : "text-faint"}
-            />
-            {copied ? "복사됨" : "복사"}
-          </button>
-        </div>
-        {copyError && (
-          <span className="text-[11.5px] font-semibold text-danger">
-            복사하지 못했어요. 링크를 길게 눌러 직접 복사해 주세요.
-          </span>
-        )}
       </div>
     </div>
   );

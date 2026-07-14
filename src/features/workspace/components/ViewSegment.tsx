@@ -13,7 +13,7 @@ type ViewKey = "plan" | "calendar" | "places" | "budget" | "stats";
 
 const VIEWS: { value: ViewKey; label: string; icon: IconName }[] = [
   { value: "plan", label: "플랜", icon: "route" },
-  { value: "calendar", label: "일정표", icon: "calendar" },
+  { value: "calendar", label: "캘린더", icon: "calendar" },
   { value: "places", label: "장소", icon: "map-pin" },
   { value: "budget", label: "예산", icon: "wallet" },
   { value: "stats", label: "통계", icon: "activity" },
