@@ -13,6 +13,8 @@ export interface PlacePrefill {
   lat?: number | null;
   lng?: number | null;
   googlePlaceId?: string | null;
+  /** 플랜 Day 맥락 추가(B6) — 지정 시 저장하면 그 날짜에 배정(scheduled_date). 없으면 미배정. */
+  scheduledDate?: string | null;
 }
 
 interface OverlayState {

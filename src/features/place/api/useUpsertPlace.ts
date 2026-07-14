@@ -8,7 +8,8 @@ import { hasSupabase } from "@/lib/supabase/env";
 
 import type { PlaceForm } from "../lib/placeSchema";
 
-type PlaceUpsert = PlaceForm & { id?: string };
+/** scheduledDate 지정 시(플랜 Day 맥락 추가, B6) 그 날짜에 배정하며 생성. 없으면 미배정 저장. */
+type PlaceUpsert = PlaceForm & { id?: string; scheduledDate?: string | null };
 
 /**
  * 장소 추가·편집·삭제 seam(오버레이 ①, 04 "장소 추가"). 계약 B5.
@@ -42,9 +43,30 @@ export function useUpsertPlace(tripId: string) {
           .eq("id", input.id);
         if (error) throw new Error("장소를 저장하지 못했어요.");
       } else {
-        const { error } = await supabase
-          .from("place")
-          .insert({ ...row, trip_id: tripId, saved_by: user?.id ?? null });
+        // 플랜 Day 맥락 추가(B6): scheduledDate 있으면 그 날짜 말미에 배정하며 생성. 없으면 미배정 저장.
+        let scheduled_date: string | null = null;
+        let order_in_day: number | null = null;
+        let scheduled_by: string | null = null;
+        if (input.scheduledDate) {
+          scheduled_date = input.scheduledDate;
+          scheduled_by = user?.id ?? null;
+          const cache = queryClient.getQueryData<PlacesResponse>([
+            "places",
+            tripId,
+          ]);
+          const maxOrder = (cache?.places ?? [])
+            .filter((p) => p.scheduled_date === scheduled_date)
+            .reduce((m, p) => Math.max(m, p.order_in_day ?? 0), 0);
+          order_in_day = maxOrder + 1;
+        }
+        const { error } = await supabase.from("place").insert({
+          ...row,
+          trip_id: tripId,
+          saved_by: user?.id ?? null,
+          scheduled_date,
+          order_in_day,
+          scheduled_by,
+        });
         if (error) throw new Error("장소를 추가하지 못했어요.");
       }
       return input;

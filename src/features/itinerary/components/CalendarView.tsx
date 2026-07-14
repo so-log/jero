@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -19,6 +19,7 @@ import {
   weekLabel,
 } from "../lib/calendar";
 import { useCalendarStore } from "../store/calendarStore";
+import { useSelectionStore } from "../store/selectionStore";
 import type { PlaceDto } from "../types";
 import { CalendarToolbar } from "./CalendarToolbar";
 import { DayTimeline } from "./DayTimeline";
@@ -37,6 +38,26 @@ export function CalendarView({ tripId }: { tripId: string }) {
   const tripStart = data?.trip.start_date ?? "";
   const tripEnd = data?.trip.end_date ?? "";
   const cursor = cursorDate ?? tripStart;
+
+  // B5 — 공유 선택 날짜 동기화(getState 비교로 핑퐁 방지).
+  const selectedDate = useSelectionStore((s) => s.selectedDate);
+  // 공유 날짜 → 캘린더 커서 채택(플랜에서 보던 날짜 유지).
+  useEffect(() => {
+    if (selectedDate && selectedDate !== useCalendarStore.getState().cursorDate) {
+      setCursor(selectedDate);
+    }
+  }, [selectedDate, setCursor]);
+  // 커서가 트립 내 날짜면 공유 소스에 발행(왕복 유지). 트립 밖(월 이동 등)은 발행 안 함.
+  useEffect(() => {
+    if (
+      cursorDate &&
+      cursorDate >= tripStart &&
+      cursorDate <= tripEnd &&
+      cursorDate !== useSelectionStore.getState().selectedDate
+    ) {
+      useSelectionStore.getState().setSelectedDate(cursorDate);
+    }
+  }, [cursorDate, tripStart, tripEnd]);
 
   const byDate = useMemo<Map<string, PlaceDto[]>>(
     () => (data ? placesByDate(data.places) : new Map()),

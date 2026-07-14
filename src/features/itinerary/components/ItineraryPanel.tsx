@@ -68,6 +68,11 @@ export function ItineraryPanel({
 
   const openOverlay = useOverlayStore((s) => s.open);
   const dayLabel = days[activeDay]?.label ?? "";
+  // 플랜 Day 맥락 추가(B6) — 활성 Day 날짜로 배정해 생성.
+  const addToActiveDay = () =>
+    openOverlay("place", {
+      placePrefill: { scheduledDate: days[activeDay]?.date ?? null },
+    });
   const list = filterByCategory(dayPlaces, activeCategory);
   const canDrag = canEdit && activeCategory === "all";
 
@@ -108,7 +113,7 @@ export function ItineraryPanel({
                 <Button
                   variant="primary"
                   className="gap-1.5"
-                  onClick={() => openOverlay("place")}
+                  onClick={addToActiveDay}
                 >
                   <Icon name="plus" size={18} strokeWidth={2.3} />
                   장소 추가하기
@@ -134,7 +139,7 @@ export function ItineraryPanel({
                   variant="soft"
                   size="sm"
                   className="gap-1 pr-3 pl-2.5"
-                  onClick={() => openOverlay("place")}
+                  onClick={addToActiveDay}
                 >
                   <Icon name="plus" size={16} strokeWidth={2.3} />
                   장소 추가

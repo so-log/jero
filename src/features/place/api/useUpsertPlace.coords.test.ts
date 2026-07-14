@@ -65,6 +65,28 @@ describe("useUpsertPlace — 좌표·place_id 기록", () => {
       lat: null,
       lng: null,
       google_place_id: null,
+      // 일반(장소 탭) 추가는 미배정 유지.
+      scheduled_date: null,
+      order_in_day: null,
+    });
+  });
+
+  it("Day 맥락 추가(scheduledDate)는 그 날짜에 배정하며 생성한다(B6)", async () => {
+    const { result } = renderHookWithClient(() => useUpsertPlace("trip_1"));
+    await act(async () => {
+      await result.current.mutateAsync({
+        name: "에펠탑",
+        address: "파리",
+        category: "museum",
+        folderId: null,
+        memo: "",
+        scheduledDate: "2026-08-11",
+      });
+    });
+    expect(insertSpy.mock.calls[0][0]).toMatchObject({
+      scheduled_date: "2026-08-11",
+      order_in_day: 1, // 캐시 비어있음 → 그 날 첫 순서
+      scheduled_by: "u1",
     });
   });
 });

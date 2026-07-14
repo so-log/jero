@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { renderWithClient } from "@/test/utils";
 
 import { usePlanStore } from "../store/planStore";
+import { useSelectionStore } from "../store/selectionStore";
 import { PlanView } from "./PlanView";
 
 /**
@@ -16,6 +17,8 @@ beforeEach(() => {
     activeCategory: "all",
     selectedId: null,
   });
+  // 플랜↔캘린더 공유 선택 날짜(B5) — 테스트 간 격리(싱글턴 store leak 방지).
+  useSelectionStore.setState({ selectedDate: null });
 });
 
 describe("PlanView", () => {

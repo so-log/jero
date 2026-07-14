@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import { TripMap, type LatLng } from "@/components/map";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
@@ -18,6 +18,7 @@ import {
   toScheduledMarkers,
 } from "../lib/selectors";
 import { usePlanStore } from "../store/planStore";
+import { useSelectionStore } from "../store/selectionStore";
 import { ItineraryPanel } from "./ItineraryPanel";
 
 /** 커서 송신 throttle 주기(ms) — mousemove 폭주를 브로드캐스트 절감(2차 A). */
@@ -40,6 +41,24 @@ export function PlanView({ tripId }: { tripId: string }) {
     [data],
   );
   const activeDate = days[activeDay]?.date;
+
+  // B5 — 플랜/캘린더 선택 날짜 동기화. getState 로 비교해 핑퐁(무한 갱신) 방지.
+  const selectedDate = useSelectionStore((s) => s.selectedDate);
+  // 플랜 활성 날짜 → 공유 소스에 발행.
+  useEffect(() => {
+    const d = days[activeDay]?.date;
+    if (d && d !== useSelectionStore.getState().selectedDate) {
+      useSelectionStore.getState().setSelectedDate(d);
+    }
+  }, [activeDay, days]);
+  // 캘린더에서 고른 날짜(트립 내) 채택.
+  useEffect(() => {
+    if (!selectedDate || days.length === 0) return;
+    const i = days.findIndex((d) => d.date === selectedDate);
+    if (i >= 0 && i !== usePlanStore.getState().activeDay) {
+      usePlanStore.getState().setActiveDay(i);
+    }
+  }, [selectedDate, days]);
 
   const dayPlaces = useMemo(
     () => (data && activeDate ? placesForDay(data.places, activeDate) : []),

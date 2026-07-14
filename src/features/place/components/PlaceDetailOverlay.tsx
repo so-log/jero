@@ -77,7 +77,12 @@ export function PlaceDetailOverlay({
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    await upsert.mutateAsync({ ...values, id: place?.id });
+    await upsert.mutateAsync({
+      ...values,
+      id: place?.id,
+      // 신규 추가 + Day 맥락(B6)일 때만 그 날짜에 배정. 편집은 배정 변경 안 함.
+      scheduledDate: place ? undefined : (prefill?.scheduledDate ?? null),
+    });
     onClose();
   });
 
