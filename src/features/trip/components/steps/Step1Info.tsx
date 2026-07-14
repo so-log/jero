@@ -2,9 +2,11 @@
 
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
+import { Combobox } from "@/components/ui/combobox";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
 import { COVER } from "@/lib/constants/covers";
+import { citiesForCountry, COUNTRIES } from "@/lib/constants/regions";
 import { cn } from "@/lib/utils";
 
 import { TRIP_COVERS, TRIP_ICONS, type CreateTripInput } from "../../lib/tripSchema";
@@ -58,7 +60,45 @@ export function Step1Info() {
         )}
       </div>
 
-      {/* 아이콘 / 커버 */}
+      {/* 나라 / 지역 (콤보박스 — 제안 선택 + 자유 입력) */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[12.5px] font-bold text-body">나라</label>
+          <Controller
+            control={control}
+            name="country"
+            render={({ field }) => (
+              <Combobox
+                aria-label="나라"
+                value={field.value ?? ""}
+                onValueChange={field.onChange}
+                items={COUNTRIES}
+                leftIcon="globe"
+                placeholder="나라 선택 또는 입력"
+              />
+            )}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[12.5px] font-bold text-body">지역 / 도시</label>
+          <Controller
+            control={control}
+            name="region"
+            render={({ field }) => (
+              <Combobox
+                aria-label="지역 / 도시"
+                value={field.value ?? ""}
+                onValueChange={field.onChange}
+                items={citiesForCountry(values.country)}
+                leftIcon="map-pin"
+                placeholder="도시 선택 또는 입력"
+              />
+            )}
+          />
+        </div>
+      </div>
+
+      {/* 대표 아이콘 / 커버 색 (꾸미기) */}
       <div className="grid grid-cols-2 gap-4">
         <Controller
           control={control}
@@ -118,18 +158,6 @@ export function Step1Info() {
             </div>
           )}
         />
-      </div>
-
-      {/* 나라 / 지역 */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[12.5px] font-bold text-body">나라</label>
-          <Input {...register("country")} placeholder="일본" leftIcon="globe" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-[12.5px] font-bold text-body">지역 / 도시</label>
-          <Input {...register("region")} placeholder="도쿄" leftIcon="map-pin" />
-        </div>
       </div>
     </div>
   );

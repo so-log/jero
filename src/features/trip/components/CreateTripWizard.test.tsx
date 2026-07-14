@@ -26,8 +26,12 @@ describe("CreateTripWizard — 데모 프리필 제거", () => {
     const title = screen.getByPlaceholderText(
       "예: 도쿄, 우리끼리 4일",
     ) as HTMLInputElement;
-    const country = screen.getByPlaceholderText("일본") as HTMLInputElement;
-    const region = screen.getByPlaceholderText("도쿄") as HTMLInputElement;
+    const country = screen.getByPlaceholderText(
+      "나라 선택 또는 입력",
+    ) as HTMLInputElement;
+    const region = screen.getByPlaceholderText(
+      "도시 선택 또는 입력",
+    ) as HTMLInputElement;
 
     expect(title.value).toBe("");
     expect(country.value).toBe("");
