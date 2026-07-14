@@ -7,11 +7,14 @@ import {
   buildMonthGrid,
   buildWeekDays,
   dayLabel,
+  dayOfMonth,
   hoursToTime,
   monthLabel,
   placesByDate,
   timeToHours,
+  tripWeekStart,
   weekLabel,
+  weekdayIndex,
   weekdayKR,
 } from "./calendar";
 
@@ -101,5 +104,30 @@ describe("buildMonthGrid / buildWeekDays", () => {
       "2026-04-23",
       "2026-04-24",
     ]);
+  });
+
+  it("tripWeekStart 는 여행 첫날 기준 주 앵커 (모바일 스트립, 3-C)", () => {
+    const tripStart = "2026-04-18";
+    // 여행 첫날 주: 04-18 자신이 앵커 → 트립(04-18~21) 전체가 한 스트립.
+    expect(tripWeekStart("2026-04-18", tripStart)).toBe("2026-04-18");
+    expect(tripWeekStart("2026-04-21", tripStart)).toBe("2026-04-18");
+    expect(buildWeekDays(tripWeekStart("2026-04-20", tripStart))).toEqual([
+      "2026-04-18",
+      "2026-04-19",
+      "2026-04-20",
+      "2026-04-21",
+      "2026-04-22",
+      "2026-04-23",
+      "2026-04-24",
+    ]);
+    // 다음 주·이전 주로 타일링.
+    expect(tripWeekStart("2026-04-25", tripStart)).toBe("2026-04-25");
+    expect(tripWeekStart("2026-04-11", tripStart)).toBe("2026-04-11");
+  });
+
+  it("dayOfMonth / weekdayIndex", () => {
+    expect(dayOfMonth("2026-04-18")).toBe(18);
+    expect(weekdayIndex("2026-04-19")).toBe(0); // 일
+    expect(weekdayIndex("2026-04-18")).toBe(6); // 토
   });
 });

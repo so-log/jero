@@ -41,6 +41,8 @@ interface ItineraryPanelProps {
   dayPlaces: PlaceDto[];
   isLoading: boolean;
   canEdit: boolean;
+  /** Day 변경 핸들러 — 미지정 시 planStore.setActiveDay. 지정 시(플랜) 선택 날짜 동기화(B5)까지 발행. */
+  onDayChange?: (index: number) => void;
   /** 드래그 재정렬 → 해당 날 새 순서(id 배열)를 상위(PlanView)로 전달. canDrag 일 때만 활성. */
   onReorder?: (orderedIds: string[]) => void;
   /** 일정에서 빼기(editor+). 없으면 카드에 버튼 미표시. */
@@ -52,6 +54,7 @@ export function ItineraryPanel({
   dayPlaces,
   isLoading,
   canEdit,
+  onDayChange,
   onReorder,
   onUnassign,
 }: ItineraryPanelProps) {
@@ -98,7 +101,11 @@ export function ItineraryPanel({
     <aside className="flex h-full w-full flex-col bg-surface md:border-r md:border-line">
       {/* 데스크톱 Day 스위처 — 모바일은 상위 MobilePlanControls 가 담당(반응형 3-B). */}
       <div className="hidden flex-none border-b border-line bg-background p-4 md:block">
-        <DaySwitcher days={days} activeDay={activeDay} onSelect={setActiveDay} />
+        <DaySwitcher
+          days={days}
+          activeDay={activeDay}
+          onSelect={onDayChange ?? setActiveDay}
+        />
       </div>
 
       {isLoading ? (

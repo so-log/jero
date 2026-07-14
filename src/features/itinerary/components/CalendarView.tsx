@@ -16,12 +16,14 @@ import {
   dayLabel,
   monthLabel,
   placesByDate,
+  tripWeekStart,
   weekLabel,
 } from "../lib/calendar";
 import { useCalendarStore } from "../store/calendarStore";
 import { useSelectionStore } from "../store/selectionStore";
 import type { PlaceDto } from "../types";
 import { CalendarToolbar } from "./CalendarToolbar";
+import { CalendarWeekStrip } from "./CalendarWeekStrip";
 import { DayTimeline } from "./DayTimeline";
 import { MonthGrid } from "./MonthGrid";
 import { WeekTimeline } from "./WeekTimeline";
@@ -90,64 +92,139 @@ export function CalendarView({ tripId }: { tripId: string }) {
   const dayPlaces = byDate.get(cursor) ?? [];
   const showDayEmpty = mode === "day" && dayPlaces.length === 0;
 
+  // 모바일 7일 스트립(반응형 3-C) — cursor 가 속한 주(일~토), ‹ › 로 주 이동.
+  // 로딩 중(cursor="")엔 계산 스킵 — 빈 문자열은 유효 날짜가 아니라 toISO 가 던진다.
+  const mobileWeekStart = cursor && tripStart ? tripWeekStart(cursor, tripStart) : "";
+  const stripDays = mobileWeekStart ? buildWeekDays(mobileWeekStart) : [];
+  const onPrevWeek = () => setCursor(addDays(cursor, -7));
+  const onNextWeek = () => setCursor(addDays(cursor, 7));
+
+  const dayEmptyState = (
+    <div className="flex flex-1 items-center justify-center px-8">
+      <EmptyState
+        icon="calendar"
+        title="이 날은 아직 일정이 없어요"
+        description="시간과 장소를 더해 하루를 채워보세요. 추가하면 플랜 지도에도 동선이 그려져요."
+        action={
+          canEdit ? (
+            <Button variant="primary" size="lg" className="gap-2">
+              <Icon name="plus" size={20} strokeWidth={2.3} />
+              일정 추가하기
+            </Button>
+          ) : undefined
+        }
+      />
+    </div>
+  );
+
   return (
     <div className="flex h-full w-full flex-col bg-surface">
-      <CalendarToolbar
-        rangeLabel={rangeLabel}
-        mode={mode}
-        canEdit={canEdit}
-        onPrev={onPrev}
-        onToday={onToday}
-        onNext={onNext}
-        onModeChange={setMode}
-      />
+      {/* 데스크톱(md+): 월/주/일 3모드 (기존 그대로) */}
+      <div className="hidden min-h-0 flex-1 flex-col md:flex">
+        <CalendarToolbar
+          rangeLabel={rangeLabel}
+          mode={mode}
+          canEdit={canEdit}
+          onPrev={onPrev}
+          onToday={onToday}
+          onNext={onNext}
+          onModeChange={setMode}
+        />
 
-      {isLoading || !data ? (
-        <div className="flex-1 p-[20px_22px]">
-          <CalendarSkeleton />
-        </div>
-      ) : showDayEmpty ? (
-        <div className="flex flex-1 items-center justify-center">
-          <EmptyState
-            icon="calendar"
-            title="이 날은 아직 일정이 없어요"
-            description="시간과 장소를 더해 하루를 채워보세요. 추가하면 플랜 지도에도 동선이 그려져요."
-            action={
-              canEdit ? (
-                <Button variant="primary" size="lg" className="gap-2">
-                  <Icon name="plus" size={20} strokeWidth={2.3} />
-                  일정 추가하기
-                </Button>
-              ) : undefined
-            }
-          />
-        </div>
-      ) : mode === "month" ? (
-        <div className="min-h-0 flex-1 p-[16px_22px_20px]">
-          <MonthGrid
-            weeks={buildMonthGrid(cursor, byDate, tripStart, tripEnd)}
-            selected={cursor}
-            onSelectDate={(date, isTrip) => {
-              setCursor(date);
-              if (isTrip) setMode("day");
-            }}
-          />
-        </div>
-      ) : mode === "week" ? (
-        <div className="min-h-0 flex-1 p-[14px_22px_18px]">
-          <WeekTimeline
-            days={buildWeekDays(cursor)}
-            byDate={byDate}
-            selected={cursor}
-            tripStart={tripStart}
-            tripEnd={tripEnd}
-          />
-        </div>
-      ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto py-1.5 pb-[22px]">
-          <DayTimeline places={dayPlaces} members={members} />
-        </div>
-      )}
+        {isLoading || !data ? (
+          <div className="flex-1 p-[20px_22px]">
+            <CalendarSkeleton />
+          </div>
+        ) : showDayEmpty ? (
+          dayEmptyState
+        ) : mode === "month" ? (
+          <div className="min-h-0 flex-1 p-[16px_22px_20px]">
+            <MonthGrid
+              weeks={buildMonthGrid(cursor, byDate, tripStart, tripEnd)}
+              selected={cursor}
+              onSelectDate={(date, isTrip) => {
+                setCursor(date);
+                if (isTrip) setMode("day");
+              }}
+            />
+          </div>
+        ) : mode === "week" ? (
+          <div className="min-h-0 flex-1 p-[14px_22px_18px]">
+            <WeekTimeline
+              days={buildWeekDays(cursor)}
+              byDate={byDate}
+              selected={cursor}
+              tripStart={tripStart}
+              tripEnd={tripEnd}
+            />
+          </div>
+        ) : (
+          <div className="min-h-0 flex-1 overflow-y-auto py-1.5 pb-[22px]">
+            <DayTimeline places={dayPlaces} members={members} />
+          </div>
+        )}
+      </div>
+
+      {/* 모바일(<md): 7일 날짜 스트립 + 선택일 아젠다(데스크톱 일 보기 계승) */}
+      <div className="flex min-h-0 flex-1 flex-col md:hidden">
+        {isLoading || !data ? (
+          <div className="flex-1 p-4">
+            <CalendarSkeleton />
+          </div>
+        ) : (
+          <>
+            <div className="flex-none border-b border-line bg-background px-3 pt-2 pb-3">
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  aria-label="이전 주"
+                  onClick={onPrevWeek}
+                  className="flex size-11 flex-none items-center justify-center rounded-xl text-subtle transition-colors hover:bg-secondary"
+                >
+                  <Icon name="chevron-left" size={20} strokeWidth={2.2} />
+                </button>
+                <span className="text-[14px] font-extrabold tracking-tight text-ink">
+                  {weekLabel(mobileWeekStart)}
+                </span>
+                <button
+                  type="button"
+                  aria-label="다음 주"
+                  onClick={onNextWeek}
+                  className="flex size-11 flex-none items-center justify-center rounded-xl text-subtle transition-colors hover:bg-secondary"
+                >
+                  <Icon name="chevron-right" size={20} strokeWidth={2.2} />
+                </button>
+              </div>
+              <div className="mt-1 px-1">
+                <CalendarWeekStrip
+                  days={stripDays}
+                  selected={cursor}
+                  byDate={byDate}
+                  tripStart={tripStart}
+                  tripEnd={tripEnd}
+                  onSelect={setCursor}
+                />
+              </div>
+            </div>
+
+            {dayPlaces.length === 0 ? (
+              dayEmptyState
+            ) : (
+              <div className="min-h-0 flex-1 overflow-y-auto pb-[22px]">
+                <div className="flex items-baseline gap-2 px-[22px] pt-4">
+                  <span className="text-[15px] font-bold text-ink">
+                    {dayLabel(cursor)}
+                  </span>
+                  <span className="text-[12.5px] font-semibold text-faint">
+                    {dayPlaces.length}개 일정
+                  </span>
+                </div>
+                <DayTimeline places={dayPlaces} members={members} />
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

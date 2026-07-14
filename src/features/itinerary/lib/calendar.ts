@@ -124,6 +124,27 @@ export function buildWeekDays(cursorISO: string): string[] {
   return Array.from({ length: 7 }, (_, i) => addDays(cursorISO, i));
 }
 
+/**
+ * 모바일 7일 스트립 앵커(반응형 3-C) — 여행 첫날 기준으로 주를 타일링해 cursor 가 속한 주의 시작 반환.
+ * 일요일 정렬 대신 트립 앵커라 여행 기간(≤7일)이 한 스트립에 모여 보인다(주 경계로 잘리지 않음).
+ */
+export function tripWeekStart(cursorISO: string, tripStartISO: string): string {
+  const diffDays = Math.round(
+    (toUTC(cursorISO).getTime() - toUTC(tripStartISO).getTime()) / 86_400_000,
+  );
+  return addDays(tripStartISO, Math.floor(diffDays / 7) * 7);
+}
+
+/** 월중 일(day-of-month) 숫자. */
+export function dayOfMonth(iso: string): number {
+  return toUTC(iso).getUTCDate();
+}
+
+/** 요일 인덱스(0=일 … 6=토) — 스트립 셀 주말 색 구분용. */
+export function weekdayIndex(iso: string): number {
+  return toUTC(iso).getUTCDay();
+}
+
 /** 라벨 — 월/주/일 모드별 기간 표기. */
 export function monthLabel(iso: string): string {
   const d = toUTC(iso);

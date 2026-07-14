@@ -47,16 +47,10 @@ export function PlanView({ tripId }: { tripId: string }) {
   );
   const activeDate = days[activeDay]?.date;
 
-  // B5 — 플랜/캘린더 선택 날짜 동기화. getState 로 비교해 핑퐁(무한 갱신) 방지.
+  // B5 — 플랜/캘린더 선택 날짜 동기화(단방향 채택 + 명시적 발행).
+  // 발행을 effect 로 하면 date↔index 임피던스 차로 채택 effect 와 무한 핑퐁(setState depth) → 발행은 날짜 변경 핸들러에서만.
   const selectedDate = useSelectionStore((s) => s.selectedDate);
-  // 플랜 활성 날짜 → 공유 소스에 발행.
-  useEffect(() => {
-    const d = days[activeDay]?.date;
-    if (d && d !== useSelectionStore.getState().selectedDate) {
-      useSelectionStore.getState().setSelectedDate(d);
-    }
-  }, [activeDay, days]);
-  // 캘린더에서 고른 날짜(트립 내) 채택.
+  // 캘린더/외부에서 고른 날짜(트립 내) → activeDay 채택.
   useEffect(() => {
     if (!selectedDate || days.length === 0) return;
     const i = days.findIndex((d) => d.date === selectedDate);
@@ -64,6 +58,15 @@ export function PlanView({ tripId }: { tripId: string }) {
       usePlanStore.getState().setActiveDay(i);
     }
   }, [selectedDate, days]);
+  // 플랜에서 Day 변경 시 activeDay + 공유 선택 날짜를 함께 갱신(캘린더가 따라옴).
+  const selectDay = useCallback(
+    (index: number) => {
+      setActiveDay(index);
+      const d = days[index]?.date;
+      if (d) useSelectionStore.getState().setSelectedDate(d);
+    },
+    [setActiveDay, days],
+  );
 
   const dayPlaces = useMemo(
     () => (data && activeDate ? placesForDay(data.places, activeDate) : []),
@@ -111,7 +114,7 @@ export function PlanView({ tripId }: { tripId: string }) {
       <MobilePlanControls
         days={days}
         activeDay={activeDay}
-        onDayChange={setActiveDay}
+        onDayChange={selectDay}
         mode={mobileMode}
         onModeChange={setMobileMode}
       />
@@ -129,6 +132,7 @@ export function PlanView({ tripId }: { tripId: string }) {
           dayPlaces={dayPlaces}
           isLoading={isLoading}
           canEdit={canEdit}
+          onDayChange={selectDay}
           onReorder={onReorder}
           onUnassign={
             canEdit ? (placeId) => unassignPlace.mutate(placeId) : undefined
