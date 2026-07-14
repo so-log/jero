@@ -7,7 +7,9 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { Presence } from "@/components/ui/avatar";
 import type { MemberDto, TripDto } from "@/features/itinerary/types";
+import { TripDatesDialog } from "@/features/trip";
 
+import { cn } from "@/lib/utils";
 import { formatPeriod, nightsDays } from "@/lib/tripDate";
 import { useOverlayStore } from "@/store/overlayStore";
 
@@ -25,10 +27,13 @@ interface WorkspaceTopBarProps {
 
 export function WorkspaceTopBar({ trip, members, canEdit }: WorkspaceTopBarProps) {
   const isViewer = trip.my_role === "viewer";
+  // 날짜 수정은 owner 전용(B3) — RLS(trip_update)가 서버에서 최종 강제(§8.2).
+  const isOwner = trip.my_role === "owner";
   const period = formatPeriod(trip.start_date, trip.end_date);
   const { label: nightsLabel } = nightsDays(trip.start_date, trip.end_date);
   const openOverlay = useOverlayStore((s) => s.open);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [datesOpen, setDatesOpen] = useState(false);
 
   return (
     <header className="relative flex h-[66px] flex-none items-center justify-between border-b border-line bg-background px-[18px]">
@@ -61,13 +66,37 @@ export function WorkspaceTopBar({ trip, members, canEdit }: WorkspaceTopBarProps
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-faint">
-            <Icon name="calendar" size={13} strokeWidth={2} />
-            {period}
-            <span className="rounded-pill bg-canvas px-1.5 py-px text-[11.5px] font-semibold text-subtle">
-              {nightsLabel}
-            </span>
-          </div>
+          {isOwner ? (
+            <button
+              type="button"
+              onClick={() => setDatesOpen(true)}
+              aria-label="여행 날짜 수정"
+              className={cn(
+                "group -mx-1.5 -my-0.5 flex items-center gap-1.5 rounded-md px-1.5 py-0.5",
+                "text-[12.5px] font-medium text-faint transition-colors hover:bg-secondary hover:text-subtle",
+              )}
+            >
+              <Icon name="calendar" size={13} strokeWidth={2} />
+              {period}
+              <span className="rounded-pill bg-canvas px-1.5 py-px text-[11.5px] font-semibold text-subtle">
+                {nightsLabel}
+              </span>
+              <Icon
+                name="pencil"
+                size={12}
+                strokeWidth={2.2}
+                className="text-mute opacity-0 transition-opacity group-hover:opacity-100"
+              />
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 text-[12.5px] font-medium text-faint">
+              <Icon name="calendar" size={13} strokeWidth={2} />
+              {period}
+              <span className="rounded-pill bg-canvas px-1.5 py-px text-[11.5px] font-semibold text-subtle">
+                {nightsLabel}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -140,6 +169,16 @@ export function WorkspaceTopBar({ trip, members, canEdit }: WorkspaceTopBarProps
           </span>
         )}
       </div>
+
+      {isOwner && (
+        <TripDatesDialog
+          tripId={trip.id}
+          startDate={trip.start_date}
+          endDate={trip.end_date}
+          open={datesOpen}
+          onOpenChange={setDatesOpen}
+        />
+      )}
     </header>
   );
 }
