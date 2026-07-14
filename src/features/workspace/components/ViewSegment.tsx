@@ -1,35 +1,16 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
-import { Icon, type IconName } from "@/components/ui/icon";
+import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
+
+import { useWorkspaceView, WORKSPACE_VIEWS } from "../hooks/useWorkspaceView";
 
 /**
  * 워크스페이스 뷰 세그먼트(플랜/일정표/장소/예산/통계) — 설계 §2 · 2차 E. 시안 플랜 뷰 중앙 토글.
- * `?view=` 쿼리만 바꿔 본문 교체(셸·데이터 유지). 현재 뷰 강조.
+ * 데스크톱(md+) 인라인 탭. 뷰 목록·라우팅은 useWorkspaceView 단일 출처(모바일 드로어와 공유).
  */
-type ViewKey = "plan" | "calendar" | "places" | "budget" | "stats";
-
-const VIEWS: { value: ViewKey; label: string; icon: IconName }[] = [
-  { value: "plan", label: "플랜", icon: "route" },
-  { value: "calendar", label: "캘린더", icon: "calendar" },
-  { value: "places", label: "장소", icon: "map-pin" },
-  { value: "budget", label: "예산", icon: "wallet" },
-  { value: "stats", label: "통계", icon: "activity" },
-];
-
 export function ViewSegment() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const current = (searchParams.get("view") as ViewKey) ?? "plan";
-
-  const go = (view: ViewKey) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("view", view);
-    router.push(`${pathname}?${params.toString()}`);
-  };
+  const { current, go } = useWorkspaceView();
 
   return (
     <div
@@ -37,7 +18,7 @@ export function ViewSegment() {
       aria-label="뷰 전환"
       className="flex items-center gap-0.5 rounded-md bg-secondary p-1"
     >
-      {VIEWS.map((v) => {
+      {WORKSPACE_VIEWS.map((v) => {
         const active = v.value === current;
         return (
           <button

@@ -7,6 +7,7 @@ import { useTripQuery } from "@/features/trip";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
 
 import { useTripRealtime } from "../api/useTripRealtime";
+import { WorkspaceMobileBar } from "./WorkspaceMobileBar";
 import { WorkspaceOverlays } from "./WorkspaceOverlays";
 import { WorkspaceTopBar } from "./WorkspaceTopBar";
 
@@ -36,9 +37,18 @@ export function WorkspaceShell({
   return (
     <div className="flex h-screen flex-col">
       {trip ? (
-        <WorkspaceTopBar trip={trip} members={membersWithPresence} canEdit={canEdit} />
+        <>
+          {/* 데스크톱(md+): 인라인 탭 상단 바 */}
+          <WorkspaceTopBar
+            trip={trip}
+            members={membersWithPresence}
+            canEdit={canEdit}
+          />
+          {/* 모바일(<md): 햄버거 + 탭 드로어 상단 바 */}
+          <WorkspaceMobileBar trip={trip} canEdit={canEdit} />
+        </>
       ) : (
-        <div className="h-[66px] flex-none border-b border-line bg-background" />
+        <div className="h-14 flex-none border-b border-line bg-background md:h-[66px]" />
       )}
       <main className="flex min-h-0 flex-1">{children}</main>
       <WorkspaceOverlays tripId={tripId} />

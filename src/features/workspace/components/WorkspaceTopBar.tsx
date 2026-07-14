@@ -37,7 +37,7 @@ export function WorkspaceTopBar({ trip, members, canEdit }: WorkspaceTopBarProps
   const [datesOpen, setDatesOpen] = useState(false);
 
   return (
-    <header className="relative flex h-[66px] flex-none items-center justify-between border-b border-line bg-background px-[18px]">
+    <header className="relative hidden h-[66px] flex-none items-center justify-between border-b border-line bg-background px-[18px] md:flex">
       {/* 좌: 목록 + 여행 정보 */}
       <div className="flex min-w-0 items-center gap-3.5">
         <Link
