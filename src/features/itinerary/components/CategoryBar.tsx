@@ -9,8 +9,8 @@ import {
 import { cn } from "@/lib/utils";
 
 /**
- * 필터 바 — 폴더 축("전체 폴더")과 카테고리 축(모든 종류 + 8칸)을 구분선으로 분리(U2).
- * 카테고리 축은 넓은 폭=칩, 좁은 폭=드롭다운(가로 스크롤 제거, U3). 선택 상태·동작 동일.
+ * 카테고리 필터 바 — 모든 종류 + 8칸. 넓은 폭=칩, 좁은 폭=드롭다운(가로 스크롤 제거, U3). 선택 상태·동작 동일.
+ * 플랜은 Day 기준이라 폴더 필터가 불필요 → 죽은 "전체 폴더" 버튼 제거(U5). 폴더 필터는 장소 탭 FolderSidebar 담당.
  * 색은 lib/constants/category 단일 출처.
  */
 interface CategoryBarProps {
@@ -20,21 +20,8 @@ interface CategoryBarProps {
 
 export function CategoryBar({ active, onSelect }: CategoryBarProps) {
   return (
-    <div className="flex items-center gap-2 pb-0.5">
-      {/* 폴더 축 */}
-      <button
-        type="button"
-        className="inline-flex h-8 flex-none items-center gap-1.5 rounded-pill border border-line-strong bg-background pr-2.5 pl-3 text-[12.5px] font-semibold text-subtle"
-      >
-        <Icon name="layers" size={14} strokeWidth={2} />
-        전체 폴더
-        <Icon name="chevron-down" size={14} strokeWidth={2} />
-      </button>
-
-      {/* 축 구분선 */}
-      <span className="h-5 w-px flex-none bg-line-strong" aria-hidden />
-
-      {/* 카테고리 축 — 넓은 폭: 칩(가로 스크롤 폴백) */}
+    <div className="flex items-center pb-0.5">
+      {/* 넓은 폭: 칩(가로 스크롤 폴백) */}
       <div className="-mr-1 hidden min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pr-1 sm:flex">
         <button
           type="button"
@@ -77,7 +64,7 @@ export function CategoryBar({ active, onSelect }: CategoryBarProps) {
         })}
       </div>
 
-      {/* 카테고리 축 — 좁은 폭: 드롭다운(가로 스크롤 제거) */}
+      {/* 좁은 폭: 드롭다운(가로 스크롤 제거) */}
       <div className="relative min-w-0 flex-1 sm:hidden">
         <select
           aria-label="카테고리 필터"
