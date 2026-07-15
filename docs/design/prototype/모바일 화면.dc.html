@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;color:#1F2430;background:#E7EAEF;}
+  ::-webkit-scrollbar{width:0;height:0;}
+  .noscroll::-webkit-scrollbar{display:none;}
+</style>
+</helmet>
+
+<div style="padding:56px 60px 90px;background:#E7EAEF;width:max-content;min-width:100%;">
+  <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:34px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px -2px rgba(91,141,239,.5);">
+        <svg width="17" height="17" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="9" r="5"/><circle cx="24" cy="9" r="1.9" fill="#fff" stroke="none"/><path d="M24 14V25a5.5 5.5 0 0 1-11 0"/></svg>
+      </div>
+      <span style="font-size:23px;font-weight:800;color:#1B2030;letter-spacing:-.03em;">jero · 모바일 (375px)</span>
+    </div>
+    <span style="font-size:14px;font-weight:500;color:#6B7280;">데스크톱 플랜 뷰 · 일정표를 모바일로 재구성 — 같은 토큰·컴포넌트, iOS 캘린더 톤 유지. 세그먼트·모드 컨트롤은 실제로 눌러 전환됩니다.</span>
+  </div>
+
+  <div style="display:flex;gap:64px;align-items:flex-start;">
+    <div style="display:flex;flex-direction:column;gap:16px;">{{ planPhone }}</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">{{ calPhone }}</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">{{ placesPhone }}</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">{{ budgetPhone }}</div>
+    <div style="display:flex;flex-direction:column;gap:16px;">{{ statsPhone }}</div>
+    <div style="width:360px;flex:none;">{{ dsNote }}</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1400,&quot;height&quot;:1000}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.CAT={
+      food:{label:'식당',icon:'utensils',bg:'#FFECEB',fg:'#E8615C'},
+      cafe:{label:'카페',icon:'coffee',bg:'#FBF1E4',fg:'#C5893A'},
+      gift:{label:'기념품',icon:'gift',bg:'#F1ECFD',fg:'#8B6FE0'},
+      shopping:{label:'쇼핑',icon:'shopping-bag',bg:'#FCE8F1',fg:'#D9609A'},
+      museum:{label:'명소',icon:'landmark',bg:'#E9F1FE',fg:'#3172E3'},
+      hotel:{label:'숙소',icon:'bed',bg:'#E1F6EE',fg:'#1FA078'},
+      transport:{label:'교통',icon:'route2',bg:'#E6F3FA',fg:'#3E97CC'},
+      etc:{label:'기타',icon:'circle-dot',bg:'#EEF0F4',fg:'#7B828F'},
+    };
+    this.MEM={ji:{initial:'지',color:'#3172E3',name:'지현'},min:{initial:'민',color:'#FF8A65',name:'민준'},seo:{initial:'서',color:'#3FC4A0',name:'서윤'},do:{initial:'도',color:'#B07CF0',name:'도윤'}};
+    this.DOW=['일','월','화','수','목','금','토'];
+    this.days=[{label:'Day 1',date:'4.18',dow:'금'},{label:'Day 2',date:'4.19',dow:'토'},{label:'Day 3',date:'4.20',dow:'일'},{label:'Day 4',date:'4.21',dow:'월'}];
+    this.placesByDay={
+      1:[
+        {id:'d2a',name:'시부야 스크램블',category:'etc',time:'10:00',note:'하치코 앞 집합',x:20,y:70},
+        {id:'d2b',name:'미야시타 파크',category:'shopping',time:'11:30',note:'루프탑 산책',x:31,y:55},
+        {id:'d2c',name:'사라베스 시부야',category:'food',time:'13:00',note:'브런치 예약 완료',x:44,y:60},
+        {id:'d2d',name:'네즈 미술관',category:'museum',time:'15:30',note:'정원 관람',x:60,y:43},
+      ],
+    };
+    this.saved=[{id:'s1',name:'센소지',category:'museum',x:74,y:20},{id:'s2',name:'아키하바라',category:'shopping',x:82,y:64}];
+    this.events={
+      18:[{s:9,dur:1.5,name:'츠키지 장외시장',cat:'food',by:'min'},{s:10.67,dur:1.4,name:'하마리큐 정원',cat:'museum',by:'seo'},{s:13,dur:1.8,name:'긴자 식스',cat:'shopping',by:'ji'},{s:15.17,dur:1.1,name:'블루보틀 긴자',cat:'cafe',by:'do'},{s:17.5,dur:1.5,name:'도쿄타워',cat:'museum',by:'ji'}],
+      19:[{s:10,dur:1.2,name:'시부야 스크램블',cat:'etc',by:'min'},{s:11.5,dur:1.2,name:'미야시타 파크',cat:'shopping',by:'seo'},{s:13,dur:1.5,name:'사라베스 시부야',cat:'food',note:'브런치 예약',by:'ji'},{s:15.5,dur:1.5,name:'네즈 미술관',cat:'museum',by:'do'}],
+      20:[{s:9.5,dur:1.0,name:'센소지',cat:'museum',by:'seo'},{s:10.67,dur:1.0,name:'나카미세 거리',cat:'shopping',by:'ji'},{s:12.17,dur:1.3,name:'카페 무지',cat:'cafe',by:'min'},{s:14,dur:1.5,name:'우에노 공원',cat:'museum',by:'do'},{s:16,dur:1.5,name:'아메요코',cat:'gift',by:'seo'}],
+      21:[{s:10,dur:1.0,name:'호텔 체크아웃',cat:'hotel',by:'ji'},{s:11.5,dur:1.5,name:'롯폰기 힐스',cat:'shopping',by:'min'},{s:13.5,dur:1.5,name:'모리 미술관',cat:'museum',by:'seo'}],
+    };
+    this.tripDow={18:'토',19:'일',20:'월',21:'화'};
+    this.TABS=[['plan','플랜','map'],['cal','캘린더','calendar'],['places','장소','bookmark'],['budget','예산','wallet'],['stats','통계','chart']];
+    this.PLACES=[
+      {name:'이치란 시부야',cat:'food',addr:'시부야구 진난 1-22',memo:'24시간 · 돈코츠',folder:'맛집'},
+      {name:'블루보틀 아오야마',cat:'cafe',addr:'미나토구 미나미아오야마 3',memo:'',folder:'카페'},
+      {name:'시부야 스크램블',cat:'etc',addr:'시부야역 하치코 출구',memo:'야경 명소',folder:'명소'},
+      {name:'돈키호테 시부야',cat:'shopping',addr:'시부야구 우다가와초 28',memo:'기념품·간식',folder:'쇼핑'},
+      {name:'네즈 미술관',cat:'museum',addr:'미나토구 미나미아오야마 6',memo:'정원 예쁨',folder:'명소'},
+    ];
+    this.FOLDERS=['전체','맛집','카페','쇼핑','명소','가보고 싶은'];
+    this.BUDGET={total:1240000,per:310000,cap:1600000,
+      cats:[['식당','food',430000],['숙소','hotel',360000],['쇼핑','shopping',250000],['교통','transport',120000],['카페','cafe',80000]],
+      settle:[['min','민준','ji','지현',85000],['seo','서윤','ji','지현',42000]],
+      expenses:[['4.19','사라베스 브런치','food',48000,'ji'],['4.19','미야시타 파크','shopping',63000,'seo'],['4.18','도쿄타워 입장','museum',36000,'do']]};
+    this.STATS={visited:18,perDay:4.5,catKinds:7,busiest:'Day 1',busiestN:5,
+      dist:[['museum',6],['shopping',4],['food',3],['cafe',2],['etc',1],['gift',1],['hotel',1]]};
+    this.state={ planView:'map', planDay:1, planToday:true, planSaved:false, planSel:'d2c', calMode:'month', calSel:19, drawer:'plan', placesFolder:'전체', placesDrop:false };
+  }
+
+  icon(name,o){
+    o=o||{};const size=o.size||18,color=o.color||'#1F2430',sw=o.sw||2;
+    const P={
+      'utensils':[['path',{d:'M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2'}],['path',{d:'M7 2v20'}],['path',{d:'M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7'}]],
+      'coffee':[['path',{d:'M10 2v2'}],['path',{d:'M14 2v2'}],['path',{d:'M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1'}],['path',{d:'M6 2v2'}]],
+      'gift':[['rect',{x:3,y:8,width:18,height:4,rx:1}],['path',{d:'M12 8v13'}],['path',{d:'M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7'}],['path',{d:'M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5'}]],
+      'shopping-bag':[['path',{d:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z'}],['path',{d:'M3 6h18'}],['path',{d:'M16 10a4 4 0 0 1-8 0'}]],
+      'landmark':[['line',{x1:3,x2:21,y1:22,y2:22}],['line',{x1:6,x2:6,y1:18,y2:11}],['line',{x1:10,x2:10,y1:18,y2:11}],['line',{x1:14,x2:14,y1:18,y2:11}],['line',{x1:18,x2:18,y1:18,y2:11}],['polygon',{points:'12 2 20 7 4 7'}]],
+      'bed':[['path',{d:'M2 4v16'}],['path',{d:'M2 8h18a2 2 0 0 1 2 2v10'}],['path',{d:'M2 17h20'}],['path',{d:'M6 8v9'}]],
+      'circle-dot':[['circle',{cx:12,cy:12,r:10}],['circle',{cx:12,cy:12,r:1}]],
+      'calendar':[['path',{d:'M8 2v4'}],['path',{d:'M16 2v4'}],['rect',{width:18,height:18,x:3,y:4,rx:2}],['path',{d:'M3 10h18'}]],
+      'map':[['polygon',{points:'3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21'}],['line',{x1:9,x2:9,y1:3,y2:18}],['line',{x1:15,x2:15,y1:6,y2:21}]],
+      'list':[['line',{x1:8,x2:21,y1:6,y2:6}],['line',{x1:8,x2:21,y1:12,y2:12}],['line',{x1:8,x2:21,y1:18,y2:18}],['line',{x1:3,x2:3.01,y1:6,y2:6}],['line',{x1:3,x2:3.01,y1:12,y2:12}],['line',{x1:3,x2:3.01,y1:18,y2:18}]],
+      'bookmark':[['path',{d:'m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z'}]],
+      'wallet':[['path',{d:'M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1'}],['path',{d:'M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4'}]],
+      'chart':[['path',{d:'M3 3v16a2 2 0 0 0 2 2h16'}],['path',{d:'M18 17V9'}],['path',{d:'M13 17V5'}],['path',{d:'M8 17v-3'}]],
+      'chevron-left':[['path',{d:'m15 18-6-6 6-6'}]],
+      'chevron-right':[['path',{d:'m9 18 6-6-6-6'}]],
+      'chevron-down':[['path',{d:'m6 9 6 6 6-6'}]],
+      'arrow-left':[['path',{d:'m12 19-7-7 7-7'}],['path',{d:'M19 12H5'}]],
+      'share':[['circle',{cx:18,cy:5,r:3}],['circle',{cx:6,cy:12,r:3}],['circle',{cx:18,cy:19,r:3}],['line',{x1:8.59,x2:15.42,y1:13.51,y2:17.49}],['line',{x1:15.41,x2:8.59,y1:6.51,y2:10.49}]],
+      'plus':[['path',{d:'M5 12h14'}],['path',{d:'M12 5v14'}]],
+      'grip':[['circle',{cx:9,cy:6,r:1}],['circle',{cx:9,cy:12,r:1}],['circle',{cx:9,cy:18,r:1}],['circle',{cx:15,cy:6,r:1}],['circle',{cx:15,cy:12,r:1}],['circle',{cx:15,cy:18,r:1}]],
+      'filter':[['polygon',{points:'22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3'}]],
+      'today':[['path',{d:'M8 2v4'}],['path',{d:'M16 2v4'}],['rect',{width:18,height:18,x:3,y:4,rx:2}],['path',{d:'M3 10h18'}],['path',{d:'M12 15h.01'}]],
+      'menu':[['line',{x1:4,x2:20,y1:6,y2:6}],['line',{x1:4,x2:20,y1:12,y2:12}],['line',{x1:4,x2:20,y1:18,y2:18}]],
+      'x':[['path',{d:'M18 6 6 18'}],['path',{d:'m6 6 12 12'}]],
+      'arrow-right':[['path',{d:'M5 12h14'}],['path',{d:'m12 5 7 7-7 7'}]],
+      'pin':[['path',{d:'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'}],['circle',{cx:12,cy:10,r:3}]],
+      'users':[['path',{d:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'}],['circle',{cx:9,cy:7,r:4}],['path',{d:'M22 21v-2a4 4 0 0 0-3-3.87'}],['path',{d:'M16 3.13a4 4 0 0 1 0 7.75'}]],
+      'route2':[['circle',{cx:6,cy:19,r:3}],['path',{d:'M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15'}],['circle',{cx:18,cy:5,r:3}]],
+      'log-out':[['path',{d:'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'}],['polyline',{points:'16 17 21 12 16 7'}],['line',{x1:21,x2:9,y1:12,y2:12}]],
+    };
+    const parts=P[name]||[];
+    return React.createElement('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'},parts.map((el,i)=>React.createElement(el[0],Object.assign({key:i},el[1]))));
+  }
+  chip(cat,size){const c=this.CAT[cat],s=size||32;return React.createElement('div',{style:{width:s,height:s,borderRadius:Math.round(s*0.3),background:c.bg,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon(c.icon,{size:Math.round(s*0.54),color:c.fg,sw:2}));}
+  avatar(key,s){const m=this.MEM[key];s=s||22;return React.createElement('div',{title:m.name,style:{width:s,height:s,borderRadius:'50%',background:'#fff',border:'2px solid '+m.color,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},React.createElement('span',{style:{fontSize:s*0.44,fontWeight:700,color:m.color}},m.initial));}
+  tstr(d){const h=Math.floor(d),m=Math.round((d-h)*60);return (h<10?'0'+h:h)+':'+(m<10?'0'+m:m);}
+
+  // ===== phone frame =====
+  phone(children,key){
+    const h=React.createElement;
+    return h('div',{key:key,style:{width:375,height:812,background:'#fff',borderRadius:44,border:'1px solid #DADFE6',boxShadow:'0 1px 3px rgba(16,24,40,.05),0 30px 70px -30px rgba(16,24,40,.5)',position:'relative',overflow:'hidden',display:'flex',flexDirection:'column'}},
+      // status bar
+      h('div',{style:{height:50,flex:'none',display:'flex',alignItems:'flex-end',justifyContent:'space-between',padding:'0 30px 8px',flexShrink:0}},
+        h('span',{style:{fontSize:15,fontWeight:700,color:'#1B2030',letterSpacing:'-.01em'}},'9:41'),
+        h('div',{style:{display:'flex',alignItems:'center',gap:6}},
+          h('svg',{width:18,height:12,viewBox:'0 0 18 12',fill:'#1B2030'},h('rect',{x:0,y:7,width:3,height:5,rx:1}),h('rect',{x:5,y:4,width:3,height:8,rx:1}),h('rect',{x:10,y:2,width:3,height:10,rx:1}),h('rect',{x:15,y:0,width:3,height:12,rx:1})),
+          h('svg',{width:17,height:12,viewBox:'0 0 17 12',fill:'#1B2030'},h('path',{d:'M8.5 2.5C10.8 2.5 12.9 3.4 14.5 4.9L15.9 3.4C13.9 1.5 11.3.5 8.5.5S3.1 1.5 1.1 3.4L2.5 4.9C4.1 3.4 6.2 2.5 8.5 2.5Z'}),h('path',{d:'M8.5 6C9.6 6 10.6 6.4 11.4 7.1L12.8 5.6C11.6 4.6 10.1 4 8.5 4S5.4 4.6 4.2 5.6L5.6 7.1C6.4 6.4 7.4 6 8.5 6Z'}),h('circle',{cx:8.5,cy:9.5,r:1.6})),
+          h('div',{style:{display:'flex',alignItems:'center',gap:2}},h('div',{style:{width:23,height:12,borderRadius:3,border:'1.5px solid rgba(27,32,48,.5)',padding:1.5,display:'flex'}},h('div',{style:{flex:1,background:'#1B2030',borderRadius:1}})),h('div',{style:{width:1.5,height:4,background:'rgba(27,32,48,.5)',borderRadius:1}}))
+        )
+      ),
+      // content
+      h('div',{style:{flex:1,minHeight:0,display:'flex',flexDirection:'column',position:'relative'}}, children),
+      // home indicator
+      h('div',{style:{height:22,flex:'none',display:'flex',alignItems:'center',justifyContent:'center'}},h('div',{style:{width:134,height:5,borderRadius:99,background:'#1B2030'}}))
+    );
+  }
+
+  // ===== workspace bar (hamburger + left drawer) =====
+  wsBar(activeTab,screenId){
+    const h=React.createElement;
+    const iconBtn=(name,onClick)=>h('button',{onClick:onClick||null,style:{width:44,height:44,flex:'none',border:'none',background:'transparent',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon(name,{size:23,color:'#3A3F4B',sw:2}));
+    const active=this.TABS.find(t=>t[0]===activeTab);
+    return h('div',{style:{flex:'none',borderBottom:'1px solid #F0F1F4',background:'#fff',position:'relative',zIndex:30}},
+      h('div',{style:{height:56,display:'flex',alignItems:'center',padding:'0 6px',gap:2}},
+        iconBtn('menu',()=>this.setState({drawer:screenId})),
+        h('div',{style:{flex:1,minWidth:0,display:'flex',flexDirection:'column',alignItems:'center'}},
+          h('span',{style:{fontSize:15.5,fontWeight:800,color:'#1B2030',letterSpacing:'-.02em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',maxWidth:210}},'도쿄, 우리끼리 4일'),
+          h('div',{style:{display:'flex',alignItems:'center',gap:5,marginTop:1}},
+            h('span',{style:{fontSize:12,fontWeight:700,color:(active&&active[0]!=='plan')?'#2F6FE0':'#71767F',whiteSpace:'nowrap'}},active?active[1]:''),
+            h('span',{style:{width:3,height:3,borderRadius:'50%',background:'#C4CAD2',flex:'none'}}),
+            h('span',{style:{fontSize:11.5,fontWeight:600,color:'#71767F',whiteSpace:'nowrap'}},'4.18–4.21'))),
+        iconBtn('share')));
+  }
+  buildDrawer(screenId,activeTab){
+    if(this.state.drawer!==screenId) return null;
+    const h=React.createElement;
+    const item=(k,label,ic)=>{const on=k===activeTab;
+      return h('button',{key:k,onClick:()=>this.setState({drawer:null}),style:{display:'flex',alignItems:'center',gap:13,height:48,padding:'0 14px',border:'none',borderRadius:13,background:on?'#EAF1FE':'transparent',cursor:'pointer',width:'100%',textAlign:'left'}},
+        this.icon(ic,{size:21,color:on?'#2F6FE0':'#7B828F',sw:2}),
+        h('span',{style:{fontSize:15,fontWeight:on?700:600,color:on?'#1B2030':'#4A4F5A',flex:1,whiteSpace:'nowrap'}},label),
+        on?h('span',{style:{marginLeft:'auto',width:7,height:7,borderRadius:'50%',background:'#3172E3'}}):null);
+    };
+    const footBtn=(label,ic)=>h('button',{onClick:()=>this.setState({drawer:null}),style:{display:'flex',alignItems:'center',gap:11,height:44,padding:'0 14px',border:'none',borderRadius:12,background:'transparent',cursor:'pointer',width:'100%',textAlign:'left'}},this.icon(ic,{size:19,color:'#7B828F',sw:2}),h('span',{style:{fontSize:14,fontWeight:600,color:'#5A606B'}},label));
+    return h('div',{onClick:()=>this.setState({drawer:null}),style:{position:'absolute',inset:0,zIndex:60,background:'rgba(20,24,35,.42)',display:'flex'}},
+      h('div',{onClick:e=>e.stopPropagation(),style:{width:274,height:'100%',background:'#fff',display:'flex',flexDirection:'column',boxShadow:'2px 0 24px -6px rgba(16,24,40,.3)'}},
+        // header
+        h('div',{style:{padding:'16px 16px 14px',borderBottom:'1px solid #F0F1F4'}},
+          h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
+            h('div',{style:{display:'flex',alignItems:'center',gap:9}},
+              h('div',{style:{width:32,height:32,borderRadius:10,background:'linear-gradient(140deg,#6E9CF2,#8FBCF7)',display:'flex',alignItems:'center',justifyContent:'center'}},
+                h('svg',{width:18,height:18,viewBox:'0 0 40 40',fill:'none',stroke:'#fff',strokeWidth:3.2,strokeLinecap:'round',strokeLinejoin:'round'},h('circle',{cx:24,cy:9,r:5}),h('circle',{cx:24,cy:9,r:1.9,fill:'#fff',stroke:'none'}),h('path',{d:'M24 14V25a5.5 5.5 0 0 1-11 0'}))),
+              h('span',{style:{fontSize:18,fontWeight:800,color:'#1B2030',letterSpacing:'-.03em'}},'jero')),
+            h('button',{onClick:()=>this.setState({drawer:null}),style:{width:36,height:36,border:'none',background:'#F1F3F6',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('x',{size:18,color:'#5A606B',sw:2.2}))),
+          h('div',{style:{marginTop:14,display:'flex',alignItems:'center',gap:10}},
+            h('div',{style:{width:38,height:38,borderRadius:11,background:'#EAF1FE',display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon('pin',{size:19,color:'#2F6FE0',sw:2})),
+            h('div',{style:{display:'flex',flexDirection:'column',gap:1,minWidth:0}},
+              h('span',{style:{fontSize:14.5,fontWeight:800,color:'#1B2030',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},'도쿄, 우리끼리 4일'),
+              h('span',{style:{fontSize:11.5,fontWeight:600,color:'#71767F'}},'4.18–4.21 · 3박 4일')))),
+        // nav
+        h('div',{style:{flex:1,minHeight:0,padding:'12px 10px',display:'flex',flexDirection:'column',gap:2}},
+          this.TABS.map(t=>item(t[0],t[1],t[2]))),
+        // footer
+        h('div',{style:{borderTop:'1px solid #F0F1F4',padding:'10px 10px 16px',display:'flex',flexDirection:'column',gap:2}},
+          footBtn('여행 목록으로','log-out'),footBtn('공유 및 멤버','users'))));
+  }
+
+  // ===== map background =====
+  mapBg(){
+    const h=React.createElement;
+    return h('svg',{width:'100%',height:'100%',viewBox:'0 0 375 600',preserveAspectRatio:'xMidYMid slice',style:{position:'absolute',inset:0}},
+      h('rect',{width:375,height:600,fill:'#EAEEF1'}),
+      h('path',{d:'M-20 210 C90 180 150 250 240 220 S400 180 420 210 L420 300 C360 320 260 280 180 310 S20 300 -20 280 Z',fill:'#DCEBF5'}),
+      h('rect',{x:210,y:340,width:150,height:130,rx:16,fill:'#DCEEDF'}),
+      h('g',{stroke:'#fff',strokeWidth:9,strokeLinecap:'round',opacity:.9},
+        h('line',{x1:60,y1:-10,x2:120,y2:620}),h('line',{x1:270,y1:-10,x2:230,y2:620}),
+        h('line',{x1:-10,y1:150,x2:400,y2:120}),h('line',{x1:-10,y1:420,x2:400,y2:460})),
+      h('g',{stroke:'#F3F5F7',strokeWidth:4,strokeLinecap:'round'},
+        h('line',{x1:150,y1:-10,x2:175,y2:620}),h('line',{x1:-10,y1:280,x2:400,y2:300})),
+      h('g',{fill:'#E2E7EB'},
+        h('rect',{x:20,y:180,width:60,height:70,rx:8}),h('rect',{x:135,y:200,width:55,height:60,rx:8}),h('rect',{x:280,y:150,width:70,height:70,rx:8}),h('rect',{x:30,y:470,width:70,height:80,rx:8}),h('rect',{x:150,y:480,width:60,height:70,rx:8})));
+  }
+  planMarkers(area){
+    const h=React.createElement;const S=this.state;const list=this.placesByDay[1];
+    const els=[];
+    // route
+    const d='M '+list.map(p=>(p.x*10).toFixed(0)+' '+(p.y*10).toFixed(0)).join(' L ');
+    els.push(h('svg',{key:'rt',width:'100%',height:'100%',viewBox:'0 0 1000 1000',preserveAspectRatio:'none',style:{position:'absolute',inset:0,overflow:'visible',pointerEvents:'none'}},
+      h('path',{d:d,fill:'none',stroke:'#3172E3',strokeWidth:3,strokeLinecap:'round',strokeLinejoin:'round',strokeDasharray:'8 9',vectorEffect:'non-scaling-stroke',style:{opacity:.9}})));
+    if(S.planSaved){this.saved.forEach(p=>els.push(h('div',{key:p.id,style:{position:'absolute',left:p.x+'%',top:p.y+'%',transform:'translate(-50%,-100%)',zIndex:1}},
+      h('div',{style:{width:26,height:26,borderRadius:'50% 50% 50% 3px',background:'#fff',border:'1.5px solid #D7DBE2',boxShadow:'0 2px 6px rgba(16,24,40,.16)',transform:'rotate(45deg)',display:'flex',alignItems:'center',justifyContent:'center'}},
+        h('div',{style:{transform:'rotate(-45deg)',display:'flex'}},this.icon(this.CAT[p.category].icon,{size:12,color:'#9AA0AB',sw:2}))))));}
+    list.forEach((p,i)=>{const sel=S.planSel===p.id;
+      els.push(h('button',{key:p.id,onClick:()=>this.setState({planSel:p.id}),style:{position:'absolute',left:p.x+'%',top:p.y+'%',transform:'translate(-50%,-50%)',background:'none',border:'none',padding:0,cursor:'pointer',zIndex:sel?6:3}},
+        h('div',{style:{position:'relative',width:36,height:36,display:'flex',alignItems:'center',justifyContent:'center'}},
+          sel?h('div',{style:{position:'absolute',inset:-4,borderRadius:'50%',background:'rgba(59,125,240,.18)'}}):null,
+          h('div',{style:{width:32,height:32,borderRadius:'50%',background:sel?'#3172E3':'#fff',border:'2px solid #3172E3',color:sel?'#fff':'#2F6FE0',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:15,boxShadow:'0 3px 8px rgba(59,125,240,.32)'}},String(i+1)))));});
+    // live cursor
+    els.push(h('div',{key:'cur',style:{position:'absolute',left:'52%',top:'32%',pointerEvents:'none',zIndex:9,display:'flex'}},
+      h('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'#FF8A65',style:{filter:'drop-shadow(0 1px 2px rgba(0,0,0,.3))'}},h('path',{d:'M5 3l14 7-6 1.5-2.5 6z'})),
+      h('div',{style:{marginLeft:-2,marginTop:13,background:'#FF8A65',color:'#fff',fontSize:11,fontWeight:700,padding:'2px 7px',borderRadius:99,whiteSpace:'nowrap',height:'max-content'}},'민준')));
+    return els;
+  }
+
+  dayNav(){
+    const h=React.createElement;const d=this.days[this.state.planDay];
+    const arrow=(dir)=>h('button',{onClick:()=>this.setState(s=>({planDay:Math.min(3,Math.max(0,s.planDay+dir)),planSel:null})),style:{width:44,height:44,flex:'none',border:'none',background:'transparent',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon(dir<0?'chevron-left':'chevron-right',{size:22,color:'#3A3F4B',sw:2.2}));
+    return h('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',gap:4}},
+      arrow(-1),
+      h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',minWidth:150}},
+        h('span',{style:{fontSize:16,fontWeight:800,color:'#1B2030',letterSpacing:'-.02em',whiteSpace:'nowrap'}},d.label),
+        h('span',{style:{fontSize:12,fontWeight:600,color:'#71767F',whiteSpace:'nowrap'}},'4월 '+d.date.split('.')[1]+'일 · '+d.dow+'요일')),
+      arrow(1));
+  }
+  planSeg(){
+    const h=React.createElement;const v=this.state.planView;
+    const btn=(k,label,ic)=>{const on=v===k;return h('button',{onClick:()=>this.setState({planView:k}),style:{flex:1,height:38,display:'flex',alignItems:'center',justifyContent:'center',gap:6,border:'none',borderRadius:9,background:on?'#fff':'transparent',color:on?'#2B61C4':'#7B828F',fontSize:13.5,fontWeight:on?700:600,cursor:'pointer',boxShadow:on?'0 1px 3px rgba(16,24,40,.12)':'none'}},this.icon(ic,{size:16,color:on?'#2B61C4':'#7B828F',sw:2}),label);};
+    return h('div',{style:{display:'flex',gap:2,background:'#F1F3F6',padding:4,borderRadius:13}},btn('list','리스트','list'),btn('map','지도','map'));
+  }
+  filterChips(){
+    const h=React.createElement;const S=this.state;
+    const chip=(on,label,onClick)=>h('button',{onClick:onClick,style:{flex:'none',display:'inline-flex',alignItems:'center',gap:6,height:36,padding:'0 14px',borderRadius:99,border:'1px solid '+(on?'#3172E3':'#E6E8EC'),background:on?'#3172E3':'#fff',color:on?'#fff':'#5A606B',fontSize:13,fontWeight:600,cursor:'pointer'}},
+      on?this.icon('today',{size:15,color:'#fff',sw:2}):this.icon('filter',{size:14,color:'#8A909B',sw:2}),label);
+    return h('div',{style:{display:'flex',gap:8}},
+      chip(S.planToday,'오늘만',()=>this.setState(s=>({planToday:!s.planToday}))),
+      chip(S.planSaved,'저장 장소',()=>this.setState(s=>({planSaved:!s.planSaved}))));
+  }
+  itineraryCard(p,i){
+    const h=React.createElement;const c=this.CAT[p.category];const sel=this.state.planSel===p.id;
+    return h('div',{key:p.id,onClick:()=>this.setState({planSel:p.id}),style:{display:'flex',alignItems:'center',gap:12,minHeight:64,padding:'11px 12px',background:'#fff',border:'1px solid '+(sel?'#Bcd4f7':'#ECEEF1'),borderRadius:15,cursor:'pointer',boxShadow:sel?'0 4px 12px -4px rgba(59,125,240,.3)':'0 1px 2px rgba(16,24,40,.03)'}},
+      h('div',{style:{width:30,height:30,flex:'none',borderRadius:'50%',background:sel?'#3172E3':'#EAF1FE',color:sel?'#fff':'#2F6FE0',display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:700}},String(i+1)),
+      this.chip(p.category,38),
+      h('div',{style:{flex:1,minWidth:0,display:'flex',flexDirection:'column',gap:2}},
+        h('span',{style:{fontSize:14.5,fontWeight:700,color:'#1B2030',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},p.name),
+        h('div',{style:{display:'flex',alignItems:'center',gap:6}},
+          h('span',{style:{fontSize:12,fontWeight:700,color:c.fg}},p.time),
+          p.note?h('span',{style:{width:3,height:3,borderRadius:'50%',background:'#C4CAD2'}}):null,
+          p.note?h('span',{style:{fontSize:12,fontWeight:500,color:'#71767F',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},p.note):null)),
+      h('div',{style:{flex:'none',width:28,height:44,display:'flex',alignItems:'center',justifyContent:'center',cursor:'grab'}},this.icon('grip',{size:18,color:'#C4CAD2',sw:2})));
+  }
+  addBtn(label){const h=React.createElement;return h('button',{style:{width:'100%',height:48,display:'flex',alignItems:'center',justifyContent:'center',gap:7,border:'1.5px dashed #C6D5F3',borderRadius:14,background:'#F7FAFF',color:'#2F6FE0',fontSize:13.5,fontWeight:700,cursor:'pointer'}},this.icon('plus',{size:18,color:'#2F6FE0',sw:2.2}),label);}
+
+  buildPlan(){
+    const h=React.createElement;const S=this.state;const list=this.placesByDay[1];
+    let body;
+    if(S.planView==='list'){
+      body=h('div',{className:'noscroll',style:{flex:1,minHeight:0,overflowY:'auto',padding:'14px 16px 20px',display:'flex',flexDirection:'column',gap:10,background:'#F7F8FA'}},
+        this.filterChips(),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:9,marginTop:2}},list.map((p,i)=>this.itineraryCard(p,i))),
+        h('div',{style:{marginTop:2}},this.addBtn('Day 2에 장소 추가')));
+    } else {
+      const sel=list.find(p=>p.id===S.planSel)||list[0];const selIdx=list.indexOf(sel);
+      body=h('div',{style:{flex:1,minHeight:0,position:'relative',overflow:'hidden'}},
+        this.mapBg(),
+        h('div',{style:{position:'absolute',top:0,left:0,right:0,bottom:158}},this.planMarkers()),
+        // floating filter
+        h('div',{style:{position:'absolute',top:12,left:12,right:12,display:'flex',gap:8}},this.filterChips().props.children),
+        // bottom sheet peek
+        h('div',{style:{position:'absolute',left:0,right:0,bottom:0,background:'#fff',borderRadius:'20px 20px 0 0',boxShadow:'0 -6px 24px -8px rgba(16,24,40,.18)',padding:'8px 0 16px'}},
+          h('div',{style:{width:40,height:5,borderRadius:99,background:'#DDE1E7',margin:'0 auto 10px'}}),
+          h('div',{style:{padding:'0 16px 10px',display:'flex',alignItems:'center',justifyContent:'space-between'}},
+            h('div',{style:{display:'flex',alignItems:'baseline',gap:8,minWidth:0}},h('span',{style:{fontSize:15,fontWeight:800,color:'#1B2030',whiteSpace:'nowrap'}},'Day 2 동선'),h('span',{style:{fontSize:12.5,fontWeight:600,color:'#71767F',whiteSpace:'nowrap'}},list.length+'곳 · 순서대로')),
+            h('button',{style:{flex:'none',display:'inline-flex',alignItems:'center',gap:5,height:34,padding:'0 12px',borderRadius:99,background:'#EAF1FE',color:'#2F6FE0',border:'none',fontSize:12.5,fontWeight:700,cursor:'pointer'}},this.icon('plus',{size:15,color:'#2F6FE0',sw:2.2}),'장소')),
+          h('div',{style:{overflow:'hidden'}}, h('div',{className:'noscroll',style:{display:'flex',gap:10,overflowX:'auto',padding:'0 16px',paddingBottom:20,marginBottom:-20}},
+            list.map((p,i)=>{const c=this.CAT[p.category];const on=p.id===S.planSel;
+              return h('button',{key:p.id,onClick:()=>this.setState({planSel:p.id}),style:{flex:'none',width:150,textAlign:'left',display:'flex',flexDirection:'column',gap:7,padding:'11px 12px',borderRadius:14,border:'1px solid '+(on?'#Bcd4f7':'#ECEEF1'),background:on?'#F7FAFF':'#fff',cursor:'pointer'}},
+                h('div',{style:{display:'flex',alignItems:'center',gap:7}},
+                  h('div',{style:{width:24,height:24,borderRadius:'50%',background:on?'#3172E3':'#EAF1FE',color:on?'#fff':'#2F6FE0',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12,fontWeight:700,flex:'none'}},String(i+1)),
+                  this.chip(p.category,26)),
+                h('div',{style:{display:'flex',flexDirection:'column',gap:1}},
+                  h('span',{style:{fontSize:13.5,fontWeight:700,color:'#1B2030',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},p.name),
+                  h('span',{style:{fontSize:12,fontWeight:700,color:c.fg}},p.time)));
+            })))));
+    }
+    return this.phone([
+      this.wsBar('plan','plan'),
+      h('div',{style:{flex:'none',padding:'12px 16px 12px',display:'flex',flexDirection:'column',gap:12,background:'#fff',borderBottom:S.planView==='list'?'1px solid #F0F1F4':'none',boxShadow:S.planView==='map'?'0 2px 8px -4px rgba(16,24,40,.1)':'none',zIndex:5,position:'relative'}},
+        this.dayNav(), this.planSeg()),
+      body,
+      this.buildDrawer('plan','plan')
+    ],'planPhone');
+  }
+
+  // ===== calendar =====
+  calModeSeg(){
+    const h=React.createElement;const cur=this.state.calMode;const items=[['month','월'],['week','주'],['day','일']];
+    return h('div',{style:{display:'flex',gap:2,background:'#F1F3F6',padding:4,borderRadius:13}},items.map(([k,label])=>{const on=cur===k;
+      return h('button',{key:k,onClick:()=>this.setState({calMode:k}),style:{flex:1,height:36,border:'none',borderRadius:9,background:on?'#fff':'transparent',color:on?'#2B61C4':'#7B828F',fontSize:13.5,fontWeight:on?700:600,cursor:'pointer',boxShadow:on?'0 1px 3px rgba(16,24,40,.12)':'none'}},label);}));
+  }
+  calHeader(label){
+    const h=React.createElement;
+    const arrow=(dir)=>h('button',{style:{width:40,height:40,border:'none',background:'transparent',borderRadius:11,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flex:'none'}},this.icon(dir<0?'chevron-left':'chevron-right',{size:21,color:'#3A3F4B',sw:2.2}));
+    return h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:2}},arrow(-1),h('span',{style:{fontSize:16,fontWeight:800,color:'#1B2030',letterSpacing:'-.02em',minWidth:96,textAlign:'center'}},label),arrow(1)),
+      h('button',{style:{display:'inline-flex',alignItems:'center',gap:5,height:34,padding:'0 13px',borderRadius:99,border:'1px solid #E6E8EC',background:'#fff',color:'#5A606B',fontSize:12.5,fontWeight:700,cursor:'pointer'}},this.icon('today',{size:14,color:'#6B7280',sw:2}),'오늘'));
+  }
+  agendaList(day){
+    const h=React.createElement;const ev=this.events[day]||[];
+    if(!ev.length) return h('div',{style:{padding:'40px 20px',textAlign:'center',color:'#9AA0AB',fontSize:13,fontWeight:600}},'이 날은 일정이 없어요');
+    return h('div',{style:{display:'flex',flexDirection:'column',gap:9}},ev.map((e,i)=>{const c=this.CAT[e.cat];
+      return h('div',{key:i,style:{display:'flex',gap:11,alignItems:'stretch'}},
+        h('div',{style:{width:44,flex:'none',paddingTop:2,textAlign:'right'}},h('div',{style:{fontSize:12.5,fontWeight:700,color:'#3A3F4B'}},this.tstr(e.s)),h('div',{style:{fontSize:11,fontWeight:600,color:'#A8AEB8'}},this.tstr(e.s+e.dur))),
+        h('div',{style:{flex:1,minWidth:0,display:'flex',alignItems:'center',gap:11,background:c.bg,borderLeft:'3px solid '+c.fg,borderRadius:'5px 12px 12px 5px',padding:'10px 12px'}},
+          this.chip(e.cat,32),
+          h('div',{style:{flex:1,minWidth:0}},h('div',{style:{fontSize:14,fontWeight:700,color:'#1B2030',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},e.name),e.note?h('div',{style:{fontSize:11.5,fontWeight:500,color:'#71767F'}},e.note):null),
+          this.avatar(e.by,24)));
+    }));
+  }
+  buildMonth(){
+    const h=React.createElement;const sel=this.state.calSel;
+    // April 2026: Apr 1 = Wed(idx3). 30 days.
+    const first=3,dim=30;const cells=[];
+    for(let i=0;i<first;i++)cells.push(null);
+    for(let n=1;n<=dim;n++)cells.push(n);
+    while(cells.length%7)cells.push(null);
+    const weeks=[];for(let i=0;i<cells.length;i+=7)weeks.push(cells.slice(i,i+7));
+    const head=h('div',{style:{display:'grid',gridTemplateColumns:'repeat(7,1fr)',marginBottom:4}},this.DOW.map((d,i)=>h('div',{key:i,style:{textAlign:'center',fontSize:11,fontWeight:700,color:i===0?'#E8615C':(i===6?'#3172E3':'#A8AEB8'),padding:'4px 0'}},d)));
+    const grid=h('div',{style:{display:'flex',flexDirection:'column'}},weeks.map((wk,wi)=>h('div',{key:wi,style:{display:'grid',gridTemplateColumns:'repeat(7,1fr)'}},wk.map((n,ci)=>{
+      if(n===null)return h('div',{key:ci,style:{height:46}});
+      const ev=this.events[n];const isSel=n===sel;const isTrip=n>=18&&n<=21;
+      const dots=ev?ev.slice(0,3).map((e,i)=>h('span',{key:i,style:{width:5,height:5,borderRadius:'50%',background:this.CAT[e.cat].fg}})):[];
+      return h('button',{key:ci,onClick:()=>this.setState({calSel:n}),style:{height:46,border:'none',background:'transparent',cursor:'pointer',display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'4px 0'}},
+        h('div',{style:{width:28,height:28,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:isSel?'#3172E3':(isTrip?'#EAF1FE':'transparent'),color:isSel?'#fff':(ci===0?'#E8615C':(ci===6?'#3172E3':'#3A3F4B')),fontSize:13.5,fontWeight:isSel||isTrip?700:500}},String(n)),
+        h('div',{style:{display:'flex',gap:2,height:5}},dots));
+    }))));
+    const selLabel='4월 '+sel+'일 '+(this.DOW[(first+sel-1)%7])+'요일';
+    return h('div',{style:{flex:1,minHeight:0,display:'flex',flexDirection:'column'}},
+      h('div',{style:{flex:'none',padding:'2px 14px 10px',borderBottom:'1px solid #F0F1F4'}},head,grid),
+      h('div',{className:'noscroll',style:{flex:1,minHeight:0,overflowY:'auto',padding:'14px 16px 20px',background:'#F7F8FA'}},
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}},
+          h('span',{style:{fontSize:14,fontWeight:800,color:'#1B2030'}},selLabel),
+          h('span',{style:{fontSize:12,fontWeight:600,color:'#71767F'}},(this.events[sel]||[]).length+'개 일정')),
+        this.agendaList(sel)));
+  }
+  buildWeek(){
+    const h=React.createElement;const sel=this.state.calSel;const first=3;
+    const days=[18,19,20,21,22,23,24];
+    const strip=h('div',{style:{flex:'none',display:'flex',gap:6,padding:'4px 14px 12px',borderBottom:'1px solid #F0F1F4'}},days.map(n=>{const on=n===sel;const dow=this.DOW[(first+n-1)%7];const ev=this.events[n];const isTrip=n>=18&&n<=21;
+      return h('button',{key:n,onClick:()=>this.setState({calSel:n}),style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6,padding:'8px 0',border:'none',borderRadius:14,background:on?'#3172E3':(isTrip?'#F7FAFF':'transparent'),cursor:'pointer'}},
+        h('span',{style:{fontSize:10.5,fontWeight:700,color:on?'rgba(255,255,255,.8)':'#A8AEB8'}},dow),
+        h('span',{style:{fontSize:15,fontWeight:800,color:on?'#fff':'#3A3F4B'}},String(n)),
+        h('span',{style:{width:5,height:5,borderRadius:'50%',background:ev?(on?'#fff':this.CAT[ev[0].cat].fg):'transparent'}}));}));
+    const selLabel='4월 '+sel+'일 '+(this.DOW[(first+sel-1)%7])+'요일';
+    return h('div',{style:{flex:1,minHeight:0,display:'flex',flexDirection:'column'}},strip,
+      h('div',{className:'noscroll',style:{flex:1,minHeight:0,overflowY:'auto',padding:'14px 16px 20px',background:'#F7F8FA'}},
+        h('div',{style:{fontSize:14,fontWeight:800,color:'#1B2030',marginBottom:12}},selLabel),
+        this.agendaList(sel)));
+  }
+  buildDayTimeline(){
+    const h=React.createElement;const sel=this.state.calSel;const ev=this.events[sel]||[];
+    const startH=8,endH=20,hourH=52;
+    const hours=[];for(let hh=startH;hh<=endH;hh+=2)hours.push(hh);
+    const grid=h('div',{style:{position:'relative',height:(endH-startH)*hourH+20}},
+      hours.map((hh,i)=>h('div',{key:i,style:{position:'absolute',top:(hh-startH)*hourH,left:0,right:0,display:'flex',alignItems:'center',gap:8}},
+        h('span',{style:{width:38,flex:'none',fontSize:11,fontWeight:600,color:'#A8AEB8',textAlign:'right'}},this.tstr(hh)),
+        h('div',{style:{flex:1,height:1,background:'#F0F1F4'}}))),
+      ev.map((e,i)=>{const c=this.CAT[e.cat];
+        return h('div',{key:i,style:{position:'absolute',left:46,right:6,top:(e.s-startH)*hourH+2,height:Math.max(e.dur*hourH-4,40),background:c.bg,borderLeft:'3px solid '+c.fg,borderRadius:'5px 10px 10px 5px',padding:'7px 11px',display:'flex',flexDirection:'column',gap:2,overflow:'hidden'}},
+          h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},h('span',{style:{fontSize:11.5,fontWeight:700,color:c.fg}},this.tstr(e.s)),this.avatar(e.by,20)),
+          h('span',{style:{fontSize:13.5,fontWeight:700,color:'#1B2030',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},e.name));}));
+    return h('div',{className:'noscroll',style:{flex:1,minHeight:0,overflowY:'auto',padding:'16px 14px 20px',background:'#F7F8FA'}},grid);
+  }
+  buildCal(){
+    const h=React.createElement;const m=this.state.calMode;
+    let label='2026년 4월';if(m==='week')label='4월 3주';else if(m==='day')label='4월 '+this.state.calSel+'일';
+    let body;if(m==='month')body=this.buildMonth();else if(m==='week')body=this.buildWeek();else body=this.buildDayTimeline();
+    return this.phone([
+      this.wsBar('cal','cal'),
+      h('div',{style:{flex:'none',padding:'12px 16px',display:'flex',flexDirection:'column',gap:12,background:'#fff',position:'relative',zIndex:5}},this.calHeader(label),this.calModeSeg()),
+      body,
+      // FAB
+      h('button',{style:{position:'absolute',right:18,bottom:34,width:54,height:54,borderRadius:'50%',border:'none',background:'#3172E3',boxShadow:'0 8px 20px -4px rgba(59,125,240,.6)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',zIndex:20}},this.icon('plus',{size:26,color:'#fff',sw:2.4})),
+      this.buildDrawer('cal','cal')
+    ],'calPhone');
+  }
+
+  won(n){return '₩'+n.toLocaleString('en-US');}
+  sectionHd(label,right){const h=React.createElement;return h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:11}},h('span',{style:{fontSize:14.5,fontWeight:800,color:'#1B2030',letterSpacing:'-.01em',whiteSpace:'nowrap'}},label),right||null);}
+
+  // ===== PLACES =====
+  buildPlaces(){
+    const h=React.createElement;const cur=this.state.placesFolder;
+    const list=cur==='전체'?this.PLACES:this.PLACES.filter(p=>p.folder===cur);
+    const open=this.state.placesDrop;
+    const count=f=>f==='전체'?this.PLACES.length:this.PLACES.filter(p=>p.folder===f).length;
+    const dropdown=h('div',{style:{position:'relative'}},
+      h('button',{onClick:()=>this.setState({placesDrop:!open}),style:{display:'inline-flex',alignItems:'center',gap:7,height:38,padding:'0 12px 0 14px',borderRadius:11,border:'1px solid '+(open?'#3172E3':'#E6E8EC'),background:open?'#F7FAFF':'#fff',cursor:'pointer'}},
+        this.icon('folder',{size:16,color:'#6B7280',sw:2}),
+        h('span',{style:{fontSize:13.5,fontWeight:700,color:'#3A3F4B',whiteSpace:'nowrap'}},cur),
+        h('span',{style:{fontSize:12,fontWeight:600,color:'#A8AEB8'}},count(cur)),
+        h('span',{style:{display:'inline-flex',transform:open?'rotate(180deg)':'none',transition:'transform .15s'}},this.icon('chevron-down',{size:16,color:'#8A909B',sw:2.2}))),
+      open?h('div',{style:{position:'absolute',top:44,left:0,zIndex:40,width:190,background:'#fff',borderRadius:14,border:'1px solid #ECEEF1',boxShadow:'0 12px 30px -8px rgba(16,24,40,.25)',padding:6,display:'flex',flexDirection:'column',gap:2}},
+        this.FOLDERS.map(f=>{const on=f===cur;return h('button',{key:f,onClick:()=>this.setState({placesFolder:f,placesDrop:false}),style:{display:'flex',alignItems:'center',gap:8,height:40,padding:'0 11px',border:'none',borderRadius:10,background:on?'#EAF1FE':'transparent',cursor:'pointer',width:'100%',textAlign:'left'}},
+          this.icon('folder',{size:15,color:on?'#2F6FE0':'#A8AEB8',sw:2}),
+          h('span',{style:{flex:1,fontSize:13.5,fontWeight:on?700:600,color:on?'#1B2030':'#4A4F5A',whiteSpace:'nowrap'}},f),
+          h('span',{style:{fontSize:12,fontWeight:700,color:on?'#2F6FE0':'#B6BCC6'}},count(f)),
+          on?this.icon('check',{size:15,color:'#2F6FE0',sw:2.6}):null);}))
+      :null);
+    const card=(p,i)=>{const c=this.CAT[p.cat];
+      return h('div',{key:i,style:{display:'flex',alignItems:'center',gap:12,padding:'12px',background:'#fff',border:'1px solid #ECEEF1',borderRadius:15,boxShadow:'0 1px 2px rgba(16,24,40,.03)'}},
+        this.chip(p.cat,40),
+        h('div',{style:{flex:1,minWidth:0,display:'flex',flexDirection:'column',gap:3}},
+          h('span',{style:{fontSize:14.5,fontWeight:700,color:'#1B2030',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},p.name),
+          h('div',{style:{display:'flex',alignItems:'center',gap:4}},this.icon('pin',{size:12,color:'#A8AEB8',sw:2}),h('span',{style:{fontSize:12,fontWeight:500,color:'#71767F',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},p.addr)),
+          p.memo?h('span',{style:{fontSize:11.5,fontWeight:600,color:c.fg,background:c.bg,alignSelf:'flex-start',padding:'2px 8px',borderRadius:99,whiteSpace:'nowrap'}},p.memo):null),
+        h('button',{style:{flex:'none',display:'inline-flex',alignItems:'center',gap:4,height:36,padding:'0 12px',borderRadius:11,background:'#EAF1FE',color:'#2F6FE0',border:'none',fontSize:12.5,fontWeight:700,cursor:'pointer'}},this.icon('plus',{size:15,color:'#2F6FE0',sw:2.2}),'일정'));
+    };
+    return this.phone([
+      this.wsBar('places','places'),
+      h('div',{style:{flex:'none',paddingTop:14,paddingBottom:14,background:'#fff',borderBottom:'1px solid #F0F1F4',zIndex:15,position:'relative',display:'flex',flexDirection:'column',gap:12}},
+        h('div',{style:{padding:'0 16px',display:'flex',alignItems:'center',justifyContent:'space-between'}},
+          h('span',{style:{fontSize:16,fontWeight:800,color:'#1B2030'}},'저장한 장소'),
+          h('button',{style:{display:'inline-flex',alignItems:'center',gap:5,height:36,padding:'0 13px',borderRadius:99,background:'#3172E3',color:'#fff',border:'none',fontSize:12.5,fontWeight:700,cursor:'pointer',boxShadow:'0 3px 8px -1px rgba(59,125,240,.45)'}},this.icon('plus',{size:15,color:'#fff',sw:2.4}),'새 장소')),
+        h('div',{style:{padding:'0 16px'}},dropdown)),
+      h('div',{className:'noscroll',style:{flex:1,minHeight:0,overflowY:'auto',padding:'14px 16px 20px',background:'#F7F8FA',display:'flex',flexDirection:'column',gap:10}},
+        h('span',{style:{fontSize:12.5,fontWeight:600,color:'#9AA0AB'}},list.length+'곳'),
+        list.map(card)),
+      this.buildDrawer('places','places')
+    ],'placesPhone');
+  }
+
+  // ===== BUDGET =====
+  buildBudget(){
+    const h=React.createElement;const B=this.BUDGET;const used=B.total/B.cap;const maxCat=Math.max.apply(null,B.cats.map(c=>c[2]));
+    const statCard=(label,val,accent)=>h('div',{style:{flex:1,background:'#fff',border:'1px solid #ECEEF1',borderRadius:15,padding:'13px 14px',display:'flex',flexDirection:'column',gap:4}},
+      h('span',{style:{fontSize:11.5,fontWeight:600,color:'#71767F'}},label),h('span',{style:{fontSize:19,fontWeight:800,color:accent||'#1B2030',letterSpacing:'-.02em'}},val));
+    const catBar=h('div',{style:{background:'#fff',border:'1px solid #ECEEF1',borderRadius:15,padding:'15px 15px'}},
+      this.sectionHd('카테고리별 지출'),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:11}},B.cats.map((c,i)=>{const cat=this.CAT[c[1]];
+        return h('div',{key:i,style:{display:'flex',alignItems:'center',gap:10}},
+          this.chip(c[1],30),
+          h('div',{style:{flex:1,minWidth:0}},
+            h('div',{style:{display:'flex',justifyContent:'space-between',marginBottom:4}},h('span',{style:{fontSize:12.5,fontWeight:700,color:'#3A3F4B'}},c[0]),h('span',{style:{fontSize:12.5,fontWeight:700,color:'#1B2030'}},this.won(c[2]))),
+            h('div',{style:{height:8,borderRadius:99,background:'#F1F3F6',overflow:'hidden'}},h('div',{style:{width:(c[2]/maxCat*100)+'%',height:'100%',borderRadius:99,background:cat.fg}}))));
+        })));
+    const settle=h('div',{style:{background:'#fff',border:'1px solid #ECEEF1',borderRadius:15,padding:'15px 15px'}},
+      this.sectionHd('정산'),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:10}},B.settle.map((s,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:9}},
+        this.avatar(s[0],30),
+        h('div',{style:{flex:1,display:'flex',alignItems:'center',gap:8}},h('span',{style:{fontSize:13,fontWeight:700,color:'#1B2030'}},s[1]),this.icon('arrow-right',{size:15,color:'#A8AEB8',sw:2.2}),this.avatar(s[2],30),h('span',{style:{fontSize:13,fontWeight:700,color:'#1B2030'}},s[3])),
+        h('span',{style:{fontSize:14,fontWeight:800,color:'#1FA078'}},this.won(s[4]))))));
+    const expenses=h('div',{style:{background:'#fff',border:'1px solid #ECEEF1',borderRadius:15,padding:'15px 15px'}},
+      this.sectionHd('지출 내역'),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:2}},B.expenses.map((e,i)=>{const c=this.CAT[e[2]];const last=i===B.expenses.length-1;
+        return h('div',{key:i,style:{display:'flex',alignItems:'center',gap:11,padding:'9px 0',borderBottom:last?'none':'1px solid #F2F3F6'}},
+          this.chip(e[2],34),
+          h('div',{style:{flex:1,minWidth:0}},h('div',{style:{fontSize:13.5,fontWeight:700,color:'#1B2030',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},e[1]),h('span',{style:{fontSize:11.5,fontWeight:600,color:'#9AA0AB'}},e[0])),
+          h('span',{style:{fontSize:13.5,fontWeight:800,color:'#1B2030'}},this.won(e[3])),this.avatar(e[4],24));
+      })));
+    return this.phone([
+      this.wsBar('budget','budget'),
+      h('div',{className:'noscroll',style:{flex:1,minHeight:0,overflowY:'auto',padding:'16px 16px 24px',background:'#F7F8FA',display:'flex',flexDirection:'column',gap:12}},
+        h('div',{style:{display:'flex',gap:10}},statCard('총지출',this.won(B.total)),statCard('1인당 (4명)',this.won(B.per),'#2F6FE0')),
+        h('div',{style:{background:'#fff',border:'1px solid #ECEEF1',borderRadius:15,padding:'14px 15px',display:'flex',flexDirection:'column',gap:9}},
+          h('div',{style:{display:'flex',justifyContent:'space-between'}},h('span',{style:{fontSize:12.5,fontWeight:600,color:'#71767F'}},'예산 사용'),h('span',{style:{fontSize:12.5,fontWeight:700,color:'#3A3F4B'}},this.won(B.total)+' / '+this.won(B.cap))),
+          h('div',{style:{height:10,borderRadius:99,background:'#F1F3F6',overflow:'hidden'}},h('div',{style:{width:(used*100)+'%',height:'100%',borderRadius:99,background:'linear-gradient(90deg,#3172E3,#5B8DEF)'}})),
+          h('span',{style:{fontSize:12,fontWeight:600,color:'#1FA078'}},this.won(B.cap-B.total)+' 남음')),
+        catBar,settle,expenses),
+      h('button',{style:{position:'absolute',right:18,bottom:34,width:54,height:54,borderRadius:'50%',border:'none',background:'#3172E3',boxShadow:'0 8px 20px -4px rgba(59,125,240,.6)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',zIndex:20}},this.icon('plus',{size:26,color:'#fff',sw:2.4})),
+      this.buildDrawer('budget','budget')
+    ],'budgetPhone');
+  }
+
+  // ===== STATS =====
+  buildStats(){
+    const h=React.createElement;const T=this.STATS;const maxD=Math.max.apply(null,T.dist.map(d=>d[1]));
+    const statCard=(label,val,unit,accent)=>h('div',{style:{flex:1,background:'#fff',border:'1px solid #ECEEF1',borderRadius:15,padding:'14px 14px',display:'flex',flexDirection:'column',gap:5}},
+      h('span',{style:{fontSize:11.5,fontWeight:600,color:'#71767F'}},label),
+      h('div',{style:{display:'flex',alignItems:'baseline',gap:3}},h('span',{style:{fontSize:24,fontWeight:800,color:accent||'#1B2030',letterSpacing:'-.03em'}},val),h('span',{style:{fontSize:12.5,fontWeight:700,color:'#9AA0AB'}},unit)));
+    const dist=h('div',{style:{background:'#fff',border:'1px solid #ECEEF1',borderRadius:15,padding:'15px 15px'}},
+      this.sectionHd('카테고리 분포'),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:10}},T.dist.map((d,i)=>{const c=this.CAT[d[0]];
+        return h('div',{key:i,style:{display:'flex',alignItems:'center',gap:10}},
+          this.chip(d[0],28),
+          h('span',{style:{width:52,flex:'none',fontSize:12.5,fontWeight:700,color:'#3A3F4B'}},c.label),
+          h('div',{style:{flex:1,height:10,borderRadius:99,background:'#F1F3F6',overflow:'hidden'}},h('div',{style:{width:(d[1]/maxD*100)+'%',height:'100%',borderRadius:99,background:c.fg}})),
+          h('span',{style:{width:24,textAlign:'right',fontSize:12.5,fontWeight:800,color:'#1B2030'}},d[1]));
+      })));
+    const busiest=h('div',{style:{background:'linear-gradient(135deg,#EAF1FE,#F0F5FF)',border:'1px solid #DCE6F8',borderRadius:15,padding:'15px 16px',display:'flex',alignItems:'center',gap:13}},
+      h('div',{style:{width:44,height:44,borderRadius:13,background:'#3172E3',display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon('route2',{size:22,color:'#fff',sw:2})),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:2}},h('span',{style:{fontSize:12.5,fontWeight:600,color:'#5A7BB5'}},'가장 바쁜 날'),h('span',{style:{fontSize:16,fontWeight:800,color:'#1B2030'}},T.busiest+' · '+T.busiestN+'곳 방문')));
+    return this.phone([
+      this.wsBar('stats','stats'),
+      h('div',{className:'noscroll',style:{flex:1,minHeight:0,overflowY:'auto',padding:'16px 16px 24px',background:'#F7F8FA',display:'flex',flexDirection:'column',gap:12}},
+        h('div',{style:{display:'flex',gap:10}},statCard('총 방문',T.visited,'곳'),statCard('하루 평균',T.perDay,'곳','#2F6FE0')),
+        busiest,dist,
+        h('div',{style:{background:'#fff',border:'1px solid #ECEEF1',borderRadius:15,padding:'15px 15px'}},
+          this.sectionHd('멤버별 추가'),
+          h('div',{style:{display:'flex',gap:16,justifyContent:'space-around',paddingTop:4}},[['ji',6],['min',5],['seo',4],['do',3]].map((m,i)=>h('div',{key:i,style:{display:'flex',flexDirection:'column',alignItems:'center',gap:7}},this.avatar(m[0],38),h('span',{style:{fontSize:14,fontWeight:800,color:'#1B2030'}},m[1]),h('span',{style:{fontSize:11,fontWeight:600,color:'#9AA0AB'}},'장소')))))),
+      this.buildDrawer('stats','stats')
+    ],'statsPhone');
+  }
+
+  buildDsNote(){
+    const h=React.createElement;
+    const card=(title,children)=>h('div',{style:{background:'#fff',border:'1px solid #E8EAEF',borderRadius:16,padding:'18px 18px',display:'flex',flexDirection:'column',gap:12,boxShadow:'0 1px 3px rgba(16,24,40,.05)'}},
+      h('span',{style:{fontSize:13.5,fontWeight:800,color:'#1B2030',letterSpacing:'-.01em'}},title),children);
+    const row=(label,desc)=>h('div',{style:{display:'flex',flexDirection:'column',gap:2}},h('span',{style:{fontSize:12.5,fontWeight:700,color:'#3A3F4B'}},label),h('span',{style:{fontSize:12,fontWeight:500,color:'#71767F',lineHeight:1.5}},desc));
+    return h('div',{style:{display:'flex',flexDirection:'column',gap:14}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:9,color:'#7A818D',fontSize:12.5,fontWeight:600}},h('span',{style:{width:7,height:7,borderRadius:'50%',background:'#3FC4A0'}}),'모바일 적용 규칙'),
+      card('워크스페이스 바 축약',h('div',{style:{display:'flex',flexDirection:'column',gap:11}},
+        row('상단 바','왼쪽 햄버거(☰) · 여행 제목(현재 탭·기간) · 공유. 3영역 고정.'),
+        row('탭 5개 → 왼쪽 드로어','☰ 탭 시 왼쪽에서 펼쳐지는 서랍 메뉴로 플랜/캘린더/장소/예산/통계 전체 표시. 탭이 잘리지 않고 항목이 늘어도 대응(통계까지 한눈에).'),
+        row('드로어','jero 로고 + 여행 정보 + 5개 메뉴(활성 강조) + 목록으로/공유. 스크림 탭이나 X로 닫힘.'))),
+      card('플랜 — 리스트 ↔ 지도',h('div',{style:{display:'flex',flexDirection:'column',gap:11}},
+        row('세그먼트 전환','상단 Day 스위처 아래 [리스트 | 지도] 토글로 한 화면에서 전환.'),
+        row('지도 모드','전체 지도 + 동선/번호 마커 + 하단 바텀시트(핸들 + 가로 스크롤 미니 카드). 필터는 지도 위 오버레이.'),
+        row('리스트 모드','필터 칩 + 번호·카테고리·시간 일정 카드(그립으로 순서 변경) + 장소 추가.'),
+        row('터치 타깃','화살표·세그먼트·카드·FAB 모두 44px 이상.'))),
+      card('캘린더 — 기본 월+아젠다',h('div',{style:{display:'flex',flexDirection:'column',gap:11}},
+        row('월 (기본)','컴팩트 월 그리드(일정 점 표시) + 선택일 아젠다 리스트를 아래 스크롤.'),
+        row('주','7일 날짜 스트립 + 선택일 아젠다(월 그리드 대신 모바일 친화).'),
+        row('일','시간 타임라인 + 카테고리 색 블록(데스크톱 일 보기 계승).'))),
+      card('장소 · 예산 · 통계',h('div',{style:{display:'flex',flexDirection:'column',gap:11}},
+        row('장소','폴더 칩(가로 스크롤) + 저장 장소 카드(카테고리·주소·메모·일정 추가).'),
+        row('예산','요약 카드(총지출·1인당) + 예산 사용 바 + 카테고리 지출 바 + 정산 + 지출 내역.'),
+        row('통계','핵심 지표 카드 + 가장 바쁜 날 + 카테고리 분포 바 + 멤버별 추가.'))));
+  }
+
+  renderVals(){
+    return { planPhone:this.buildPlan(), calPhone:this.buildCal(), placesPhone:this.buildPlaces(), budgetPhone:this.buildBudget(), statsPhone:this.buildStats(), dsNote:this.buildDsNote() };
+  }
+}
+</script>
+</body>
+</html>
