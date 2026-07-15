@@ -97,27 +97,27 @@ export function AccountSettings() {
   return (
     <div className="flex h-screen flex-col">
       {/* 상단 바 */}
-      <header className="flex h-16 flex-none items-center gap-3.5 border-b border-line bg-background px-[22px]">
+      <header className="flex h-16 flex-none items-center gap-2 border-b border-line bg-background px-4 md:gap-3.5 md:px-[22px]">
         <Link
           href="/trips"
-          className="inline-flex h-[34px] items-center gap-1.5 rounded-md border border-line-strong bg-background pr-[11px] pl-2 text-[13px] font-semibold text-subtle hover:bg-secondary"
+          className="inline-flex h-11 flex-none items-center gap-1.5 rounded-md border border-line-strong bg-background pr-[11px] pl-2 text-[13px] font-semibold text-subtle hover:bg-secondary"
         >
           <Icon name="arrow-left" size={17} strokeWidth={2} />
           목록
         </Link>
-        <span className="h-6 w-px bg-line" />
-        <span className="text-[17px] font-extrabold tracking-tight text-ink">
+        <span className="hidden h-6 w-px bg-line md:inline" />
+        <span className="truncate text-[15px] font-extrabold tracking-tight text-ink md:text-[17px]">
           계정 설정
         </span>
         {profile && (
-          <div className="ml-auto flex items-center gap-2.5">
+          <div className="ml-auto flex flex-none items-center gap-2.5">
             <span
               className="flex size-8 items-center justify-center rounded-full text-[13px] font-bold text-white"
               style={{ background: profile.avatarColor }}
             >
               {profile.name[0]}
             </span>
-            <div className="flex flex-col leading-tight">
+            <div className="hidden flex-col leading-tight sm:flex">
               <span className="text-[13px] font-bold text-ink">{profile.name}</span>
               <span className="text-[11.5px] font-medium text-faint">{profile.email}</span>
             </div>
@@ -125,13 +125,14 @@ export function AccountSettings() {
         )}
       </header>
 
-      <main className="flex min-h-0 flex-1">
+      {/* 모바일: 세로 스택(상단 탭 nav → 콘텐츠 → 저장 바) / 데스크톱: 좌 nav + 우 콘텐츠 2단 */}
+      <main className="flex min-h-0 flex-1 flex-col md:flex-row">
         <SettingsNav active={active} onSelect={goSection} />
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex-1 overflow-y-auto p-[30px_36px_28px]">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="flex-1 overflow-y-auto p-4 md:p-[30px_36px_28px]">
             <FormProvider {...methods}>
-              <div className="flex max-w-[620px] flex-col gap-[30px]">
+              <div className="flex max-w-[620px] flex-col gap-6 md:gap-[30px]">
                 <ProfileSection email={profile?.email ?? ""} />
                 <PreferenceSection />
                 <AccountSection

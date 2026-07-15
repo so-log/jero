@@ -22,7 +22,8 @@ export function SettingsNav({
   onSelect: (section: SettingsSection) => void;
 }) {
   return (
-    <nav className="flex w-[230px] flex-none flex-col gap-0.5 border-r border-line bg-surface p-[18px_14px]">
+    // 모바일: 상단 가로 탭(3분할) / 데스크톱: 좌측 세로 사이드바(230px)
+    <nav className="flex flex-none gap-0.5 border-b border-line bg-surface p-2 md:w-[230px] md:flex-col md:border-r md:border-b-0 md:p-[18px_14px]">
       {NAV.map((n) => {
         const on = n.key === active;
         return (
@@ -32,7 +33,7 @@ export function SettingsNav({
             aria-current={on}
             onClick={() => onSelect(n.key)}
             className={cn(
-              "flex h-11 items-center gap-3 rounded-md px-3.5 text-left transition-colors",
+              "flex h-11 flex-1 items-center justify-center gap-2 rounded-md px-2 text-left transition-colors md:flex-none md:justify-start md:gap-3 md:px-3.5",
               on ? "bg-primary-tint" : "hover:bg-secondary",
             )}
           >
@@ -53,7 +54,7 @@ export function SettingsNav({
           </button>
         );
       })}
-      <div className="mt-auto px-2.5 py-3 text-[11.5px] font-medium leading-relaxed text-mute">
+      <div className="mt-auto hidden px-2.5 py-3 text-[11.5px] font-medium leading-relaxed text-mute md:block">
         jero {ACCOUNT_META.version} · 마지막 로그인
         <br />
         {ACCOUNT_META.lastLogin}
