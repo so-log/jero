@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/ui/icon";
 import { useTripQuery } from "@/features/trip";
@@ -30,6 +30,23 @@ export function PamphletExportView({ tripId }: { tripId: string }) {
     if (!data.isLoading && data.isEmpty && sections.schedule) toggleSection("schedule");
   }, [data.isLoading, data.isEmpty, sections.schedule, toggleSection]);
 
+  // 미리보기 A4 3단을 컨테이너 폭에 맞춰 스케일(가로 스크롤 없이). 데스크톱은 150 상한이라 기존과 동일.
+  // 3 패널 + PreviewFace 좌우 패딩(18px)·보더(1px) 여유를 빼고 3등분.
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  const [panelWidth, setPanelWidth] = useState(150);
+  useEffect(() => {
+    const el = previewRef.current;
+    if (!el) return;
+    const measure = () => {
+      const usable = el.clientWidth - 38;
+      setPanelWidth(Math.max(88, Math.min(150, Math.floor(usable / 3))));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const canEdit = trip ? roleCanEdit(trip.my_role) : true;
   if (trip && !canEdit) {
     return (
@@ -52,27 +69,34 @@ export function PamphletExportView({ tripId }: { tripId: string }) {
   return (
     <div className="flex h-screen flex-col bg-background">
       {/* 상단 바 */}
-      <header className="flex h-16 flex-none items-center gap-3.5 border-b border-line px-[22px]">
+      <header className="flex h-16 flex-none items-center gap-2 border-b border-line px-4 md:gap-3.5 md:px-[22px]">
         <Link
           href={`/trips/${tripId}?view=plan`}
-          className="inline-flex h-[34px] items-center gap-1.5 rounded-md border border-line-strong bg-background pr-3 pl-2 text-[13px] font-semibold text-subtle hover:bg-secondary"
+          className="inline-flex h-11 flex-none items-center gap-1.5 rounded-md border border-line-strong bg-background pr-3 pl-2 text-[13px] font-semibold text-subtle hover:bg-secondary"
         >
           <Icon name="chevron-left" size={16} strokeWidth={2.2} />
           플랜으로
         </Link>
-        <span className="h-6 w-px bg-line" />
-        <span className="text-[17px] font-extrabold tracking-tight text-ink">팜플렛 내보내기</span>
-        {trip && <span className="text-[13px] font-semibold text-faint">· {trip.title}</span>}
-        <span className="ml-auto inline-flex items-center gap-1.5 rounded-pill bg-secondary px-3 py-1.5 text-xs font-bold text-faint">
+        <span className="hidden h-6 w-px bg-line md:inline" />
+        <span className="truncate text-[15px] font-extrabold tracking-tight text-ink md:text-[17px]">
+          팜플렛 내보내기
+        </span>
+        {trip && (
+          <span className="hidden truncate text-[13px] font-semibold text-faint sm:inline">
+            · {trip.title}
+          </span>
+        )}
+        <span className="ml-auto inline-flex flex-none items-center gap-1.5 rounded-pill bg-secondary px-3 py-1.5 text-xs font-bold text-faint">
           <Icon name="file-text" size={14} strokeWidth={2} />
           {data.isEmpty ? "일정 0건" : `${data.days.length}일 · 일정 ${itemCount}건`}
         </span>
       </header>
 
-      <main className="flex min-h-0 flex-1">
-        {/* 좌측 설정 */}
-        <div className="flex w-[372px] flex-none flex-col border-r border-line">
-          <div className="flex-1 overflow-y-auto p-[24px_22px]">
+      {/* 모바일: 세로 스택(설정 → 미리보기, 페이지 단일 스크롤) / 데스크톱: 좌우 2단(각자 스크롤) */}
+      <main className="flex min-h-0 flex-1 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
+        {/* 설정 */}
+        <div className="flex w-full flex-none flex-col border-b border-line md:w-[372px] md:min-h-0 md:border-r md:border-b-0">
+          <div className="p-[24px_22px] md:min-h-0 md:flex-1 md:overflow-y-auto">
             <SettingPanel scheduleDisabled={data.isEmpty} />
           </div>
           <div className="flex flex-none gap-2.5 border-t border-line p-[16px_22px]">
@@ -88,16 +112,16 @@ export function PamphletExportView({ tripId }: { tripId: string }) {
           </div>
         </div>
 
-        {/* 우측 미리보기 */}
-        <div className="flex flex-1 flex-col items-center overflow-y-auto bg-surface p-[26px_30px]">
-          <div className="flex w-full max-w-[560px] flex-col gap-5">
+        {/* 미리보기 */}
+        <div className="flex flex-none flex-col items-center bg-surface p-4 md:min-h-0 md:flex-1 md:overflow-y-auto md:p-[26px_30px]">
+          <div ref={previewRef} className="flex w-full max-w-[560px] flex-col gap-5">
             <div className="flex items-center justify-between">
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-extrabold text-ink">A4 3단 접이 · 미리보기</span>
                 <span className="text-xs font-medium text-faint">297 × 210mm · 접힘 순서대로</span>
               </div>
               <span
-                className="inline-flex items-center gap-1.5 rounded-pill border px-3 py-1.5 text-xs font-bold"
+                className="inline-flex flex-none items-center gap-1.5 rounded-pill border px-3 py-1.5 text-xs font-bold"
                 style={{ background: theme.soft, borderColor: theme.line, color: theme.ink }}
               >
                 <span className="size-2.5 rounded-full" style={{ background: theme.accent }} />
@@ -110,7 +134,7 @@ export function PamphletExportView({ tripId }: { tripId: string }) {
               data={data}
               prep={prep}
               sections={sections}
-              panelWidth={150}
+              panelWidth={panelWidth}
             />
           </div>
         </div>
