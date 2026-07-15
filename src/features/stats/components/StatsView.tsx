@@ -48,9 +48,9 @@ export function StatsView({ tripId }: { tripId: string }) {
 
   return (
     <div className="h-full w-full overflow-y-auto bg-surface">
-      <div className="flex flex-col gap-4 p-6">
-        {/* 요약 카드 4 */}
-        <div className="grid grid-cols-4 gap-4">
+      <div className="flex flex-col gap-4 p-4 md:p-6">
+        {/* 요약 카드 4 — 모바일 2열, 데스크톱 4열 */}
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           <StatCard
             label="총 이동거리"
             value={`${stats.totalDistanceKm.toLocaleString("ko-KR")}km`}
@@ -87,8 +87,8 @@ export function StatsView({ tripId }: { tripId: string }) {
           />
         </div>
 
-        {/* 차트 행 */}
-        <div className="grid grid-cols-[1fr_420px] gap-4">
+        {/* 차트 행 — 모바일 세로 스택 */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_420px]">
           <DistanceTrend data={stats.perDay} />
           <CategoryPie data={stats.byCategory} />
         </div>
@@ -133,13 +133,13 @@ export function StatsView({ tripId }: { tripId: string }) {
 function StatsSkeleton() {
   return (
     <div className="h-full w-full overflow-y-auto bg-surface">
-      <div className="flex flex-col gap-4 p-6">
-        <div className="grid grid-cols-4 gap-4">
+      <div className="flex flex-col gap-4 p-4 md:p-6">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="h-[108px] animate-pulse rounded-panel bg-secondary" />
           ))}
         </div>
-        <div className="grid grid-cols-[1fr_420px] gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_420px]">
           <div className="h-[240px] animate-pulse rounded-panel bg-secondary" />
           <div className="h-[240px] animate-pulse rounded-panel bg-secondary" />
         </div>

@@ -33,6 +33,7 @@ import { ALL_FOLDER } from "../types";
 import { FolderSidebar } from "./FolderSidebar";
 import { MapSearchBox } from "./MapSearchBox";
 import { PlaceList } from "./PlaceList";
+import { PlacesMobileControls, type PlacesMode } from "./PlacesMobileControls";
 
 /**
  * 06 장소 — 폴더 사이드바 + 저장 장소 리스트 + 미니 지도(3분할). 설계 §3.
@@ -55,6 +56,8 @@ export function PlacesView({ tripId }: { tripId: string }) {
   const [flyTo, setFlyTo] = useState<{ position: LatLng; zoom?: number } | null>(
     null,
   );
+  // 모바일 전용: 리스트 ↔ 지도 토글(데스크톱은 3분할이라 무관). 기본 리스트.
+  const [mobileMode, setMobileMode] = useState<PlacesMode>("list");
 
   const saved = useMemo(() => data?.saved_places ?? [], [data]);
   const folders = data?.folders ?? [];
@@ -129,46 +132,92 @@ export function PlacesView({ tripId }: { tripId: string }) {
 
   const { collapsed, width, dragging } = map;
 
+  // 데스크톱·모바일 지도가 공유하는 범례/빈 오버레이(중복 정의 방지).
+  const savedLegend = (
+    <div className="absolute bottom-3.5 left-3.5 flex items-center gap-2 rounded-md border border-line bg-white/90 px-3 py-2 text-xs font-semibold text-subtle shadow-[0_4px_14px_-4px_color-mix(in_srgb,var(--color-ink)_16%,transparent)] backdrop-blur">
+      <span
+        className="size-[13px] border-[1.5px] border-line-strong bg-white"
+        style={{ borderRadius: "50% 50% 50% 2px", transform: "rotate(45deg)" }}
+      />
+      저장한 장소 · 아직 일정 아님
+    </div>
+  );
+  const savedEmpty = (
+    <div className="rounded-2xl border-[1.5px] border-dashed border-mute bg-white/85 px-5 py-4 text-center text-[12.5px] font-semibold leading-relaxed text-subtle backdrop-blur">
+      저장한 장소가
+      <br />
+      여기에 표시돼요
+    </div>
+  );
+  const placeListEl = (
+    <PlaceList
+      tripId={tripId}
+      places={visible}
+      members={members}
+      days={days}
+      folder={folderMeta}
+      canEdit={canEdit}
+      isLoading={isLoading}
+    />
+  );
+
   return (
-    <div ref={containerRef} className="flex h-full min-h-0 w-full">
+    // 단일 트리(3-B PlanView 패턴): 컴포넌트를 한 번만 렌더하고 CSS(모드+md:)로 표시 분기.
+    // 데스크톱(md+)은 폴더 사이드바 + 리스트 + 리사이즈 지도 3분할(기존 그대로),
+    // 모바일(<md)은 상단 컨트롤 + [리스트 | 지도] 전폭 토글. 컴포넌트 중복 마운트 없음.
+    <div
+      ref={containerRef}
+      className="flex h-full min-h-0 w-full flex-col md:flex-row"
+    >
+      {/* 모바일 전용: 폴더 드롭다운 + [리스트 | 지도] 세그먼트(컴포넌트가 스스로 md:hidden) */}
+      <PlacesMobileControls
+        folders={folders}
+        folderId={folderId}
+        onSelectFolder={setFolder}
+        mode={mobileMode}
+        onModeChange={setMobileMode}
+      />
+
+      {/* 폴더 사이드바 — 데스크톱 전용(모바일은 위 드롭다운이 대체). 접힘 시 숨김. */}
       {!collapsed && (
-        <FolderSidebar
-          key="folders"
-          folders={folders}
-          saved={saved}
-          folderId={folderId}
-          canEdit={canEdit}
-          onSelect={setFolder}
-          onCreateFolder={
-            canEdit ? (name) => upsertFolder.mutate({ name }) : undefined
-          }
-          onRenameFolder={
-            canEdit ? (id, name) => upsertFolder.mutate({ id, name }) : undefined
-          }
-          onDeleteFolder={
-            canEdit
-              ? (id) => {
-                  if (folderId === id) setFolder(ALL_FOLDER); // 활성 폴더 삭제 → 전체로
-                  deleteFolder.mutate(id);
-                }
-              : undefined
-          }
-        />
-      )}
-      {!collapsed && (
-        <PlaceList
-          key="list"
-          tripId={tripId}
-          places={visible}
-          members={members}
-          days={days}
-          folder={folderMeta}
-          canEdit={canEdit}
-          isLoading={isLoading}
-        />
+        <div className="hidden flex-none md:flex">
+          <FolderSidebar
+            key="folders"
+            folders={folders}
+            saved={saved}
+            folderId={folderId}
+            canEdit={canEdit}
+            onSelect={setFolder}
+            onCreateFolder={
+              canEdit ? (name) => upsertFolder.mutate({ name }) : undefined
+            }
+            onRenameFolder={
+              canEdit ? (id, name) => upsertFolder.mutate({ id, name }) : undefined
+            }
+            onDeleteFolder={
+              canEdit
+                ? (id) => {
+                    if (folderId === id) setFolder(ALL_FOLDER); // 활성 폴더 삭제 → 전체로
+                    deleteFolder.mutate(id);
+                  }
+                : undefined
+            }
+          />
+        </div>
       )}
 
-      {/* 리사이즈 핸들(수직 splitter) + 접기/펼치기 토글 */}
+      {/* 리스트 — 모바일: 리스트 모드일 때만 전폭 / 데스크톱: 접힘 아닐 때 좌측 flex-1 */}
+      <div
+        className={cn(
+          "min-h-0",
+          mobileMode === "list" ? "flex flex-1 flex-col" : "hidden",
+          collapsed ? "md:hidden" : "md:flex md:flex-1 md:flex-col",
+        )}
+      >
+        {placeListEl}
+      </div>
+
+      {/* 리사이즈 핸들(수직 splitter) + 접기/펼치기 토글 — 데스크톱 전용 */}
       <div
         key="splitter"
         role="separator"
@@ -182,7 +231,7 @@ export function PlacesView({ tripId }: { tripId: string }) {
         onPointerUp={map.onHandlePointerUp}
         onKeyDown={map.onHandleKeyDown}
         className={cn(
-          "group relative z-10 flex w-2 flex-none items-center justify-center border-l border-line bg-canvas transition-colors outline-none",
+          "group relative z-10 hidden w-2 flex-none items-center justify-center border-l border-line bg-canvas transition-colors outline-none md:flex",
           !collapsed &&
             "cursor-col-resize hover:bg-primary-tint focus-visible:bg-primary-tint",
         )}
@@ -209,10 +258,16 @@ export function PlacesView({ tripId }: { tripId: string }) {
         </button>
       </div>
 
+      {/* 지도 — 모바일: 지도 모드일 때만 전폭 / 데스크톱: 항상(접힘 flex-1, 아니면 가변 폭) */}
       <div
         key="mapPanel"
-        className="relative min-w-0 bg-canvas"
-        style={collapsed ? { flex: "1 1 0%" } : { flex: "0 0 auto", width }}
+        className={cn(
+          "relative min-w-0 bg-canvas",
+          mobileMode === "map" ? "flex flex-1" : "hidden",
+          "md:flex",
+          collapsed ? "md:flex-1" : "md:w-(--places-map-w) md:flex-none",
+        )}
+        style={{ ["--places-map-w" as string]: `${width}px` }}
       >
         {canEdit && <MapSearchBox onSelect={onSearchSelect} />}
         {/* 드래그 중 지도 위 포인터 이벤트 차단(경계 드래그 안정) */}
@@ -227,22 +282,8 @@ export function PlacesView({ tripId }: { tripId: string }) {
           onSelect={select}
           onMapClick={onMapClick}
           flyTo={flyTo}
-          legend={
-            <div className="absolute bottom-3.5 left-3.5 flex items-center gap-2 rounded-md border border-line bg-white/90 px-3 py-2 text-xs font-semibold text-subtle shadow-[0_4px_14px_-4px_color-mix(in_srgb,var(--color-ink)_16%,transparent)] backdrop-blur">
-              <span
-                className="size-[13px] border-[1.5px] border-line-strong bg-white"
-                style={{ borderRadius: "50% 50% 50% 2px", transform: "rotate(45deg)" }}
-              />
-              저장한 장소 · 아직 일정 아님
-            </div>
-          }
-          emptyOverlay={
-            <div className="rounded-2xl border-[1.5px] border-dashed border-mute bg-white/85 px-5 py-4 text-center text-[12.5px] font-semibold leading-relaxed text-subtle backdrop-blur">
-              저장한 장소가
-              <br />
-              여기에 표시돼요
-            </div>
-          }
+          legend={savedLegend}
+          emptyOverlay={savedEmpty}
         />
       </div>
     </div>

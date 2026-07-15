@@ -43,7 +43,10 @@ test.describe("폴더 관리(2차 B)", () => {
     await page.getByRole("button", { name: "폴더 추가" }).first().click();
     await page.getByPlaceholder("새 폴더 이름").fill("카페투어");
     await page.getByPlaceholder("새 폴더 이름").press("Enter");
-    await expect(page.getByText("카페투어")).toBeVisible({ timeout: 20000 });
+    // 데스크톱 사이드바 폴더 버튼으로 특정(모바일 폴더 드롭다운 <option> 과 텍스트 중복 회피).
+    await expect(
+      page.getByRole("button", { name: /카페투어/ }).first(),
+    ).toBeVisible({ timeout: 20000 });
 
     // 실제 폴더가 DB 에 커밋될 때까지 폴링(낙관적 temp 가 아니라 서버 반영 확인).
     let folderId = "";

@@ -60,17 +60,20 @@ export function ExpenseTable({
         )}
       </div>
 
-      <div
-        className={`grid ${COLS} gap-3 border-b border-line bg-surface px-5 py-2.5 text-[11.5px] font-bold tracking-wide text-faint`}
-      >
-        <span>날짜</span>
-        <span>항목</span>
-        <span>결제자</span>
-        <span className="text-center">분담</span>
-        <span className="text-right">금액</span>
-      </div>
+      {/* 좁은 폭(모바일)에선 가로 스크롤 — 컬럼 최소폭 유지(데스크톱은 넉넉해 스크롤 없음) */}
+      <div className="overflow-x-auto">
+        <div className="min-w-[460px]">
+          <div
+            className={`grid ${COLS} gap-3 border-b border-line bg-surface px-5 py-2.5 text-[11.5px] font-bold tracking-wide text-faint`}
+          >
+            <span>날짜</span>
+            <span>항목</span>
+            <span>결제자</span>
+            <span className="text-center">분담</span>
+            <span className="text-right">금액</span>
+          </div>
 
-      <div className="max-h-[236px] overflow-y-auto">
+          <div className="max-h-[236px] overflow-y-auto">
         {expenses.map((e) => {
           const payer = memberById.get(e.payer_id);
           const editable = !!onEditExpense;
@@ -152,6 +155,8 @@ export function ExpenseTable({
             </div>
           );
         })}
+          </div>
+        </div>
       </div>
     </div>
   );
