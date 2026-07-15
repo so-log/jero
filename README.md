@@ -44,11 +44,9 @@
 
 ## 스크린샷
 
-> 아래 이미지는 `docs/screenshots/` 에 넣습니다(파일명은 그대로 두면 자동으로 렌더됩니다). 1280px 기준 캡처 권장.
-
-| 플랜 뷰 (동선 + 지도) | 예산 대시보드 | 일정표 |
+| 플랜 뷰 (동선 + 지도) | 예산 대시보드 | 캘린더 |
 |---|---|---|
-| ![플랜 뷰 — 도쿄 일정 동선과 번호 마커](./docs/screenshots/plan-hero.png) | ![예산 대시보드 — 카테고리 도넛·일별 추이·정산](./docs/screenshots/budget.png) | ![일정표 — 월/주/일 모드](./docs/screenshots/calendar.png) |
+| ![플랜 뷰 — 도쿄 일정 동선과 번호 마커](./docs/screenshots/plan-hero.png) | ![예산 대시보드 — 카테고리 도넛·일별 추이·정산](./docs/screenshots/budget.png) | ![캘린더 — 월/주/일 모드](./docs/screenshots/calendar.png) |
 
 *좌: 일정 리스트를 드래그하면 지도 동선 Polyline·번호 마커가 즉시 갱신됩니다. 중: Recharts 차트 + 멤버별 정산. 우: 월/주/일 캘린더.*
 
