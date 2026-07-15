@@ -168,12 +168,13 @@ jero/
 ## 7. 컨벤션
 
 - **커밋**: Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `chore:`, `test:`).
-- **브랜치**: `main` 보호, 작업은 `feat/<기능>` 브랜치에서 → PR.
+- **브랜치 (필수)**: **`main`에 직접 커밋·push 절대 금지.** 모든 작업은 `feat|fix|test|docs/<주제>` 브랜치에서 → 브랜치 push → PR(`gh pr create`). `main` 머지는 사용자가 한다(셀프 리뷰·squash).
 - **코드**: TypeScript strict, ESLint/Prettier 준수. 컴포넌트는 `features/` 도메인별로, 공통은 `components/ui`.
 - **언어**: 코드·커밋은 영어, 문서·주석은 한국어 가능.
 
 ### 7.1 가드레일 (작업 시 준수)
 
+- **브랜치 필수 (main 직행 금지)**: `main`에서 직접 작업·커밋·push 하지 않는다. 새 작업은 반드시 `feat|fix|test|docs/<주제>` 브랜치를 파고(`git checkout main && git pull && git checkout -b <브랜치>`), 커밋·push는 그 브랜치에만(`git push -u origin <브랜치>`). PR로 올리고 머지는 사용자가 한다. **커밋 전 현재 브랜치가 main이 아닌지 확인.**
 - **요청 범위 고수**: 요청에 없는 리팩토링·포맷팅-only 변경·import 정리·변수명 일괄 변경을 임의로 하지 않는다.
 - **기존 시그니처 보호**: 이미 쓰이는 공용 함수·훅·컴포넌트의 props/리턴 타입을 깨지 않는다(특히 `lib/`, `components/ui`). 확장은 additive 로.
 - **타입 안전성**: `any`·비검증 `unknown` 금지. 구체 타입을 정의한다.

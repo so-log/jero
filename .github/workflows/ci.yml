@@ -1,0 +1,40 @@
+name: CI
+
+# PR과 main push마다 typecheck·lint·test·build를 자동 실행하는 게이트.
+# (Playwright e2e는 브라우저 + 실 Supabase가 필요해 CI에서 제외 — 로컬 `yarn test:e2e`로 실행.)
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# 같은 브랜치에 새 커밋이 오면 진행 중이던 실행은 취소(불필요한 중복 방지).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: typecheck · lint · test · build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      # typecheck + lint + Vitest (프로젝트 게이트)
+      - name: Check
+        run: yarn run check
+
+      # 프로덕션 빌드 (env 없이 = 스텁 경로, 앱의 graceful fallback으로 통과)
+      - name: Build
+        run: yarn build
