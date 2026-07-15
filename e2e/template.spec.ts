@@ -59,12 +59,13 @@ test.describe("템플릿 복제(2차 C)", () => {
     await page.goto("/trips/new");
     await expect(page.getByText("새 여행 만들기")).toBeVisible({ timeout: 20000 });
 
-    // step1 → step2(날짜 10~13, 3박4일 = 도쿄 템플릿 길이) → step3
-    await page.getByRole("button", { name: "다음" }).click();
+    // step1(제목 입력, 프리필 제거됨) → step2(날짜 10~13, 3박4일 = 도쿄 템플릿 길이) → step3
+    await page.getByPlaceholder("예: 도쿄, 우리끼리 4일").fill("도쿄 템플릿 여행");
+    await page.getByRole("button", { name: "다음", exact: true }).click();
     await page.getByRole("button", { name: "10", exact: true }).click();
     await page.getByRole("button", { name: "13", exact: true }).click();
-    await page.getByRole("button", { name: "다음" }).click();
-    await page.getByRole("button", { name: "다음" }).click();
+    await page.getByRole("button", { name: "다음", exact: true }).click();
+    await page.getByRole("button", { name: "다음", exact: true }).click();
 
     // step4: 템플릿 모드 → 도쿄 템플릿 선택 → 생성
     await page.getByRole("button", { name: /템플릿 복제로 시작/ }).click();
@@ -75,10 +76,13 @@ test.describe("템플릿 복제(2차 C)", () => {
     // 플랜 뷰 Day1 에 복제된 일정 장소(센소지) 렌더.
     await expect(page.getByText("센소지")).toBeVisible({ timeout: 20000 });
 
-    // 장소 뷰에 복제된 폴더(명소) 렌더.
+    // 장소 뷰에 복제된 폴더(명소) 렌더 — 데스크톱 사이드바 폴더 버튼으로 특정
+    // (모바일 폴더 드롭다운 <option> 과 텍스트 중복 회피).
     const url = new URL(page.url());
     await page.goto(`${url.pathname}?view=places`);
-    await expect(page.getByText("명소")).toBeVisible({ timeout: 20000 });
+    await expect(
+      page.getByRole("button", { name: /명소/ }).first(),
+    ).toBeVisible({ timeout: 20000 });
   });
 
   test("빈 여행 경로 회귀 없음(템플릿 미선택)", async ({ page }) => {
@@ -86,11 +90,13 @@ test.describe("템플릿 복제(2차 C)", () => {
     await login(page, data.a);
     await page.goto("/trips/new");
     await expect(page.getByText("새 여행 만들기")).toBeVisible({ timeout: 20000 });
-    await page.getByRole("button", { name: "다음" }).click();
+    // step1 제목 입력(프리필 제거됨) → step2
+    await page.getByPlaceholder("예: 도쿄, 우리끼리 4일").fill("빈 여행 테스트");
+    await page.getByRole("button", { name: "다음", exact: true }).click();
     await page.getByRole("button", { name: "11", exact: true }).click();
     await page.getByRole("button", { name: "12", exact: true }).click();
-    await page.getByRole("button", { name: "다음" }).click();
-    await page.getByRole("button", { name: "다음" }).click();
+    await page.getByRole("button", { name: "다음", exact: true }).click();
+    await page.getByRole("button", { name: "다음", exact: true }).click();
     // step4 기본 '빈 여행' → 바로 생성
     await page.getByRole("button", { name: "여행 만들기" }).click();
     await expect(page).toHaveURL(/\/trips\/[0-9a-f-]{36}\?view=plan/, { timeout: 25000 });

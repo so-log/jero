@@ -51,19 +51,20 @@ test.describe("핵심 해피패스 통합", () => {
     await page.goto("/trips/new");
     await expect(page.getByText("새 여행 만들기")).toBeVisible({ timeout: 20000 });
 
-    // step1(정보, 프리필) → 다음
+    // step1(정보) — 제목 입력(프리필 제거됨, 필수 검증) → 다음
     await expect(page.getByText("단계 1 / 4")).toBeVisible();
-    await page.getByRole("button", { name: "다음" }).click();
+    await page.getByPlaceholder("예: 도쿄, 우리끼리 4일").fill("플로우 마법사 여행");
+    await page.getByRole("button", { name: "다음", exact: true }).click();
 
     // step2(기간): 캘린더에서 시작 10일 · 종료 13일 선택(필수)
     await expect(page.getByText("단계 2 / 4")).toBeVisible();
     await page.getByRole("button", { name: "10", exact: true }).click();
     await page.getByRole("button", { name: "13", exact: true }).click();
-    await page.getByRole("button", { name: "다음" }).click();
+    await page.getByRole("button", { name: "다음", exact: true }).click();
 
     // step3(멤버, 프리필) → 다음
     await expect(page.getByText("단계 3 / 4")).toBeVisible();
-    await page.getByRole("button", { name: "다음" }).click();
+    await page.getByRole("button", { name: "다음", exact: true }).click();
 
     // step4(시작 방식) → 여행 만들기 → 워크스페이스(UUID)
     await expect(page.getByText("단계 4 / 4")).toBeVisible();
