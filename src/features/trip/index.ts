@@ -7,5 +7,12 @@ export { CreateTripWizard } from "./components/CreateTripWizard";
 export { TripDatesDialog } from "./components/TripDatesDialog";
 export { useTripsQuery, useTripQuery } from "./api/useTripsQuery";
 export { useUpdateTrip } from "./api/useUpdateTrip";
+export { useTripCities } from "./api/useTripCities";
+export {
+  citySchedule,
+  cityForDate,
+  type TripCity,
+  type CitySegment,
+} from "./lib/citySchedule";
 export { tripSchema, inviteSchema, type CreateTripInput, type InviteRole } from "./lib/tripSchema";
 export type { TripSummaryDto, TripFilter } from "./types";
