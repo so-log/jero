@@ -2,12 +2,15 @@ import { describe, expect, it } from "vitest";
 
 import { PLAN_FIXTURE } from "../api/fixtures";
 import type { MemberDto } from "../types";
+import type { PlaceDto } from "../types";
 import {
   deriveDays,
   filterByCategory,
+  orderByIds,
   peersToCursors,
   placesForDay,
   reorderDayPlaces,
+  scheduledWithCoords,
   toSavedMarkers,
   toScheduledMarkers,
 } from "./selectors";
@@ -105,5 +108,44 @@ describe("peersToCursors (2차 A 실시간 커서)", () => {
   it("멤버 목록에 없는 피어는 기본 이름·색으로 폴백", () => {
     const cursors = peersToCursors({ ghost: { lat: 1, lng: 2, ts: 1 } }, members);
     expect(cursors[0]).toMatchObject({ id: "ghost", name: "멤버" });
+  });
+});
+
+describe("scheduledWithCoords · orderByIds (동선 최적화 입력)", () => {
+  const mk = (id: string, lng: number | null): PlaceDto =>
+    ({
+      id,
+      name: id,
+      category: "cafe",
+      scheduled_date: "2026-08-01",
+      order_in_day: 1,
+      start_time: null,
+      duration_min: null,
+      memo: null,
+      lat: lng === null ? null : 0,
+      lng,
+    }) as PlaceDto;
+
+  it("scheduledWithCoords: 좌표 유/무 분리, 각 원순서 유지", () => {
+    const { withCoords, withoutCoords } = scheduledWithCoords([
+      mk("A", 0),
+      mk("N", null),
+      mk("B", 5),
+    ]);
+    expect(withCoords.map((p) => p.id)).toEqual(["A", "B"]);
+    expect(withoutCoords.map((p) => p.id)).toEqual(["N"]);
+    // withCoords 는 lat/lng 가 number 로 좁혀짐
+    expect(typeof withCoords[0].lat).toBe("number");
+  });
+
+  it("orderByIds: id 순으로 재정렬, 누락 id 는 원순서로 뒤에", () => {
+    const places = [mk("A", 0), mk("B", 1), mk("C", 2)];
+    expect(orderByIds(places, ["C", "A", "B"]).map((p) => p.id)).toEqual([
+      "C",
+      "A",
+      "B",
+    ]);
+    // ids 에 없는 것은 원순서로 append
+    expect(orderByIds(places, ["C"]).map((p) => p.id)).toEqual(["C", "A", "B"]);
   });
 });
