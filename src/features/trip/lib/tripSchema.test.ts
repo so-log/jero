@@ -11,6 +11,7 @@ const baseTrip: CreateTripInput = {
   region: "도쿄",
   start_date: "2026-04-18",
   end_date: "2026-04-21",
+  cities: [{ name: "도쿄", country: "일본", nights: 3 }],
   members: [],
   startMode: "blank",
   templateId: null,
@@ -36,6 +37,30 @@ describe("tripSchema", () => {
   });
   it("템플릿 모드 + templateId 있음 → 통과", () => {
     const r = tripSchema.safeParse({ ...baseTrip, startMode: "template", templateId: "tpl-tokyo" });
+    expect(r.success).toBe(true);
+  });
+  it("도시 0개 → 실패(최소 1)", () => {
+    const r = tripSchema.safeParse({ ...baseTrip, cities: [] });
+    expect(r.success).toBe(false);
+    if (!r.success) {
+      expect(r.error.issues.some((i) => i.path.includes("cities"))).toBe(true);
+    }
+  });
+  it("도시 이름 미입력 → 실패", () => {
+    const r = tripSchema.safeParse({
+      ...baseTrip,
+      cities: [{ name: "  ", nights: 2 }],
+    });
+    expect(r.success).toBe(false);
+  });
+  it("다중 도시 통과", () => {
+    const r = tripSchema.safeParse({
+      ...baseTrip,
+      cities: [
+        { name: "오사카", nights: 2 },
+        { name: "교토", nights: 1 },
+      ],
+    });
     expect(r.success).toBe(true);
   });
 });

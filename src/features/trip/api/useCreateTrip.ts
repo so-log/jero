@@ -33,6 +33,12 @@ export function useCreateTrip() {
           startMode: input.startMode,
           templateId: input.templateId,
           members: input.members,
+          // 다중 도시(Phase 2) — Phase 1 RPC 가 seq 순 저장. 단일 도시면 기존과 동일.
+          cities: input.cities.map((c) => ({
+            name: c.name,
+            country: c.country || null,
+            nights: c.nights,
+          })),
         },
       });
       if (error || typeof data !== "string") {

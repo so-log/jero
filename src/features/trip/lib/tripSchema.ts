@@ -42,6 +42,16 @@ export const inviteSchema = z.object({
 export type InviteInput = z.infer<typeof inviteSchema>;
 export type InviteRole = InviteInput["role"];
 
+/** 여행 도시(다중 도시, Phase 2). 날짜는 저장 안 함 — start_date + nights·순서로 파생(citySchedule). */
+export const citySchema = z.object({
+  name: z.string().trim().min(1, "도시 이름을 입력해 주세요"),
+  country: z.string().trim().max(40).optional(),
+  /** 박수(0=당일). */
+  nights: z.number().int().min(0).max(90),
+});
+
+export type CityInput = z.infer<typeof citySchema>;
+
 export const tripSchema = z
   .object({
     title: z.string().trim().min(1, "여행 제목을 입력해 주세요"),
@@ -49,9 +59,11 @@ export const tripSchema = z
     cover: coverSchema,
     country: z.string().trim().max(40),
     region: z.string().trim().max(40),
-    // 캘린더 선택값(ISO). 미선택이면 빈 문자열 → 검증 실패.
-    start_date: z.string().min(1, "시작일과 종료일을 선택해 주세요"),
-    end_date: z.string().min(1, "시작일과 종료일을 선택해 주세요"),
+    // 시작일(ISO). 미선택이면 빈 문자열 → 검증 실패. 종료일은 도시 박수 합으로 파생.
+    start_date: z.string().min(1, "시작일을 선택해 주세요"),
+    end_date: z.string().min(1, "시작일을 선택해 주세요"),
+    // 다중 도시(최소 1). 도시 1개면 기존 단일 도시 여행과 동일.
+    cities: z.array(citySchema).min(1, "도시를 하나 이상 추가해 주세요"),
     members: z.array(inviteSchema),
     startMode: z.enum(["blank", "template"]),
     templateId: z.string().nullable(),
@@ -79,7 +91,7 @@ export type CreateTripInput = z.infer<typeof tripSchema>;
 /** 단계별 검증 대상 필드(RHF trigger 용). Step3(멤버)는 추가 시 검증되므로 게이트 없음. */
 export const STEP_FIELDS: Record<number, (keyof CreateTripInput)[]> = {
   1: ["title", "icon", "cover", "country", "region"],
-  2: ["start_date", "end_date"],
+  2: ["start_date", "cities"], // end_date 는 박수 합으로 파생(Step 이 계산)
   3: [],
   4: ["startMode", "templateId"],
 };

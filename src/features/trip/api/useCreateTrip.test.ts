@@ -29,6 +29,7 @@ const templateInput: CreateTripInput = {
   region: "도쿄",
   start_date: "2026-08-01",
   end_date: "2026-08-04",
+  cities: [{ name: "도쿄", country: "일본", nights: 3 }],
   members: [],
   startMode: "template",
   templateId: "tpl-tokyo",
@@ -44,6 +45,10 @@ describe("useCreateTrip (템플릿 복제 배선)", () => {
     expect(state.rpc?.name).toBe("create_trip");
     expect(args.payload.startMode).toBe("template");
     expect(args.payload.templateId).toBe("tpl-tokyo");
+    // 다중 도시(Phase 2): cities 를 payload 로 전달(RPC 가 seq 순 저장).
+    expect(args.payload.cities).toEqual([
+      { name: "도쿄", country: "일본", nights: 3 },
+    ]);
   });
 
   it("성공 시 ['trips'] 와 ['places', newId] 를 무효화한다", async () => {

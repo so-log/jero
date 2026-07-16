@@ -56,10 +56,10 @@ test.describe("핵심 해피패스 통합", () => {
     await page.getByPlaceholder("예: 도쿄, 우리끼리 4일").fill("플로우 마법사 여행");
     await page.getByRole("button", { name: "다음", exact: true }).click();
 
-    // step2(기간): 캘린더에서 시작 10일 · 종료 13일 선택(필수)
+    // step2(도시·일정, 다중 도시 Phase 2): 시작일 + 도시명(박수는 기본 1박) → 다음
     await expect(page.getByText("단계 2 / 4")).toBeVisible();
-    await page.getByRole("button", { name: "10", exact: true }).click();
-    await page.getByRole("button", { name: "13", exact: true }).click();
+    await page.getByLabel("시작일").fill("2026-08-10");
+    await page.getByPlaceholder("도시 이름 (예: 오사카)").fill("도쿄");
     await page.getByRole("button", { name: "다음", exact: true }).click();
 
     // step3(멤버, 프리필) → 다음

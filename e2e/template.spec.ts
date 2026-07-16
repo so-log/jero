@@ -59,11 +59,13 @@ test.describe("템플릿 복제(2차 C)", () => {
     await page.goto("/trips/new");
     await expect(page.getByText("새 여행 만들기")).toBeVisible({ timeout: 20000 });
 
-    // step1(제목 입력, 프리필 제거됨) → step2(날짜 10~13, 3박4일 = 도쿄 템플릿 길이) → step3
+    // step1(제목 입력) → step2(도시·일정: 시작일 + 도시 3박 = 도쿄 템플릿 4일) → step3
     await page.getByPlaceholder("예: 도쿄, 우리끼리 4일").fill("도쿄 템플릿 여행");
     await page.getByRole("button", { name: "다음", exact: true }).click();
-    await page.getByRole("button", { name: "10", exact: true }).click();
-    await page.getByRole("button", { name: "13", exact: true }).click();
+    await page.getByLabel("시작일").fill("2026-08-10");
+    await page.getByPlaceholder("도시 이름 (예: 오사카)").fill("도쿄");
+    await page.getByRole("button", { name: "박수 증가" }).click(); // 1→2
+    await page.getByRole("button", { name: "박수 증가" }).click(); // 2→3
     await page.getByRole("button", { name: "다음", exact: true }).click();
     await page.getByRole("button", { name: "다음", exact: true }).click();
 
@@ -90,11 +92,11 @@ test.describe("템플릿 복제(2차 C)", () => {
     await login(page, data.a);
     await page.goto("/trips/new");
     await expect(page.getByText("새 여행 만들기")).toBeVisible({ timeout: 20000 });
-    // step1 제목 입력(프리필 제거됨) → step2
+    // step1 제목 입력 → step2(도시·일정: 시작일 + 도시명)
     await page.getByPlaceholder("예: 도쿄, 우리끼리 4일").fill("빈 여행 테스트");
     await page.getByRole("button", { name: "다음", exact: true }).click();
-    await page.getByRole("button", { name: "11", exact: true }).click();
-    await page.getByRole("button", { name: "12", exact: true }).click();
+    await page.getByLabel("시작일").fill("2026-08-11");
+    await page.getByPlaceholder("도시 이름 (예: 오사카)").fill("제주");
     await page.getByRole("button", { name: "다음", exact: true }).click();
     await page.getByRole("button", { name: "다음", exact: true }).click();
     // step4 기본 '빈 여행' → 바로 생성

@@ -16,7 +16,7 @@ import {
   type CreateTripInput,
 } from "../lib/tripSchema";
 import { Step1Info } from "./steps/Step1Info";
-import { Step2Dates } from "./steps/Step2Dates";
+import { Step2Cities } from "./steps/Step2Cities";
 import { Step3Members } from "./steps/Step3Members";
 import { Step4Mode } from "./steps/Step4Mode";
 
@@ -24,7 +24,7 @@ import { Step4Mode } from "./steps/Step4Mode";
  * 03 여행 생성 마법사 — RHF + Zod 다단계 폼(tripSchema 단일 출처). 컴포넌트 직접 fetch 금지(§7.1).
  * 단계별 trigger 검증 → 마지막에 useCreateTrip(스텁) → 성공 시 워크스페이스로 진입.
  */
-const STEPS = ["여행 정보", "여행 기간", "멤버 초대", "시작 방식"];
+const STEPS = ["여행 정보", "도시 · 일정", "멤버 초대", "시작 방식"];
 
 const DEFAULTS: CreateTripInput = {
   // 데모 프리필 없음 — 제목·나라·지역은 빈 값(placeholder 안내). 커버/아이콘 기본 선택만 유지.
@@ -33,9 +33,11 @@ const DEFAULTS: CreateTripInput = {
   cover: "blue",
   country: "",
   region: "",
-  // 기본 날짜 없음 — 사용자가 시작·종료를 필수 선택(과거 기본값 방지, 종료≥시작).
+  // 기본 시작일 없음 — 사용자가 선택. 종료일은 도시 박수 합으로 파생(Step2Cities).
   start_date: "",
   end_date: "",
+  // 다중 도시(Phase 2) — 기본 도시 1개(빈 이름·1박). 1개면 기존 단일 도시 UX 와 동일.
+  cities: [{ name: "", country: "", nights: 1 }],
   // 초대 멤버 프리필 없음 — 소유자(=실제 나)만 기본(Step3 가 useProfileQuery 로 표시).
   members: [],
   startMode: "blank",
@@ -128,7 +130,7 @@ export function CreateTripWizard() {
               </div>
             )}
             {step === 1 && <Step1Info />}
-            {step === 2 && <Step2Dates />}
+            {step === 2 && <Step2Cities />}
             {step === 3 && <Step3Members />}
             {step === 4 && <Step4Mode />}
           </FormProvider>

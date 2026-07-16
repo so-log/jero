@@ -56,6 +56,7 @@ describe("Step3Members — 기본 멤버는 나만", () => {
     region: "",
     start_date: "",
     end_date: "",
+    cities: [{ name: "", country: "", nights: 1 }],
     members: [],
     startMode: "blank",
     templateId: null,
