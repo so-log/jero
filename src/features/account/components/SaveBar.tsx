@@ -18,14 +18,17 @@ export function SaveBar({
   onSave: () => void;
 }) {
   return (
-    <div className="flex h-[70px] flex-none items-center justify-between border-t border-line bg-background px-9">
-      <StatusText status={status} />
-      <div className="flex items-center gap-2.5">
+    <div className="flex h-[70px] flex-none items-center gap-3 border-t border-line bg-background px-4 md:px-9">
+      {/* 상태 문구는 좁은 폭에서 숨김(버튼 우선) */}
+      <div className="hidden min-w-0 truncate sm:block">
+        <StatusText status={status} />
+      </div>
+      <div className="ml-auto flex flex-none items-center gap-2.5">
         <Button
           variant="secondary"
           onClick={onReset}
           disabled={!dirty || status === "saving"}
-          className="h-[42px]"
+          className="h-11 md:h-[42px]"
         >
           되돌리기
         </Button>
@@ -33,7 +36,7 @@ export function SaveBar({
           variant="primary"
           onClick={onSave}
           disabled={!dirty || status === "saving"}
-          className="h-[42px]"
+          className="h-11 md:h-[42px]"
         >
           {status === "saving" ? "저장 중…" : "변경사항 저장"}
         </Button>

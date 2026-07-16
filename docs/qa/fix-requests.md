@@ -9,6 +9,7 @@
 | # | 항목 | 구분 | 우선 | 상태 |
 |---|---|---|---|---|
 | R1 | 모바일 반응형 최적화 | 개선 | 🟠 중 | ✅ (1·2·3-A~E·4 완료) |
+| R1-S | 설정(프로필) 페이지 모바일 반응형 — R1에서 누락, 모바일서 깨짐 | 버그 | 🟠 중 | ✅ `fix/settings-responsive` |
 | B1 | 초대링크 복사 클립보드 안 됨 | 버그 | 🔴 높음 | ✅ `b548181` |
 | B2 | 선택한 나라/도시 무시하고 "도쿄"로 저장 | 버그 | 🔴 높음 | ✅ `a1743ab` |
 | B3 | 여행 날짜(기간) 생성 후 수정 불가 | 기능누락 | 🟠 중 | ✅ |
@@ -49,6 +50,11 @@
   4. **팜플렛(내보내기 화면)** — ✅ 완료(`feat/pamphlet-responsive`): 모바일 세로 스택(설정 → PDF 내보내기 → A4 3단 프리뷰), 프리뷰는 컨테이너 폭 측정(ResizeObserver)으로 panelWidth 계산해 폭 맞춤 스케일(데스크톱 150 상한 → 회귀 없음). PDF/print 로직 무변경(panelWidth prop 만 전달). 375 오버플로 없음·1280 2단 유지, check(187)·build·pamphlet e2e 4/4 그린.
 - **관련**: 각 view + `app/layout`, Tailwind 반응형 유틸, `@theme`
 - **규모**: L (분할)
+
+### R1-S. 설정(프로필) 페이지 모바일 — ✅ 완료(`fix/settings-responsive`)
+- R1 분할에서 누락됐던 `/settings`. **레이아웃/반응형 유틸만**(기능·시그니처·데이터 흐름 무변경, additive).
+- `AccountSettings` main `flex-col md:flex-row` + 헤더 패딩 축소·좁은 폭 이름/이메일 숨김. `SettingsNav` 좌측 세로 사이드바(230px) → 모바일 상단 가로 3탭(flex-1·44px, 버전 푸터 md 이상만). `SaveBar` 좁은 폭 상태문구 숨김·버튼 우측(모바일 44px)·흐름 배치(콘텐츠 안 가림). `ProfileSection` 사진+색 행 `flex-wrap`(색 스와치 줄바꿈). `PreferenceSection` 통화 행 모바일 세로 스택.
+- 검증: 375/768/1280 오버플로 없음·3섹션 정상·저장 동작, 데스크톱 회귀 없음, check(187)·build·account e2e 3/3 그린.
 
 ---
 
@@ -108,7 +114,7 @@
 
 ### B8. 로그인 폼 pre-hydration 네이티브 제출 (비번 URL 노출)
 - **현상**: React 하이드레이션 전에 로그인 폼이 제출되면 네이티브 GET으로 처리돼 `/?email=…&pw=…`로 이동 → **비밀번호가 URL 쿼리에 노출**. (스크린샷 캡처 스크립트에서 발견 — 실사용자가 JS 로드 전 순간에 제출할 확률은 낮음.)
-- **원하는 것**: `<form onSubmit>`에서 항상 `preventDefault`(또는 button type 조정)로 네이티브 제출 차단. 최소한 비번이 URL에 안 들어가게.
+- **원하는 것**: `<form onSubmit>`에서 항상 `preventDefault`(또는 button type 조정)로 네이티브 제출 차단. 하이드레이션 전에도 GET 제출이 안 되게. 최소한 비번이 URL에 안 들어가게.
 - **관련**: `AuthPanel.tsx`(로그인 폼)
 - **규모**: S · 보안 냄새라 낮은 우선순위지만 기록.
 

@@ -30,8 +30,8 @@ export function ProfileSection({ email }: { email: string }) {
       </div>
 
       <div className="overflow-hidden rounded-panel border border-line bg-background">
-        {/* 사진 + 색 */}
-        <div className="flex items-center gap-4 border-b border-line p-[18px]">
+        {/* 사진 + 색 (좁은 폭에서 색 스와치가 다음 줄로) */}
+        <div className="flex flex-wrap items-center gap-4 border-b border-line p-[18px]">
           <span
             className="flex size-16 flex-none items-center justify-center rounded-full text-2xl font-bold text-white"
             style={{ background: color }}

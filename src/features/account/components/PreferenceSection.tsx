@@ -51,8 +51,8 @@ export function PreferenceSection() {
       </div>
 
       <div className="overflow-hidden rounded-panel border border-line bg-background">
-        {/* 기본 통화 */}
-        <div className="flex items-center justify-between gap-4 border-b border-line p-[18px]">
+        {/* 기본 통화 (좁은 폭에서 세로 스택) */}
+        <div className="flex flex-col items-start gap-3 border-b border-line p-[18px] sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <Row icon="wallet" tone="success" title="기본 통화" desc="예산·지출에 기본으로 쓰여요" />
           <Controller
             control={control}
