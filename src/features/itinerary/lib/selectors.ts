@@ -122,6 +122,44 @@ export function reorderDayPlaces(
   };
 }
 
+/**
+ * 동선 최적화 입력 분리(2차) — 그 날 장소를 좌표 유/무로 나눈다(각각 원래 상대순서 유지).
+ * 최적화는 `withCoords` 만 대상, `withoutCoords` 는 결과 끝에 원래 순서로 붙인다(설계 §3).
+ */
+export function scheduledWithCoords(dayPlaces: PlaceDto[]): {
+  withCoords: (PlaceDto & { lat: number; lng: number })[];
+  withoutCoords: PlaceDto[];
+} {
+  const withCoords: (PlaceDto & { lat: number; lng: number })[] = [];
+  const withoutCoords: PlaceDto[] = [];
+  for (const p of dayPlaces) {
+    if (p.lat != null && p.lng != null) {
+      withCoords.push({ ...p, lat: p.lat, lng: p.lng });
+    } else {
+      withoutCoords.push(p);
+    }
+  }
+  return { withCoords, withoutCoords };
+}
+
+/**
+ * 장소 배열을 id 순서대로 재정렬(순수) — 미리보기에서 새 순서를 리스트·지도에 반영.
+ * ids 에 없는 장소는 원래 상대순서로 뒤에 붙인다.
+ */
+export function orderByIds(places: PlaceDto[], ids: string[]): PlaceDto[] {
+  const byId = new Map(places.map((p) => [p.id, p]));
+  const ordered: PlaceDto[] = [];
+  for (const id of ids) {
+    const p = byId.get(id);
+    if (p) {
+      ordered.push(p);
+      byId.delete(id);
+    }
+  }
+  for (const p of places) if (byId.has(p.id)) ordered.push(p); // 남은 것(원순서)
+  return ordered;
+}
+
 /** 카테고리 필터(리스트용) — 'all' 이면 전체. 마커 mute 는 지도에서 opacity 로 처리. */
 export function filterByCategory(
   places: PlaceDto[],

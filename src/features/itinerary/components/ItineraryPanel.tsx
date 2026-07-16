@@ -16,6 +16,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
+import type { ReactNode } from "react";
+
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
@@ -47,6 +49,10 @@ interface ItineraryPanelProps {
   onReorder?: (orderedIds: string[]) => void;
   /** 일정에서 빼기(editor+). 없으면 카드에 버튼 미표시. */
   onUnassign?: (placeId: string) => void;
+  /** 동선 최적화 컨트롤(버튼/미리보기 배너) — Day 툴바에 렌더. 미지정 시 미표시. */
+  routeControls?: ReactNode;
+  /** 드래그 비활성(예: 최적화 미리보기 중 순서 고정). */
+  disableDrag?: boolean;
 }
 
 export function ItineraryPanel({
@@ -57,6 +63,8 @@ export function ItineraryPanel({
   onDayChange,
   onReorder,
   onUnassign,
+  routeControls,
+  disableDrag = false,
 }: ItineraryPanelProps) {
   const {
     activeDay,
@@ -77,7 +85,7 @@ export function ItineraryPanel({
       placePrefill: { scheduledDate: days[activeDay]?.date ?? null },
     });
   const list = filterByCategory(dayPlaces, activeCategory);
-  const canDrag = canEdit && activeCategory === "all";
+  const canDrag = canEdit && activeCategory === "all" && !disableDrag;
 
   // 드래그 센서: 포인터(클릭 오작동 방지 위해 5px 이동 후 활성) + 키보드(§11 비기능 "키보드 조작").
   const sensors = useSensors(
@@ -154,6 +162,7 @@ export function ItineraryPanel({
                 </Button>
               )}
             </div>
+            {routeControls}
             <FilterTodayToggle checked={filterToday} onToggle={toggleFilterToday} />
             <CategoryBar active={activeCategory} onSelect={setActiveCategory} />
             {canDrag && (

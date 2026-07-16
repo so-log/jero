@@ -11,8 +11,10 @@ import { useCursorStore } from "@/store/cursorStore";
 import { useMembersQuery, usePlacesQuery } from "../api/usePlacesQuery";
 import { useReorderPlaces } from "../api/useReorderPlaces";
 import { useUnassignPlace } from "../api/useUnassignPlace";
+import { useRouteOptimize } from "../hooks/useRouteOptimize";
 import {
   deriveDays,
+  orderByIds,
   peersToCursors,
   placesForDay,
   toSavedMarkers,
@@ -22,6 +24,7 @@ import { usePlanStore } from "../store/planStore";
 import { useSelectionStore } from "../store/selectionStore";
 import { ItineraryPanel } from "./ItineraryPanel";
 import { MobilePlanControls, type PlanMode } from "./MobilePlanControls";
+import { RouteOptimizeControls } from "./RouteOptimizeControls";
 
 /** 커서 송신 throttle 주기(ms) — mousemove 폭주를 브로드캐스트 절감(2차 A). */
 const CURSOR_THROTTLE_MS = 60;
@@ -72,9 +75,22 @@ export function PlanView({ tripId }: { tripId: string }) {
     () => (data && activeDate ? placesForDay(data.places, activeDate) : []),
     [data, activeDate],
   );
+
+  // 동선 최적화(2차) — 미리보기 중이면 제안 순서로 리스트·지도를 투영(순서 배열만 교체).
+  const optimize = useRouteOptimize(tripId);
+  const previewActive =
+    optimize.preview !== null && optimize.preview.date === activeDate;
+  const shownDayPlaces = useMemo(
+    () =>
+      previewActive && optimize.preview
+        ? orderByIds(dayPlaces, optimize.preview.order)
+        : dayPlaces,
+    [previewActive, optimize.preview, dayPlaces],
+  );
+
   const scheduledMarkers = useMemo(
-    () => toScheduledMarkers(dayPlaces),
-    [dayPlaces],
+    () => toScheduledMarkers(shownDayPlaces),
+    [shownDayPlaces],
   );
   const savedMarkers = useMemo(
     () => (data ? toSavedMarkers(data.saved_places) : []),
@@ -129,13 +145,30 @@ export function PlanView({ tripId }: { tripId: string }) {
       >
         <ItineraryPanel
           days={days}
-          dayPlaces={dayPlaces}
+          dayPlaces={shownDayPlaces}
           isLoading={isLoading}
           canEdit={canEdit}
           onDayChange={selectDay}
           onReorder={onReorder}
           onUnassign={
             canEdit ? (placeId) => unassignPlace.mutate(placeId) : undefined
+          }
+          disableDrag={previewActive}
+          routeControls={
+            <RouteOptimizeControls
+              canEdit={canEdit}
+              coordCount={optimize.coordCount(dayPlaces)}
+              previewing={previewActive}
+              beforeKm={optimize.preview?.beforeKm ?? 0}
+              afterKm={optimize.preview?.afterKm ?? 0}
+              excludedCount={optimize.preview?.excludedCount ?? 0}
+              isApplying={optimize.isApplying}
+              canUndo={optimize.canUndo}
+              onOptimize={() => activeDate && optimize.runPreview(activeDate, dayPlaces)}
+              onApply={optimize.apply}
+              onCancel={optimize.cancel}
+              onUndo={optimize.undo}
+            />
           }
         />
       </div>
