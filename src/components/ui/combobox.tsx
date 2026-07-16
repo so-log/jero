@@ -40,6 +40,9 @@ export function Combobox({
       value={value}
       onValueChange={(next) => onValueChange(next)}
       mode="list"
+      // 입력창을 탭/클릭하면 제안이 바로 열리게(모바일에선 타이핑 전 열림 신호가 없어 "안 됨"으로 보였음).
+      // 빈 입력이면 전체 목록, 타이핑하면 필터 — 데스크톱 동작·자유 입력 유지.
+      openOnInputClick
     >
       <div className="relative flex items-center">
         {leftIcon && (

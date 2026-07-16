@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon, type IconName } from "@/components/ui/icon";
 import type { Day, MemberDto, PlaceDto } from "@/features/itinerary";
@@ -8,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useOverlayStore } from "@/store/overlayStore";
 
 import { useAddPlaceToSchedule } from "../api/useAddPlaceToSchedule";
+import { useDeletePlace } from "../api/useUpsertPlace";
 import { usePlacesStore } from "../store/placesStore";
 import { SORT_LABEL, type SortKey } from "../types";
 import { AddToScheduleMenu } from "./AddToScheduleMenu";
@@ -39,8 +43,16 @@ export function PlaceList({
   const { query, sort, selectedId, assigned, setQuery, setSort, select } =
     usePlacesStore();
   const { assign, unassign } = useAddPlaceToSchedule(tripId);
+  const deletePlace = useDeletePlace(tripId);
   const openOverlay = useOverlayStore((s) => s.open);
   const memberById = new Map(members.map((m) => [m.id, m]));
+
+  // 카드에서 바로 삭제(B9) — 확인 다이얼로그 후 useDeletePlace 재사용(오버레이 삭제와 동일 뮤테이션).
+  const [pendingDelete, setPendingDelete] = useState<PlaceDto | null>(null);
+  const confirmDelete = async () => {
+    if (pendingDelete) await deletePlace.mutateAsync(pendingDelete.id);
+    setPendingDelete(null);
+  };
 
   const toggleSort = () =>
     setSort(sort === "recent" ? "name" : ("recent" as SortKey));
@@ -159,11 +171,22 @@ export function PlaceList({
                     onUnassign={() => unassign(place.id)}
                   />
                 }
+                onDelete={canEdit ? () => setPendingDelete(place) : undefined}
               />
             ))}
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!pendingDelete}
+        onOpenChange={(o) => !o && setPendingDelete(null)}
+        variant="destructive"
+        title="이 장소를 삭제할까요?"
+        description="저장한 장소와 일정 배정이 함께 사라져요. 이 작업은 되돌릴 수 없어요."
+        confirmLabel="삭제할게요"
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

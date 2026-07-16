@@ -18,6 +18,8 @@ interface SavedPlaceCardProps {
   selected: boolean;
   onSelect: (id: string) => void;
   action: ReactNode;
+  /** 삭제 액션(권한 있을 때만 주입) — 카드에서 바로 삭제(오버레이 안 열고). 없으면 삭제 버튼 미표시. */
+  onDelete?: () => void;
 }
 
 export function SavedPlaceCard({
@@ -26,6 +28,7 @@ export function SavedPlaceCard({
   selected,
   onSelect,
   action,
+  onDelete,
 }: SavedPlaceCardProps) {
   return (
     <div
@@ -88,7 +91,22 @@ export function SavedPlaceCard({
         </div>
       )}
 
-      <div className="flex items-center justify-between">{action}</div>
+      <div className="flex items-center justify-between gap-2">
+        {action}
+        {onDelete && (
+          <button
+            type="button"
+            aria-label={`${place.name} 삭제`}
+            onClick={(e) => {
+              e.stopPropagation(); // 카드 선택과 분리
+              onDelete();
+            }}
+            className="flex size-8 flex-none items-center justify-center rounded-md text-mute transition-colors hover:bg-danger-tint hover:text-danger"
+          >
+            <Icon name="trash" size={16} strokeWidth={2} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }

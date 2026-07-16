@@ -84,9 +84,9 @@ test.describe("폴더 관리(2차 B)", () => {
       page.getByRole("button", { name: /카페투어/ }).first(),
     ).toContainText("1", { timeout: 20000 });
 
-    // 폴더 삭제(더보기 → 삭제 → 확인).
+    // 폴더 삭제(더보기 → 삭제 → 확인). exact: 장소 카드 "…삭제"(B9) 버튼과 텍스트 중복 회피.
     await page.getByRole("button", { name: "카페투어 폴더 관리" }).click();
-    await page.getByRole("button", { name: "삭제" }).click();
+    await page.getByRole("button", { name: "삭제", exact: true }).click();
     await page.getByRole("button", { name: "삭제할게요" }).click();
     await expect(page.getByText("카페투어")).toHaveCount(0, { timeout: 20000 });
 

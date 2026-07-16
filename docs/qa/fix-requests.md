@@ -27,6 +27,9 @@
 | U4 | "일정표" 탭 → "캘린더"로 리네이밍 | 개선(카피) | 🟢 낮 | ✅ `9f1556c` |
 | B6 | 플랜 Day별 "장소 추가"가 그 날짜에 배정 안 됨 | 버그/UX | 🟠 중 | ✅ `a5e8487` |
 | B7 | 마법사 e2e 회귀(flows·template) — 프리필 제거(G) 후 제목 미입력 실패 | 테스트 | 🟠 중 | ✅ `test/wizard-e2e-fixture` |
+| B8 | 로그인 폼 pre-hydration 네이티브 제출 → 비번이 URL(?pw=)에 노출 | 버그/보안 | 🟢 낮 | ⬜ |
+| B9 | 장소 목록 카드에서 바로 삭제 없음(오버레이 휴지통만 = 발견성 나쁨) | 버그/UX | 🟠 중 | ✅ `fix/place-delete-combobox-mobile` |
+| B10 | 나라/지역 콤보박스 모바일 미동작(탭해도 제안 안 열림) | 버그 | 🔴 높음 | ✅ `fix/place-delete-combobox-mobile` |
 
 ---
 
@@ -102,6 +105,26 @@
 - **관련**: `e2e/flows.spec.ts`, `e2e/template.spec.ts`
 - **규모**: S
 - **✅ 완료**(`test/wizard-e2e-fixture`): Step1 제목 입력 스텝 추가(제목만 필수 — 나라/지역·아이콘·커버는 선택/프리필). 부수로 Step2 캘린더 "다음 달" 버튼과 겹치던 `{ name: "다음" }` 클릭을 `exact: true` 로, 템플릿 폴더(명소) 단언을 사이드바 role=button 으로 특정(3-D 모바일 폴더 드롭다운 option 중복 회피). 전체 e2e 21/21·check(187) 그린. 앱 코드 무변경.
+
+### B8. 로그인 폼 pre-hydration 네이티브 제출 (비번 URL 노출)
+- **현상**: React 하이드레이션 전에 로그인 폼이 제출되면 네이티브 GET으로 처리돼 `/?email=…&pw=…`로 이동 → **비밀번호가 URL 쿼리에 노출**. (스크린샷 캡처 스크립트에서 발견 — 실사용자가 JS 로드 전 순간에 제출할 확률은 낮음.)
+- **원하는 것**: `<form onSubmit>`에서 항상 `preventDefault`(또는 button type 조정)로 네이티브 제출 차단. 최소한 비번이 URL에 안 들어가게.
+- **관련**: `AuthPanel.tsx`(로그인 폼)
+- **규모**: S · 보안 냄새라 낮은 우선순위지만 기록.
+
+### B9. 장소 삭제 발견성 — 카드에서 바로 삭제
+- **현상**: 삭제는 `PlaceDetailOverlay` 하단 휴지통에만 있어(장소 열어야 보임) "삭제 없다"고 느낌. 목록 카드에서 바로 삭제 불가.
+- **원하는 것**: 카드에 삭제 액션 + ConfirmDialog(기존 `useDeletePlace` 재사용). 오버레이 삭제 유지.
+- **관련**: `SavedPlaceCard.tsx`, `PlaceList.tsx`, `useUpsertPlace.ts`(useDeletePlace)
+- **규모**: S
+- **✅ 완료**(`fix/place-delete-combobox-mobile`): `SavedPlaceCard` 에 `onDelete?` prop(additive) — 하단 행에 삭제 아이콘 버튼(카드 select 와 stopPropagation 분리, `canEdit` 일 때만). `PlaceList` 가 `useDeletePlace` + `ConfirmDialog` 로 배선(카드는 표현만, 직접 fetch 없음). 오버레이 삭제 유지. 컴포넌트 테스트 +2, check(189)·전체 e2e 21/21 그린.
+
+### B10. 나라/지역 콤보박스 모바일 미동작
+- **현상**: 생성 마법사 Step1 나라/지역 콤보박스가 **모바일에서 탭해도 제안이 안 열림**. base-ui Autocomplete 가 타이핑 전 팝업을 안 열어서 → 데스크톱은 타이핑으로 티 안 났지만 모바일은 "안 됨"으로 보임.
+- **원하는 것**: 포커스/탭 시 제안 목록이 열리게 + 팝업이 375px 풀스크린 모달 안에서 정상 위치·표시. 데스크톱 동작·자유 입력 유지.
+- **관련**: `components/ui/combobox.tsx`, `Step1Info.tsx`
+- **규모**: S~M
+- **✅ 완료**(`fix/place-delete-combobox-mobile`): `Autocomplete.Root` 에 `openOnInputClick` 추가 — 입력창 탭/클릭 시 제안 팝업 열림(빈 입력=전체, 타이핑=필터, 자유 입력 유지). 팝업은 body 포털(z-50)이라 모달(일반 페이지) 안에서 정위치·전폭 표시(z 충돌 없음). 375 탭→목록→선택 반영 확인, 데스크톱 회귀 없음.
 
 ## B. 생성 마법사 Step1 (여행 정보)
 
