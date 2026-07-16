@@ -126,8 +126,9 @@ export function AuthPanel() {
           <div className="h-px flex-1 bg-line" />
         </div>
 
-        {/* 이메일 폼 */}
-        <form onSubmit={onSubmit} className="flex flex-col gap-3.5">
+        {/* 이메일 폼 — method="post": 하이드레이션 전 네이티브 제출돼도 기본 GET(비번이 URL 쿼리 노출)이 아닌
+            POST(본문)로 나가 비번이 URL 에 안 실림. 하이드레이션 후엔 onSubmit(RHF handleSubmit)이 preventDefault. */}
+        <form method="post" onSubmit={onSubmit} className="flex flex-col gap-3.5">
           {signup && (
             <FormField label="이름" error={errors.name?.message}>
               <Input
