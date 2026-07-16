@@ -159,12 +159,23 @@ export function PlanView({ tripId }: { tripId: string }) {
               canEdit={canEdit}
               coordCount={optimize.coordCount(dayPlaces)}
               previewing={previewActive}
-              beforeKm={optimize.preview?.beforeKm ?? 0}
-              afterKm={optimize.preview?.afterKm ?? 0}
+              before={optimize.preview?.before ?? 0}
+              after={optimize.preview?.after ?? 0}
+              unit={optimize.preview?.unit ?? "km"}
               excludedCount={optimize.preview?.excludedCount ?? 0}
+              fellBack={optimize.preview?.fellBack ?? false}
               isApplying={optimize.isApplying}
+              isPreviewing={optimize.isPreviewing}
+              mode={optimize.mode}
+              onModeChange={optimize.setMode}
+              anchorStart={optimize.anchorStart}
+              anchorEnd={optimize.anchorEnd}
+              onToggleStart={optimize.toggleAnchorStart}
+              onToggleEnd={optimize.toggleAnchorEnd}
               canUndo={optimize.canUndo}
-              onOptimize={() => activeDate && optimize.runPreview(activeDate, dayPlaces)}
+              onOptimize={() => {
+                if (activeDate) void optimize.runPreview(activeDate, dayPlaces);
+              }}
               onApply={optimize.apply}
               onCancel={optimize.cancel}
               onUndo={optimize.undo}

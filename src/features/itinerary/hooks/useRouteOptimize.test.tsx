@@ -1,7 +1,17 @@
 import { act, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { renderHookWithClient } from "@/test/utils";
+
+// 실이동시간 매트릭스 래퍼를 목으로 — 기본 null(폴백). 개별 테스트에서 값 주입.
+const mockFetchMatrix = vi.hoisted(() => vi.fn());
+vi.mock("@/components/map", () => ({
+  fetchTravelTimeMatrix: mockFetchMatrix,
+}));
+
+afterEach(() => {
+  mockFetchMatrix.mockReset();
+});
 
 import { placesForDay } from "../lib/selectors";
 import type { PlaceDto, PlacesResponse } from "../types";
@@ -54,18 +64,20 @@ function makeResponse(): PlacesResponse {
 }
 
 describe("useRouteOptimize", () => {
-  it("preview: after ≤ before, 제안 순서는 순열 + 좌표없는 장소는 끝, excludedCount", () => {
+  it("preview: after ≤ before, 제안 순서는 순열 + 좌표없는 장소는 끝, excludedCount", async () => {
     const { client, result } = renderHookWithClient(() => useRouteOptimize(TRIP));
     client.setQueryData<PlacesResponse>(KEY, makeResponse());
     const dayPlaces = placesForDay(makeResponse().places, DATE);
 
-    act(() => result.current.runPreview(DATE, dayPlaces));
+    await act(async () => {
+      await result.current.runPreview(DATE, dayPlaces);
+    });
 
     const preview = result.current.preview;
     expect(preview).not.toBeNull();
-    expect(preview!.afterKm).toBeLessThanOrEqual(preview!.beforeKm);
+    expect(preview!.after).toBeLessThanOrEqual(preview!.before);
     // 지그재그(A,B,C)라 실제로 줄어야 함
-    expect(preview!.afterKm).toBeLessThan(preview!.beforeKm);
+    expect(preview!.after).toBeLessThan(preview!.before);
     expect(preview!.excludedCount).toBe(1);
     expect(preview!.order).toHaveLength(4);
     expect([...preview!.order].sort()).toEqual(["A", "B", "C", "N"]);
@@ -74,14 +86,16 @@ describe("useRouteOptimize", () => {
     expect(preview!.order).toEqual(["A", "C", "B", "N"]);
   });
 
-  it("coordCount<2 면 preview 안 만든다(no-op)", () => {
+  it("coordCount<2 면 preview 안 만든다(no-op)", async () => {
     const { client, result } = renderHookWithClient(() => useRouteOptimize(TRIP));
     const one: PlacesResponse = {
       ...makeResponse(),
       places: [place("A", 1, 0), place("N", 2, null)],
     };
     client.setQueryData<PlacesResponse>(KEY, one);
-    act(() => result.current.runPreview(DATE, placesForDay(one.places, DATE)));
+    await act(async () => {
+      await result.current.runPreview(DATE, placesForDay(one.places, DATE));
+    });
     expect(result.current.preview).toBeNull();
   });
 
@@ -90,7 +104,9 @@ describe("useRouteOptimize", () => {
     client.setQueryData<PlacesResponse>(KEY, makeResponse());
     const dayPlaces = placesForDay(makeResponse().places, DATE);
 
-    act(() => result.current.runPreview(DATE, dayPlaces));
+    await act(async () => {
+      await result.current.runPreview(DATE, dayPlaces);
+    });
     act(() => result.current.apply());
 
     await waitFor(() => {
@@ -116,5 +132,61 @@ describe("useRouteOptimize", () => {
       ]);
     });
     expect(result.current.canUndo).toBe(false);
+  });
+
+  it("실이동시간 모드: 매트릭스 성공 → unit=min, 분 단위 before/after", async () => {
+    // A→C→B 최적(분). 대칭 3×3(자기 0).
+    mockFetchMatrix.mockResolvedValue([
+      [0, 50, 10],
+      [50, 0, 40],
+      [10, 40, 0],
+    ]);
+    const { client, result } = renderHookWithClient(() => useRouteOptimize(TRIP));
+    client.setQueryData<PlacesResponse>(KEY, makeResponse());
+    const dayPlaces = placesForDay(makeResponse().places, DATE);
+
+    act(() => result.current.setMode("time"));
+    await act(async () => {
+      await result.current.runPreview(DATE, dayPlaces);
+    });
+
+    expect(mockFetchMatrix).toHaveBeenCalledTimes(1);
+    const preview = result.current.preview!;
+    expect(preview.unit).toBe("min");
+    expect(preview.fellBack).toBe(false);
+    // 현재순서 A,B,C = 50+40=90 → 최적 A,C,B = 10+40=50
+    expect(preview.before).toBe(90);
+    expect(preview.after).toBe(50);
+    expect(preview.order).toEqual(["A", "C", "B", "N"]);
+  });
+
+  it("실이동시간 실패 → 직선거리 폴백(unit=km, fellBack)", async () => {
+    mockFetchMatrix.mockResolvedValue(null);
+    const { client, result } = renderHookWithClient(() => useRouteOptimize(TRIP));
+    client.setQueryData<PlacesResponse>(KEY, makeResponse());
+    const dayPlaces = placesForDay(makeResponse().places, DATE);
+
+    act(() => result.current.setMode("time"));
+    await act(async () => {
+      await result.current.runPreview(DATE, dayPlaces);
+    });
+
+    const preview = result.current.preview!;
+    expect(preview.unit).toBe("km");
+    expect(preview.fellBack).toBe(true);
+  });
+
+  it("복귀 고정(end anchor): 마지막 좌표 장소가 원래 마지막(C)로 고정", async () => {
+    const { client, result } = renderHookWithClient(() => useRouteOptimize(TRIP));
+    client.setQueryData<PlacesResponse>(KEY, makeResponse());
+    const dayPlaces = placesForDay(makeResponse().places, DATE);
+
+    act(() => result.current.toggleAnchorEnd());
+    await act(async () => {
+      await result.current.runPreview(DATE, dayPlaces);
+    });
+
+    // 앵커 없으면 [A,C,B,N] 이지만 복귀 고정 시 C 가 좌표 마지막 → [A,B,C,N]
+    expect(result.current.preview!.order).toEqual(["A", "B", "C", "N"]);
   });
 });

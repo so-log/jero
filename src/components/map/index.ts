@@ -11,6 +11,7 @@ export {
   type GeocodeResult,
   type PlaceDetails,
 } from "./geocode";
+export { fetchTravelTimeMatrix, type TravelMode } from "./distanceMatrix";
 export {
   usePlacesAutocomplete,
   type PlaceSelection,
