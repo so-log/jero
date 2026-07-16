@@ -1,6 +1,10 @@
 import { deriveDays } from "@/features/itinerary";
 import type { PlaceDto } from "@/features/itinerary";
 import type { CategoryKey } from "@/lib/constants/category";
+import { haversineKm } from "@/lib/geo";
+
+// Haversine 은 lib/geo 로 승격(통계·동선 최적화 공유 단일 출처). 기존 임포터 호환 위해 재export.
+export { haversineKm };
 
 /**
  * 여행 통계(2차 E) 순수 셀렉터 — 일정 장소(scheduled)로 이동거리·분포를 집계한다(설계 §E, 기획 15).
@@ -37,24 +41,6 @@ export interface TripStats {
   tripDays: number;
   /** 하루 평균 장소 수(소수 1자리). */
   avgPerDay: number;
-}
-
-interface Coord {
-  lat: number;
-  lng: number;
-}
-
-const EARTH_RADIUS_KM = 6371;
-const toRad = (deg: number): number => (deg * Math.PI) / 180;
-
-/** 두 좌표 간 Haversine 직선 거리(km). */
-export function haversineKm(a: Coord, b: Coord): number {
-  const dLat = toRad(b.lat - a.lat);
-  const dLng = toRad(b.lng - a.lng);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
-  return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
 const round1 = (n: number): number => Math.round(n * 10) / 10;
