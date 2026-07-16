@@ -28,7 +28,7 @@
 | U4 | "일정표" 탭 → "캘린더"로 리네이밍 | 개선(카피) | 🟢 낮 | ✅ `9f1556c` |
 | B6 | 플랜 Day별 "장소 추가"가 그 날짜에 배정 안 됨 | 버그/UX | 🟠 중 | ✅ `a5e8487` |
 | B7 | 마법사 e2e 회귀(flows·template) — 프리필 제거(G) 후 제목 미입력 실패 | 테스트 | 🟠 중 | ✅ `test/wizard-e2e-fixture` |
-| B8 | 로그인 폼 pre-hydration 네이티브 제출 → 비번이 URL(?pw=)에 노출 | 버그/보안 | 🟢 낮 | ⬜ |
+| B8 | 로그인 폼 pre-hydration 네이티브 제출 → 비번이 URL(?pw=)에 노출 | 버그/보안 | 🟢 낮 | ✅ `fix/login-form-submit` |
 | B9 | 장소 목록 카드에서 바로 삭제 없음(오버레이 휴지통만 = 발견성 나쁨) | 버그/UX | 🟠 중 | ✅ `fix/place-delete-combobox-mobile` |
 | B10 | 나라/지역 콤보박스 모바일 미동작(탭해도 제안 안 열림) | 버그 | 🔴 높음 | ✅ `fix/place-delete-combobox-mobile` |
 
@@ -117,6 +117,7 @@
 - **원하는 것**: `<form onSubmit>`에서 항상 `preventDefault`(또는 button type 조정)로 네이티브 제출 차단. 하이드레이션 전에도 GET 제출이 안 되게. 최소한 비번이 URL에 안 들어가게.
 - **관련**: `AuthPanel.tsx`(로그인 폼)
 - **규모**: S · 보안 냄새라 낮은 우선순위지만 기록.
+- **✅ 완료**(`fix/login-form-submit`): `<form method="post">` 추가 — 하이드레이션 전 네이티브 제출이 기본 GET(비번 URL 쿼리 노출) 대신 POST(본문)로 나가 URL 에 안 실림. 하이드레이션 후엔 `onSubmit`(RHF handleSubmit)이 `preventDefault`로 그대로 SPA 처리(동작 무변경). JS 비활성 e2e 로 pw 미노출 확인 + home.spec 3/3(정상 로그인 유지), check(189)·build 그린.
 
 ### B9. 장소 삭제 발견성 — 카드에서 바로 삭제
 - **현상**: 삭제는 `PlaceDetailOverlay` 하단 휴지통에만 있어(장소 열어야 보임) "삭제 없다"고 느낌. 목록 카드에서 바로 삭제 불가.
