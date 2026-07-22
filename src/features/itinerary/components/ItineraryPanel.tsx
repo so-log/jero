@@ -21,13 +21,16 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
+import { type CitySegment } from "@/features/trip";
 import { cn } from "@/lib/utils";
 import { useOverlayStore } from "@/store/overlayStore";
 
 import { usePlanStore } from "../store/planStore";
 import type { Day, PlaceDto } from "../types";
+import { cityForDay } from "../lib/citySelectors";
 import { filterByCategory } from "../lib/selectors";
 import { CategoryBar } from "./CategoryBar";
+import { CityDayBadge } from "./CityDayBadge";
 import { DaySwitcher } from "./DaySwitcher";
 import { FilterTodayToggle } from "./FilterTodayToggle";
 import { PlaceCard } from "./PlaceCard";
@@ -53,6 +56,8 @@ interface ItineraryPanelProps {
   routeControls?: ReactNode;
   /** 드래그 비활성(예: 최적화 미리보기 중 순서 고정). */
   disableDrag?: boolean;
+  /** 다중 도시 파생 구간(seq 순). 2개 이상이면 Day 스위처 도시 색·경계 + 도시 배지 노출. */
+  citySegments?: CitySegment[];
 }
 
 export function ItineraryPanel({
@@ -65,6 +70,7 @@ export function ItineraryPanel({
   onUnassign,
   routeControls,
   disableDrag = false,
+  citySegments,
 }: ItineraryPanelProps) {
   const {
     activeDay,
@@ -79,6 +85,10 @@ export function ItineraryPanel({
 
   const openOverlay = useOverlayStore((s) => s.open);
   const dayLabel = days[activeDay]?.label ?? "";
+  const multiCity = (citySegments?.length ?? 0) > 1;
+  const dayCity = multiCity
+    ? cityForDay(citySegments as CitySegment[], days[activeDay]?.date)
+    : null;
   // 플랜 Day 맥락 추가(B6) — 활성 Day 날짜로 배정해 생성.
   const addToActiveDay = () =>
     openOverlay("place", {
@@ -113,7 +123,13 @@ export function ItineraryPanel({
           days={days}
           activeDay={activeDay}
           onSelect={onDayChange ?? setActiveDay}
+          segments={citySegments}
         />
+        {dayCity && days[activeDay] && (
+          <div className="mt-2.5">
+            <CityDayBadge dayCity={dayCity} date={days[activeDay].date} />
+          </div>
+        )}
       </div>
 
       {isLoading ? (

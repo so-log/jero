@@ -63,6 +63,11 @@ export interface TripMapProps {
   zoom?: number;
   /** 검색 결과 등으로 지도를 명령형 이동(panTo). 값이 바뀔 때마다 해당 좌표로 부드럽게 이동. */
   flyTo?: { position: LatLng; zoom?: number } | null;
+  /**
+   * 좌표 묶음에 맞춰 명령형 fitBounds — 값(참조)이 바뀔 때만 재적용(다중 도시 도시 전환 등).
+   * 자동 fitBounds(scheduled/saved) 이후에 실행돼 우선한다. 빈 배열/undefined 면 무시.
+   */
+  flyToBounds?: LatLng[] | null;
   /** 마커/동선 선택 → selectedId 후보 전달. */
   onSelect?: (id: string) => void;
   /**

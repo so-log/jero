@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { TripMap, type LatLng } from "@/components/map";
+import { cityForDate } from "@/features/trip";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
 import { cn } from "@/lib/utils";
 import { throttle } from "@/lib/throttle";
@@ -11,7 +12,10 @@ import { useCursorStore } from "@/store/cursorStore";
 import { useMembersQuery, usePlacesQuery } from "../api/usePlacesQuery";
 import { useReorderPlaces } from "../api/useReorderPlaces";
 import { useUnassignPlace } from "../api/useUnassignPlace";
+import { useCityMapFocus } from "../hooks/useCityMapFocus";
+import { useCitySchedule } from "../hooks/useCitySchedule";
 import { useRouteOptimize } from "../hooks/useRouteOptimize";
+import { firstDayIndexOfCity, positionsForCity } from "../lib/citySelectors";
 import {
   deriveDays,
   orderByIds,
@@ -22,6 +26,7 @@ import {
 } from "../lib/selectors";
 import { usePlanStore } from "../store/planStore";
 import { useSelectionStore } from "../store/selectionStore";
+import { CityTabs } from "./CityTabs";
 import { ItineraryPanel } from "./ItineraryPanel";
 import { MobilePlanControls, type PlanMode } from "./MobilePlanControls";
 import { RouteOptimizeControls } from "./RouteOptimizeControls";
@@ -71,10 +76,49 @@ export function PlanView({ tripId }: { tripId: string }) {
     [setActiveDay, days],
   );
 
+  // 다중 도시(Phase 3) — 도시 목록·파생 구간. isMulti(>1)에서만 도시 UI 노출(단일 도시 회귀 0).
+  const { schedule, cityViews, cities, isMulti } = useCitySchedule(
+    tripId,
+    data?.trip.start_date,
+  );
+  const activeSegment =
+    isMulti && activeDate ? cityForDate(schedule, activeDate) : null;
+  const activeCityId = activeSegment?.cityId ?? null;
+  const activeCityData = activeCityId
+    ? (cities.find((c) => c.id === activeCityId) ?? null)
+    : null;
+  // 도시 전환 → 그 도시 첫날로 점프(activeDay + 공유 선택 날짜 동기화).
+  const onCitySelect = useCallback(
+    (cityId: string) => {
+      const seg = schedule.find((s) => s.cityId === cityId);
+      if (!seg) return;
+      const idx = firstDayIndexOfCity(days, seg);
+      if (idx >= 0) selectDay(idx);
+    },
+    [schedule, days, selectDay],
+  );
+
   const dayPlaces = useMemo(
     () => (data && activeDate ? placesForDay(data.places, activeDate) : []),
     [data, activeDate],
   );
+
+  // 지도 도시 중심 이동 — 도시 좌표 → 지점 이동 / 없으면 도시 장소 bounds fit / 그것도 없으면 지오코딩 폴백(§7).
+  const cityPositions = useMemo(
+    () => (data && activeSegment ? positionsForCity(data.places, activeSegment) : []),
+    [data, activeSegment],
+  );
+  const cityFocus = useCityMapFocus({
+    enabled: isMulti,
+    cityId: activeCityId,
+    cityLatLng:
+      activeCityData && activeCityData.lat != null && activeCityData.lng != null
+        ? { lat: activeCityData.lat, lng: activeCityData.lng }
+        : null,
+    positions: cityPositions,
+    cityName: activeSegment?.name ?? null,
+    cityCountry: activeCityData?.country ?? null,
+  });
 
   // 동선 최적화(2차) — 미리보기 중이면 제안 순서로 리스트·지도를 투영(순서 배열만 교체).
   const optimize = useRouteOptimize(tripId);
@@ -125,15 +169,34 @@ export function PlanView({ tripId }: { tripId: string }) {
   const unassignPlace = useUnassignPlace(tripId);
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col md:flex-row">
-      {/* 모바일 전용: Day 스위처 + 리스트/지도 세그먼트(토글 위 고정) */}
-      <MobilePlanControls
-        days={days}
-        activeDay={activeDay}
-        onDayChange={selectDay}
-        mode={mobileMode}
-        onModeChange={setMobileMode}
-      />
+    <div className="flex h-full min-h-0 w-full flex-col">
+      {/* 데스크톱 도시 전환 탭(다중 도시) — 상단 풀폭 바. 단일 도시면 미노출(회귀 0). */}
+      {isMulti && (
+        <div className="hidden flex-none items-center justify-between gap-3 border-b border-line bg-background px-4 py-2.5 md:flex">
+          <CityTabs
+            cities={cityViews}
+            activeCityId={activeCityId}
+            onSelect={onCitySelect}
+          />
+          <span className="whitespace-nowrap text-[12.5px] font-semibold text-faint">
+            도시를 전환하면 지도·일정이 함께 이동해요
+          </span>
+        </div>
+      )}
+
+      <div className="flex min-h-0 w-full flex-1 flex-col md:flex-row">
+        {/* 모바일 전용: 도시 탭 + Day 스위처 + 리스트/지도 세그먼트(토글 위 고정) */}
+        <MobilePlanControls
+          days={days}
+          activeDay={activeDay}
+          onDayChange={selectDay}
+          mode={mobileMode}
+          onModeChange={setMobileMode}
+          cityViews={cityViews}
+          activeCityId={activeCityId}
+          onCitySelect={onCitySelect}
+          citySegments={schedule}
+        />
 
       {/* 리스트 패널 — 모바일: 리스트 모드일 때만 / 데스크톱: 항상 좌측 392px */}
       <div
@@ -154,6 +217,7 @@ export function PlanView({ tripId }: { tripId: string }) {
             canEdit ? (placeId) => unassignPlace.mutate(placeId) : undefined
           }
           disableDrag={previewActive}
+          citySegments={schedule}
           routeControls={
             <RouteOptimizeControls
               canEdit={canEdit}
@@ -200,6 +264,8 @@ export function PlanView({ tripId }: { tripId: string }) {
           activeCategory={activeCategory}
           cursors={cursors}
           routeStyle="solid"
+          flyTo={cityFocus.flyTo}
+          flyToBounds={cityFocus.flyToBounds}
           onSelect={select}
           onPointerMove={onPointerMove}
           onPointerLeave={onPointerLeave}
@@ -211,6 +277,7 @@ export function PlanView({ tripId }: { tripId: string }) {
             </div>
           }
         />
+      </div>
       </div>
     </div>
   );

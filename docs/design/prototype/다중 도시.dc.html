@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;color:#1F2430;background:#E7EAEF;}
+  ::-webkit-scrollbar{width:0;height:0;}
+  .noscroll::-webkit-scrollbar{display:none;}
+</style>
+</helmet>
+
+<div style="padding:56px 60px 90px;background:#E7EAEF;width:max-content;min-width:100%;">
+  <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:30px;height:30px;border-radius:9px;background:linear-gradient(140deg,#6E9CF2,#8FBCF7);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px -2px rgba(91,141,239,.5);">
+        <svg width="17" height="17" viewBox="0 0 40 40" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="9" r="5"/><circle cx="24" cy="9" r="1.9" fill="#fff" stroke="none"/><path d="M24 14V25a5.5 5.5 0 0 1-11 0"/></svg>
+      </div>
+      <span style="font-size:23px;font-weight:800;color:#1B2030;letter-spacing:-.03em;">jero · 다중 도시 UI</span>
+    </div>
+    <span style="font-size:14px;font-weight:500;color:#6B7280;max-width:760px;">여러 도시를 한 여행에 담는 흐름 — 생성 마법사 · 플랜 도시 컨텍스트 · 캘린더 도시 구분 · 도시 간 이동. 데스크톱/모바일 모두 기존 토큰·Lucide·iOS 캘린더 톤 유지. 도시가 1개면 다중 UI는 숨겨져 기존과 동일합니다.</span>
+  </div>
+
+  {{ sectionA }}
+  {{ sectionB }}
+  {{ sectionC }}
+  {{ sectionD }}
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1720,&quot;height&quot;:1200}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.CITIES=[
+      {key:'tokyo',name:'도쿄',en:'Tokyo',nights:3,range:'4.8–4.11',color:'#3172E3',tint:'#EAF1FE',line:'#DCE6F8'},
+      {key:'osaka',name:'오사카',en:'Osaka',nights:2,range:'4.11–4.13',color:'#FF7A4D',tint:'#FFEDE6',line:'#FBD9CC'},
+      {key:'kyoto',name:'교토',en:'Kyoto',nights:2,range:'4.13–4.15',color:'#1FA078',tint:'#E1F6EE',line:'#C7EBDD'},
+    ];
+    this.CAT={
+      food:{label:'식당',icon:'utensils',bg:'#FFECEB',fg:'#E8615C'},
+      cafe:{label:'카페',icon:'coffee',bg:'#FBF1E4',fg:'#C5893A'},
+      museum:{label:'명소',icon:'landmark',bg:'#E9F1FE',fg:'#3172E3'},
+      shopping:{label:'쇼핑',icon:'shopping-bag',bg:'#FCE8F1',fg:'#D9609A'},
+      hotel:{label:'숙소',icon:'bed',bg:'#E1F6EE',fg:'#1FA078'},
+      etc:{label:'기타',icon:'circle-dot',bg:'#EEF0F4',fg:'#7B828F'},
+    };
+    this.state={ activeCity:'osaka', calCity:'all', mobileTab:'plan' };
+  }
+
+  icon(name,o){
+    o=o||{};const size=o.size||18,color=o.color||'#1F2430',sw=o.sw||2;
+    const P={
+      'utensils':[['path',{d:'M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2'}],['path',{d:'M7 2v20'}],['path',{d:'M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7'}]],
+      'coffee':[['path',{d:'M10 2v2'}],['path',{d:'M14 2v2'}],['path',{d:'M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1'}],['path',{d:'M6 2v2'}]],
+      'landmark':[['line',{x1:3,x2:21,y1:22,y2:22}],['line',{x1:6,x2:6,y1:18,y2:11}],['line',{x1:10,x2:10,y1:18,y2:11}],['line',{x1:14,x2:14,y1:18,y2:11}],['line',{x1:18,x2:18,y1:18,y2:11}],['polygon',{points:'12 2 20 7 4 7'}]],
+      'shopping-bag':[['path',{d:'M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z'}],['path',{d:'M3 6h18'}],['path',{d:'M16 10a4 4 0 0 1-8 0'}]],
+      'bed':[['path',{d:'M2 4v16'}],['path',{d:'M2 8h18a2 2 0 0 1 2 2v10'}],['path',{d:'M2 17h20'}],['path',{d:'M6 8v9'}]],
+      'circle-dot':[['circle',{cx:12,cy:12,r:10}],['circle',{cx:12,cy:12,r:1}]],
+      'chevron-left':[['path',{d:'m15 18-6-6 6-6'}]],
+      'chevron-right':[['path',{d:'m9 18 6-6-6-6'}]],
+      'chevron-down':[['path',{d:'m6 9 6 6 6-6'}]],
+      'plus':[['path',{d:'M5 12h14'}],['path',{d:'M12 5v14'}]],
+      'minus':[['path',{d:'M5 12h14'}]],
+      'grip':[['circle',{cx:9,cy:6,r:1}],['circle',{cx:9,cy:12,r:1}],['circle',{cx:9,cy:18,r:1}],['circle',{cx:15,cy:6,r:1}],['circle',{cx:15,cy:12,r:1}],['circle',{cx:15,cy:18,r:1}]],
+      'trash':[['path',{d:'M3 6h18'}],['path',{d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'}]],
+      'pin':[['path',{d:'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z'}],['circle',{cx:12,cy:10,r:3}]],
+      'plane':[['path',{d:'M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z'}]],
+      'train':[['path',{d:'M8 3.1V7a4 4 0 0 0 8 0V3.1'}],['path',{d:'m9 15-1-1'}],['path',{d:'m15 15 1-1'}],['path',{d:'M9 19c-2.8 0-5-2.2-5-5v-4a8 8 0 0 1 16 0v4c0 2.8-2.2 5-5 5Z'}],['line',{x1:8,x2:8,y1:19,y2:22}],['line',{x1:16,x2:16,y1:19,y2:22}]],
+      'map':[['polygon',{points:'3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21'}],['line',{x1:9,x2:9,y1:3,y2:18}],['line',{x1:15,x2:15,y1:6,y2:21}]],
+      'calendar':[['path',{d:'M8 2v4'}],['path',{d:'M16 2v4'}],['rect',{width:18,height:18,x:3,y:4,rx:2}],['path',{d:'M3 10h18'}]],
+      'share':[['circle',{cx:18,cy:5,r:3}],['circle',{cx:6,cy:12,r:3}],['circle',{cx:18,cy:19,r:3}],['line',{x1:8.59,x2:15.42,y1:13.51,y2:17.49}],['line',{x1:15.41,x2:8.59,y1:6.51,y2:10.49}]],
+      'menu':[['line',{x1:4,x2:20,y1:6,y2:6}],['line',{x1:4,x2:20,y1:12,y2:12}],['line',{x1:4,x2:20,y1:18,y2:18}]],
+      'arrow-left':[['path',{d:'m12 19-7-7 7-7'}],['path',{d:'M19 12H5'}]],
+      'check':[['path',{d:'M20 6 9 17l-5-5'}]],
+      'clock':[['circle',{cx:12,cy:12,r:10}],['polyline',{points:'12 6 12 12 16 14'}]],
+    };
+    const parts=P[name]||[];
+    return React.createElement('svg',{width:size,height:size,viewBox:'0 0 24 24',fill:'none',stroke:color,strokeWidth:sw,strokeLinecap:'round',strokeLinejoin:'round'},parts.map((el,i)=>React.createElement(el[0],Object.assign({key:i},el[1]))));
+  }
+  chip(cat,size){const c=this.CAT[cat],s=size||30;return React.createElement('div',{style:{width:s,height:s,borderRadius:Math.round(s*0.3),background:c.bg,display:'flex',alignItems:'center',justifyContent:'center',flex:'none'}},this.icon(c.icon,{size:Math.round(s*0.54),color:c.fg,sw:2}));}
+  cityDot(city,s){return React.createElement('span',{style:{width:s||9,height:s||9,borderRadius:'50%',background:city.color,flex:'none',display:'inline-block'}});}
+  panelTitle(txt,sub){const h=React.createElement;return h('div',{style:{display:'flex',flexDirection:'column',gap:4,marginBottom:16}},h('div',{style:{display:'flex',alignItems:'center',gap:9}},h('span',{style:{width:7,height:7,borderRadius:'50%',background:'#5B8DEF',flex:'none'}}),h('span',{style:{fontSize:17,fontWeight:800,color:'#1B2030',letterSpacing:'-.02em',whiteSpace:'nowrap'}},txt)),sub?h('span',{style:{fontSize:13,fontWeight:500,color:'#71767F',paddingLeft:16}},sub):null);}
+
+  totalNights(){return this.CITIES.reduce((a,c)=>a+c.nights,0);}
+
+  // ===== phone frame =====
+  phone(children,key,w){
+    const h=React.createElement;const W=w||375;
+    return h('div',{key:key,style:{width:W,height:760,background:'#fff',borderRadius:42,border:'1px solid #DADFE6',boxShadow:'0 1px 3px rgba(16,24,40,.05),0 26px 60px -30px rgba(16,24,40,.5)',position:'relative',overflow:'hidden',display:'flex',flexDirection:'column'}},
+      h('div',{style:{height:44,flex:'none',display:'flex',alignItems:'flex-end',justifyContent:'space-between',padding:'0 28px 7px'}},
+        h('span',{style:{fontSize:14,fontWeight:700,color:'#1B2030'}},'9:41'),
+        h('div',{style:{display:'flex',gap:5,alignItems:'center'}},
+          h('svg',{width:17,height:11,viewBox:'0 0 18 12',fill:'#1B2030'},h('rect',{x:0,y:7,width:3,height:5,rx:1}),h('rect',{x:5,y:4,width:3,height:8,rx:1}),h('rect',{x:10,y:2,width:3,height:10,rx:1}),h('rect',{x:15,y:0,width:3,height:12,rx:1})),
+          h('div',{style:{width:23,height:11,borderRadius:3,border:'1.5px solid rgba(27,32,48,.5)',padding:1.5,display:'flex'}},h('div',{style:{flex:1,background:'#1B2030',borderRadius:1}})))),
+      h('div',{style:{flex:1,minHeight:0,display:'flex',flexDirection:'column',position:'relative'}},children),
+      h('div',{style:{height:20,flex:'none',display:'flex',alignItems:'center',justifyContent:'center'}},h('div',{style:{width:130,height:5,borderRadius:99,background:'#1B2030'}})));
+  }
+  deskFrame(children,key,w){
+    const h=React.createElement;
+    return h('div',{key:key,style:{width:w||760,background:'#fff',borderRadius:18,border:'1px solid #E2E6EC',boxShadow:'0 1px 3px rgba(16,24,40,.05),0 20px 44px -28px rgba(16,24,40,.35)',overflow:'hidden',display:'flex',flexDirection:'column'}},children);
+  }
+  platformTag(txt){const h=React.createElement;return h('div',{style:{display:'inline-flex',alignItems:'center',gap:6,alignSelf:'flex-start',background:'#fff',border:'1px solid #E2E6EC',borderRadius:99,padding:'5px 12px',marginBottom:12}},h('span',{style:{fontSize:11.5,fontWeight:700,color:'#5A606B',letterSpacing:'.02em'}},txt));}
+
+  // ================= SECTION A: WIZARD CITY ADD =================
+  cityRow(city,i,mobile){
+    const h=React.createElement;const last=i===this.CITIES.length-1;
+    return h('div',{key:city.key,style:{display:'flex',alignItems:'center',gap:mobile?9:11,background:'#fff',border:'1px solid #ECEEF1',borderRadius:14,padding:mobile?'9px 10px':'11px 12px',boxShadow:'0 1px 2px rgba(16,24,40,.03)'}},
+      h('div',{style:{width:28,height:44,flex:'none',display:'flex',alignItems:'center',justifyContent:'center',cursor:'grab'}},this.icon('grip',{size:17,color:'#C4CAD2',sw:2})),
+      h('div',{style:{width:26,height:26,flex:'none',borderRadius:8,background:city.tint,display:'flex',alignItems:'center',justifyContent:'center'}},h('span',{style:{fontSize:13,fontWeight:800,color:city.color}},String(i+1))),
+      h('div',{style:{flex:1,minWidth:0,display:'flex',flexDirection:'column',gap:2}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:7}},this.cityDot(city,8),h('span',{style:{fontSize:mobile?14.5:15,fontWeight:700,color:'#1B2030',whiteSpace:'nowrap'}},city.name),h('span',{style:{fontSize:12,fontWeight:500,color:'#A8AEB8'}},city.en)),
+        h('span',{style:{fontSize:12,fontWeight:600,color:city.color,whiteSpace:'nowrap'}},'4월 '+city.range+' · '+city.nights+'박')),
+      h('div',{style:{flex:'none',display:'flex',alignItems:'center',gap:mobile?4:6,background:'#F7F8FA',borderRadius:11,padding:'4px'}},
+        h('button',{style:{width:32,height:32,border:'none',background:'#fff',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',boxShadow:'0 1px 2px rgba(16,24,40,.08)'}},this.icon('minus',{size:15,color:'#5A606B',sw:2.4})),
+        h('div',{style:{minWidth:38,textAlign:'center',display:'flex',flexDirection:'column',lineHeight:1}},h('span',{style:{fontSize:15,fontWeight:800,color:'#1B2030'}},city.nights),h('span',{style:{fontSize:9.5,fontWeight:600,color:'#A8AEB8',marginTop:1}},'박')),
+        h('button',{style:{width:32,height:32,border:'none',background:'#fff',borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',boxShadow:'0 1px 2px rgba(16,24,40,.08)'}},this.icon('plus',{size:15,color:'#2F6FE0',sw:2.4}))),
+      mobile?null:h('button',{style:{width:36,height:36,flex:'none',border:'none',background:'transparent',borderRadius:9,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('trash',{size:16,color:'#C4CAD2',sw:2})));
+  }
+  transitMini(from,to){
+    const h=React.createElement;
+    return h('div',{style:{display:'flex',alignItems:'center',gap:8,padding:'2px 0 2px 62px'}},
+      h('div',{style:{width:2,height:14,background:'#E2E5EA',borderRadius:2}}),
+      h('div',{style:{display:'inline-flex',alignItems:'center',gap:6,background:'#F4F6F8',borderRadius:99,padding:'4px 11px 4px 8px'}},
+        h('span',{style:{width:20,height:20,borderRadius:6,background:'#fff',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon(from==='도쿄'?'train':'train',{size:13,color:'#7B828F',sw:2})),
+        h('span',{style:{fontSize:11.5,fontWeight:600,color:'#7B828F'}},from+' → '+to+' 이동')));
+  }
+  wizardHeader(mobile){
+    const h=React.createElement;
+    const steps=['기본 정보','도시 · 일정','멤버 초대','시작 방식'];
+    return h('div',{style:{display:'flex',flexDirection:'column',gap:mobile?14:16}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:8}},steps.map((s,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:8,flex:i<3?1:'none'}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:6}},
+          h('span',{style:{width:22,height:22,borderRadius:'50%',background:i===1?'#3172E3':(i<1?'#EAF1FE':'#F1F3F6'),color:i===1?'#fff':(i<1?'#2F6FE0':'#A8AEB8'),fontSize:11.5,fontWeight:800,display:'flex',alignItems:'center',justifyContent:'center'}},i<1?this.icon('check',{size:12,color:'#2F6FE0',sw:3}):String(i+1)),
+          (!mobile||i===1)?h('span',{style:{fontSize:12.5,fontWeight:i===1?700:600,color:i===1?'#1B2030':'#A8AEB8',whiteSpace:'nowrap'}},s):null),
+        i<3?h('div',{style:{flex:1,height:2,background:i<1?'#3172E3':'#ECEEF1',borderRadius:2,minWidth:mobile?10:24}}):null))),
+      h('div',{style:{display:'flex',flexDirection:'column',gap:3}},
+        h('span',{style:{fontSize:mobile?19:22,fontWeight:800,color:'#161B28',letterSpacing:'-.03em'}},'어느 도시들을 여행하나요?'),
+        h('span',{style:{fontSize:mobile?13:13.5,fontWeight:500,color:'#8A909B'}},'도시와 머무는 박수를 추가하세요. 순서대로 날짜가 자동 계산돼요.')));
+  }
+  totalBar(mobile){
+    const h=React.createElement;const n=this.totalNights();
+    return h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',background:'#F7FAFF',border:'1px solid #DCE6F8',borderRadius:14,padding:mobile?'12px 14px':'14px 16px'}},
+      h('div',{style:{display:'flex',alignItems:'center',gap:9}},this.icon('calendar',{size:mobile?17:18,color:'#2F6FE0',sw:2}),h('span',{style:{fontSize:mobile?13.5:14.5,fontWeight:700,color:'#1B2030'}},this.CITIES.length+'개 도시 · 총 '+n+'박 '+(n+1)+'일')),
+      h('span',{style:{fontSize:mobile?12.5:13.5,fontWeight:700,color:'#2F6FE0'}},'4.8 – 4.'+(8+n)));
+  }
+  addCityBtn(mobile){const h=React.createElement;return h('button',{style:{width:'100%',height:mobile?48:50,display:'flex',alignItems:'center',justifyContent:'center',gap:7,border:'1.5px dashed #C6D5F3',borderRadius:14,background:'#F7FAFF',color:'#2F6FE0',fontSize:14,fontWeight:700,cursor:'pointer'}},this.icon('plus',{size:18,color:'#2F6FE0',sw:2.2}),'도시 추가');}
+
+  buildWizardDesktop(){
+    const h=React.createElement;
+    return this.deskFrame([
+      h('div',{style:{padding:'26px 30px 12px'}},this.wizardHeader(false)),
+      h('div',{style:{padding:'8px 30px 16px',display:'flex',flexDirection:'column',gap:9}},
+        this.CITIES.map((c,i)=>h('div',{key:c.key,style:{display:'flex',flexDirection:'column',gap:9}},this.cityRow(c,i,false),i<this.CITIES.length-1?this.transitMini(c.name,this.CITIES[i+1].name):null)),
+        h('div',{style:{marginTop:4}},this.addCityBtn(false)),
+        h('div',{style:{marginTop:6}},this.totalBar(false))),
+      h('div',{style:{borderTop:'1px solid #ECEEF1',padding:'16px 30px',display:'flex',justifyContent:'space-between'}},
+        h('button',{style:{height:46,padding:'0 20px',border:'1px solid #E6E8EC',background:'#fff',borderRadius:12,color:'#5A606B',fontSize:14,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:7}},this.icon('chevron-left',{size:17,color:'#5A606B',sw:2.2}),'이전'),
+        h('button',{style:{height:46,padding:'0 24px',border:'none',background:'#3172E3',borderRadius:12,color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:7,boxShadow:'0 5px 14px -3px rgba(59,125,240,.5)'}},'다음',this.icon('chevron-right',{size:17,color:'#fff',sw:2.2})))
+    ],'wizD',760);
+  }
+  buildWizardMobile(){
+    const h=React.createElement;
+    return this.phone([
+      h('div',{style:{height:52,flex:'none',display:'flex',alignItems:'center',padding:'0 8px',borderBottom:'1px solid #F0F1F4'}},
+        h('button',{style:{width:44,height:44,border:'none',background:'transparent',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('arrow-left',{size:22,color:'#3A3F4B',sw:2})),
+        h('span',{style:{flex:1,textAlign:'center',fontSize:15.5,fontWeight:800,color:'#1B2030'}},'새 여행'),
+        h('div',{style:{width:44}})),
+      h('div',{className:'noscroll',style:{flex:1,minHeight:0,overflowY:'auto',padding:'16px 16px 20px',display:'flex',flexDirection:'column',gap:14}},
+        this.wizardHeader(true),
+        h('div',{style:{display:'flex',flexDirection:'column',gap:8}},this.CITIES.map((c,i)=>h('div',{key:c.key,style:{display:'flex',flexDirection:'column',gap:8}},this.cityRow(c,i,true),i<this.CITIES.length-1?this.transitMini(c.name,this.CITIES[i+1].name):null))),
+        this.addCityBtn(true),
+        this.totalBar(true)),
+      h('div',{style:{flex:'none',borderTop:'1px solid #F0F1F4',padding:'12px 16px',display:'flex',gap:10}},
+        h('button',{style:{width:52,height:48,border:'1px solid #E6E8EC',background:'#fff',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('chevron-left',{size:20,color:'#5A606B',sw:2.2})),
+        h('button',{style:{flex:1,height:48,border:'none',background:'#3172E3',borderRadius:12,color:'#fff',fontSize:14.5,fontWeight:700,cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',gap:7,boxShadow:'0 5px 14px -3px rgba(59,125,240,.5)'}},'다음',this.icon('chevron-right',{size:18,color:'#fff',sw:2.2})))
+    ],'wizM');
+  }
+
+  // ================= SECTION B: PLAN CITY CONTEXT =================
+  cityTabs(mobile){
+    const h=React.createElement;const cur=this.state.activeCity;
+    return h('div',{style:{display:'flex',gap:6}},this.CITIES.map(c=>{const on=c.key===cur;
+      return h('button',{key:c.key,onClick:()=>this.setState({activeCity:c.key}),style:{display:'inline-flex',alignItems:'center',gap:7,height:36,padding:'0 14px',borderRadius:99,border:'1.5px solid '+(on?c.color:'#E6E8EC'),background:on?c.color:'#fff',cursor:'pointer'}},
+        h('span',{style:{width:8,height:8,borderRadius:'50%',background:on?'#fff':c.color}}),
+        h('span',{style:{fontSize:13,fontWeight:on?700:600,color:on?'#fff':'#5A606B',whiteSpace:'nowrap'}},c.name),
+        h('span',{style:{fontSize:11.5,fontWeight:600,color:on?'rgba(255,255,255,.8)':'#A8AEB8'}},c.nights+'박'));
+    }));
+  }
+  cityDropdown(){
+    const h=React.createElement;const c=this.CITIES.find(x=>x.key===this.state.activeCity);
+    return h('button',{style:{display:'inline-flex',alignItems:'center',gap:7,height:38,padding:'0 11px 0 13px',borderRadius:11,border:'1px solid #E6E8EC',background:'#fff',cursor:'pointer'}},
+      h('span',{style:{width:9,height:9,borderRadius:'50%',background:c.color}}),
+      h('span',{style:{fontSize:14,fontWeight:700,color:'#1B2030',whiteSpace:'nowrap'}},c.name),
+      h('span',{style:{fontSize:12,fontWeight:600,color:'#A8AEB8'}},'4월 '+c.range),
+      this.icon('chevron-down',{size:16,color:'#8A909B',sw:2.2}));
+  }
+  planMapMini(city,wide){
+    const h=React.createElement;
+    const pts=[[26,60],[40,44],[56,54],[68,36]];
+    const d='M '+pts.map(p=>(p[0]*10)+' '+(p[1]*10)).join(' L ');
+    return h('div',{style:{position:'relative',flex:1,minHeight:0,overflow:'hidden',background:'#EAEEF1'}},
+      h('svg',{width:'100%',height:'100%',viewBox:'0 0 375 500',preserveAspectRatio:'xMidYMid slice',style:{position:'absolute',inset:0}},
+        h('rect',{width:375,height:500,fill:'#EAEEF1'}),
+        h('path',{d:'M-20 180 C90 150 150 220 240 190 S400 150 420 180 L420 260 C360 280 260 240 180 270 S20 260 -20 240 Z',fill:city.key==='tokyo'?'#DCEBF5':(city.key==='osaka'?'#FBE4DB':'#DCEFE7')}),
+        h('g',{stroke:'#fff',strokeWidth:9,strokeLinecap:'round',opacity:.9},h('line',{x1:60,y1:-10,x2:120,y2:520}),h('line',{x1:270,y1:-10,x2:230,y2:520}),h('line',{x1:-10,y1:150,x2:400,y2:120})),
+        h('g',{fill:'#E2E7EB'},h('rect',{x:20,y:160,width:60,height:60,rx:8}),h('rect',{x:280,y:150,width:70,height:70,rx:8}),h('rect',{x:150,y:380,width:60,height:70,rx:8}))),
+      h('svg',{width:'100%',height:'100%',viewBox:'0 0 1000 1000',preserveAspectRatio:'none',style:{position:'absolute',inset:0,overflow:'visible'}},h('path',{d:d,fill:'none',stroke:city.color,strokeWidth:3,strokeDasharray:'8 9',strokeLinecap:'round',vectorEffect:'non-scaling-stroke'})),
+      pts.map((p,i)=>h('div',{key:i,style:{position:'absolute',left:p[0]+'%',top:p[1]+'%',transform:'translate(-50%,-50%)'}},
+        h('div',{style:{width:30,height:30,borderRadius:'50%',background:'#fff',border:'2px solid '+city.color,color:city.color,display:'flex',alignItems:'center',justifyContent:'center',fontWeight:700,fontSize:14,boxShadow:'0 3px 8px rgba(16,24,40,.2)'}},String(i+1)))),
+      // city center badge
+      h('div',{style:{position:'absolute',top:12,left:12,display:'inline-flex',alignItems:'center',gap:6,background:'#fff',borderRadius:99,padding:'6px 12px 6px 9px',boxShadow:'0 3px 10px -2px rgba(16,24,40,.18)'}},
+        h('span',{style:{width:20,height:20,borderRadius:6,background:city.tint,display:'flex',alignItems:'center',justifyContent:'center'}},this.icon('pin',{size:13,color:city.color,sw:2.2})),
+        h('span',{style:{fontSize:12.5,fontWeight:700,color:'#1B2030'}},city.name+' 중심')));
+  }
+  dayNavCity(city,mobile){
+    const h=React.createElement;
+    return h('div',{style:{display:'flex',alignItems:'center',justifyContent:'center',gap:4}},
+      h('button',{style:{width:44,height:44,border:'none',background:'transparent',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('chevron-left',{size:21,color:'#3A3F4B',sw:2.2})),
+      h('div',{style:{display:'flex',flexDirection:'column',alignItems:'center',minWidth:150}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:7}},h('span',{style:{fontSize:16,fontWeight:800,color:'#1B2030',whiteSpace:'nowrap'}},'Day 4'),h('span',{style:{display:'inline-flex',alignItems:'center',gap:5,background:city.tint,borderRadius:99,padding:'2px 9px 2px 7px'}},this.cityDot(city,7),h('span',{style:{fontSize:11.5,fontWeight:700,color:city.color,whiteSpace:'nowrap'}},city.name))),
+        h('span',{style:{fontSize:12,fontWeight:600,color:'#71767F',whiteSpace:'nowrap'}},'4월 11일 · '+city.name+' 첫날')),
+      h('button',{style:{width:44,height:44,border:'none',background:'transparent',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('chevron-right',{size:21,color:'#3A3F4B',sw:2.2})));
+  }
+  dayStripCity(mobile){
+    const h=React.createElement;
+    // days across cities: highlight boundary
+    const days=[{n:'D1',d:8,c:'tokyo'},{n:'D2',d:9,c:'tokyo'},{n:'D3',d:10,c:'tokyo'},{n:'D4',d:11,c:'osaka',bound:true},{n:'D5',d:12,c:'osaka'},{n:'D6',d:13,c:'kyoto',bound:true},{n:'D7',d:14,c:'kyoto'}];
+    const byKey={};this.CITIES.forEach(c=>byKey[c.key]=c);
+    return h('div',{className:'noscroll',style:{display:'flex',gap:0,overflowX:'auto',padding:'0 2px'}},days.map((dy,i)=>{const c=byKey[dy.c];const on=dy.d===11;
+      return h('div',{key:i,style:{display:'flex',alignItems:'stretch'}},
+        dy.bound?h('div',{style:{width:1,alignSelf:'stretch',borderLeft:'2px dashed '+c.line,margin:'6px 6px'}}):null,
+        h('button',{style:{flex:'none',width:52,display:'flex',flexDirection:'column',alignItems:'center',gap:5,padding:'8px 0',border:'none',background:'transparent',cursor:'pointer'}},
+          h('span',{style:{fontSize:10,fontWeight:700,color:c.color}},dy.n),
+          h('span',{style:{width:30,height:30,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:on?c.color:c.tint,color:on?'#fff':c.color,fontSize:13,fontWeight:800}},String(dy.d)),
+          h('span',{style:{width:6,height:6,borderRadius:'50%',background:c.color}})));
+    }));
+  }
+  buildPlanDesktop(){
+    const h=React.createElement;const city=this.CITIES.find(c=>c.key===this.state.activeCity);
+    return this.deskFrame([
+      h('div',{style:{height:56,display:'flex',alignItems:'center',gap:12,padding:'0 18px',borderBottom:'1px solid #F0F1F4'}},
+        h('button',{style:{display:'inline-flex',alignItems:'center',gap:5,height:34,padding:'0 11px 0 8px',border:'1px solid #E6E8EC',background:'#fff',borderRadius:10,color:'#5A606B',fontSize:13,fontWeight:600,cursor:'pointer'}},this.icon('arrow-left',{size:16,color:'#8A909B',sw:2}),'목록'),
+        h('span',{style:{fontSize:16,fontWeight:800,color:'#1B2030',letterSpacing:'-.02em'}},'간사이 일주 7박'),
+        h('div',{style:{marginLeft:'auto',display:'flex',alignItems:'center',gap:8}},
+          this.cityDropdown(),
+          h('button',{style:{width:38,height:38,border:'1px solid #E6E8EC',background:'#fff',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('share',{size:18,color:'#5A606B',sw:2})))),
+      // city tabs bar
+      h('div',{style:{padding:'12px 18px',borderBottom:'1px solid #F0F1F4',display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}},this.cityTabs(false),h('span',{style:{fontSize:12.5,fontWeight:600,color:'#A8AEB8',whiteSpace:'nowrap'}},'도시를 전환하면 지도·일정이 함께 이동')),
+      h('div',{style:{display:'flex',height:420}},
+        // left itinerary
+        h('div',{style:{width:320,flex:'none',borderRight:'1px solid #F0F1F4',display:'flex',flexDirection:'column'}},
+          h('div',{style:{padding:'14px 16px',borderBottom:'1px solid #F0F1F4'}},this.dayNavCity(city,false)),
+          h('div',{className:'noscroll',style:{flex:1,overflowY:'auto',padding:'14px 16px',display:'flex',flexDirection:'column',gap:9,background:'#F7F8FA'}},
+            [['오사카성','museum','09:30'],['도톤보리 다코야키','food','12:00'],['우메다 스카이빌딩','museum','15:00'],['호젠지 요코초','cafe','18:00']].map((it,i)=>h('div',{key:i,style:{display:'flex',alignItems:'center',gap:11,padding:'11px 12px',background:'#fff',border:'1px solid #ECEEF1',borderRadius:14}},
+              h('div',{style:{width:28,height:28,flex:'none',borderRadius:'50%',background:city.tint,color:city.color,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,fontWeight:700}},String(i+1)),
+              this.chip(it[1],34),
+              h('div',{style:{flex:1,minWidth:0}},h('div',{style:{fontSize:14,fontWeight:700,color:'#1B2030',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},it[0]),h('span',{style:{fontSize:12,fontWeight:700,color:city.color}},it[2])))))),
+        // right map
+        this.planMapMini(city,true))
+    ],'planD',760);
+  }
+  buildPlanMobile(){
+    const h=React.createElement;const city=this.CITIES.find(c=>c.key===this.state.activeCity);
+    return this.phone([
+      h('div',{style:{height:52,flex:'none',display:'flex',alignItems:'center',padding:'0 6px',borderBottom:'1px solid #F0F1F4'}},
+        h('button',{style:{width:44,height:44,border:'none',background:'transparent',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('menu',{size:23,color:'#3A3F4B',sw:2})),
+        h('div',{style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center'}},h('span',{style:{fontSize:15,fontWeight:800,color:'#1B2030'}},'간사이 일주 7박'),h('span',{style:{fontSize:11.5,fontWeight:600,color:'#71767F'}},'플랜 · 4.8–4.15')),
+        h('button',{style:{width:44,height:44,border:'none',background:'transparent',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('share',{size:21,color:'#3A3F4B',sw:2}))),
+      // city selector row (horizontal)
+      h('div',{style:{flex:'none',padding:'11px 12px',borderBottom:'1px solid #F0F1F4',background:'#fff'}},
+        h('div',{className:'noscroll',style:{overflow:'hidden'}},h('div',{className:'noscroll',style:{display:'flex',gap:6,overflowX:'auto',paddingBottom:16,marginBottom:-16}},this.cityTabsMobile()))),
+      // day nav + city
+      h('div',{style:{flex:'none',padding:'10px 12px 12px',background:'#fff',boxShadow:'0 2px 8px -4px rgba(16,24,40,.1)',zIndex:5,position:'relative',display:'flex',flexDirection:'column',gap:10}},
+        this.dayNavCity(city,true)),
+      this.planMapMini(city,false),
+      // bottom peek
+      h('div',{style:{flex:'none',background:'#fff',borderTop:'1px solid #F0F1F4',padding:'10px 14px 12px'}},
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}},
+          h('div',{style:{display:'flex',alignItems:'center',gap:7}},h('span',{style:{fontSize:14.5,fontWeight:800,color:'#1B2030'}},city.name+' Day 4'),h('span',{style:{fontSize:12,fontWeight:600,color:'#71767F'}},'4곳')),
+          h('button',{style:{display:'inline-flex',alignItems:'center',gap:4,height:32,padding:'0 11px',borderRadius:99,background:city.tint,color:city.color,border:'none',fontSize:12,fontWeight:700,cursor:'pointer'}},this.icon('plus',{size:14,color:city.color,sw:2.2}),'장소')),
+        h('div',{className:'noscroll',style:{display:'flex',gap:8,overflowX:'auto'}},[['오사카성','museum'],['도톤보리','food'],['우메다','museum']].map((it,i)=>h('div',{key:i,style:{flex:'none',display:'flex',alignItems:'center',gap:8,padding:'8px 11px 8px 8px',border:'1px solid #ECEEF1',borderRadius:12}},h('span',{style:{width:22,height:22,borderRadius:'50%',background:city.color,color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700}},String(i+1)),this.chip(it[1],24),h('span',{style:{fontSize:13,fontWeight:700,color:'#1B2030',whiteSpace:'nowrap'}},it[0])))))
+    ],'planM');
+  }
+  cityTabsMobile(){
+    const h=React.createElement;const cur=this.state.activeCity;
+    return this.CITIES.map(c=>{const on=c.key===cur;
+      return h('button',{key:c.key,onClick:()=>this.setState({activeCity:c.key}),style:{flex:'none',display:'inline-flex',alignItems:'center',gap:7,height:38,padding:'0 14px',borderRadius:99,border:'1.5px solid '+(on?c.color:'#E6E8EC'),background:on?c.color:'#fff',cursor:'pointer'}},
+        h('span',{style:{width:8,height:8,borderRadius:'50%',background:on?'#fff':c.color}}),
+        h('span',{style:{fontSize:13,fontWeight:on?700:600,color:on?'#fff':'#5A606B',whiteSpace:'nowrap'}},c.name),
+        h('span',{style:{fontSize:11.5,fontWeight:600,color:on?'rgba(255,255,255,.8)':'#A8AEB8'}},c.nights+'박'));
+    });
+  }
+
+  // ================= SECTION C: CALENDAR CITY BANDS =================
+  buildCalDesktop(){
+    const h=React.createElement;
+    // April: 1=Wed(idx3). Trip 8-15.
+    const cityOfDay=(d)=>{ if(d>=8&&d<=10)return this.CITIES[0]; if(d===11||d===12)return this.CITIES[1]; if(d>=13&&d<=14)return this.CITIES[2]; return null; };
+    const first=3,dim=30;const cells=[];for(let i=0;i<first;i++)cells.push(null);for(let n=1;n<=dim;n++)cells.push(n);while(cells.length%7)cells.push(null);
+    const weeks=[];for(let i=0;i<cells.length;i+=7)weeks.push(cells.slice(i,i+7));
+    const dow=['일','월','화','수','목','금','토'];
+    const head=h('div',{style:{display:'grid',gridTemplateColumns:'repeat(7,1fr)'}},dow.map((d,i)=>h('div',{key:i,style:{textAlign:'center',fontSize:12,fontWeight:700,color:i===0?'#E8615C':(i===6?'#3172E3':'#A8AEB8'),padding:'8px 0'}},d)));
+    const grid=h('div',{style:{display:'flex',flexDirection:'column'}},weeks.map((wk,wi)=>h('div',{key:wi,style:{display:'grid',gridTemplateColumns:'repeat(7,1fr)'}},wk.map((n,ci)=>{
+      if(n===null)return h('div',{key:ci,style:{height:78,border:'1px solid #F4F5F7'}});
+      const c=cityOfDay(n);const isStart=c&&(n===8||n===11||n===13);
+      return h('div',{key:ci,style:{height:78,border:'1px solid #F4F5F7',padding:'6px 7px',position:'relative',background:c?c.tint+'55':'#fff',display:'flex',flexDirection:'column',gap:4}},
+        h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between'}},h('span',{style:{fontSize:13,fontWeight:c?700:500,color:ci===0?'#E8615C':(ci===6?'#3172E3':'#3A3F4B')}},String(n)),isStart?h('span',{style:{display:'inline-flex',alignItems:'center',gap:3,background:c.color,borderRadius:99,padding:'1px 7px'}},h('span',{style:{fontSize:9.5,fontWeight:700,color:'#fff'}},c.name)):null),
+        c?h('div',{style:{marginTop:'auto',display:'flex',flexDirection:'column',gap:3}},
+          h('div',{style:{height:4,borderRadius:99,background:c.color,opacity:.85,width:'100%'}}),
+          n<=13?h('div',{style:{display:'flex',gap:3}},[0,1].map(k=>h('span',{key:k,style:{width:5,height:5,borderRadius:'50%',background:c.color}}))):null):null);
+    }))));
+    return this.deskFrame([
+      h('div',{style:{padding:'18px 22px',borderBottom:'1px solid #F0F1F4',display:'flex',alignItems:'center',justifyContent:'space-between'}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:10}},h('span',{style:{fontSize:17,fontWeight:800,color:'#1B2030',whiteSpace:'nowrap'}},'2026년 4월'),
+          h('div',{style:{display:'flex',gap:2,background:'#F1F3F6',padding:3,borderRadius:11}},['월','주','일'].map((m,i)=>h('span',{key:i,style:{height:30,padding:'0 13px',display:'inline-flex',alignItems:'center',borderRadius:8,fontSize:13,fontWeight:i===0?700:600,background:i===0?'#fff':'transparent',color:i===0?'#2B61C4':'#7B828F',boxShadow:i===0?'0 1px 3px rgba(16,24,40,.12)':'none'}},m)))),
+        h('div',{style:{display:'flex',gap:14}},this.CITIES.map(c=>h('div',{key:c.key,style:{display:'flex',alignItems:'center',gap:6}},this.cityDot(c,10),h('span',{style:{fontSize:12.5,fontWeight:700,color:'#3A3F4B'}},c.name),h('span',{style:{fontSize:11.5,fontWeight:600,color:'#A8AEB8'}},c.range))))),
+      h('div',{style:{padding:'8px 16px 18px'}},head,grid)
+    ],'calD',760);
+  }
+  buildCalMobile(){
+    const h=React.createElement;
+    const cityOfDay=(d)=>{ if(d>=8&&d<=10)return this.CITIES[0]; if(d===11||d===12)return this.CITIES[1]; if(d>=13&&d<=14)return this.CITIES[2]; return null; };
+    const first=3,dim=30;const cells=[];for(let i=0;i<first;i++)cells.push(null);for(let n=1;n<=dim;n++)cells.push(n);while(cells.length%7)cells.push(null);
+    const weeks=[];for(let i=0;i<cells.length;i+=7)weeks.push(cells.slice(i,i+7));
+    const dow=['일','월','화','수','목','금','토'];
+    const head=h('div',{style:{display:'grid',gridTemplateColumns:'repeat(7,1fr)',marginBottom:2}},dow.map((d,i)=>h('div',{key:i,style:{textAlign:'center',fontSize:11,fontWeight:700,color:i===0?'#E8615C':(i===6?'#3172E3':'#A8AEB8'),padding:'4px 0'}},d)));
+    const grid=h('div',{},weeks.map((wk,wi)=>h('div',{key:wi,style:{display:'grid',gridTemplateColumns:'repeat(7,1fr)'}},wk.map((n,ci)=>{
+      if(n===null)return h('div',{key:ci,style:{height:48}});
+      const c=cityOfDay(n);const isStart=c&&(n===8||n===11||n===13);
+      return h('div',{key:ci,style:{height:48,display:'flex',flexDirection:'column',alignItems:'center',gap:3,padding:'4px 0',position:'relative'}},
+        h('div',{style:{width:28,height:28,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',background:isStart?c.color:(c?c.tint:'transparent'),color:isStart?'#fff':(c?c.color:(ci===0?'#E8615C':(ci===6?'#3172E3':'#3A3F4B'))),fontSize:13,fontWeight:c?700:500}},String(n)),
+        c?h('span',{style:{width:14,height:3,borderRadius:99,background:c.color}}):h('span',{style:{height:3}}));
+    }))));
+    return this.phone([
+      h('div',{style:{height:52,flex:'none',display:'flex',alignItems:'center',padding:'0 6px',borderBottom:'1px solid #F0F1F4'}},
+        h('button',{style:{width:44,height:44,border:'none',background:'transparent',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('menu',{size:23,color:'#3A3F4B',sw:2})),
+        h('div',{style:{flex:1,display:'flex',flexDirection:'column',alignItems:'center'}},h('span',{style:{fontSize:15,fontWeight:800,color:'#1B2030'}},'캘린더'),h('span',{style:{fontSize:11.5,fontWeight:600,color:'#71767F'}},'2026년 4월')),
+        h('button',{style:{width:44,height:44,border:'none',background:'transparent',borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer'}},this.icon('share',{size:21,color:'#3A3F4B',sw:2}))),
+      h('div',{style:{flex:'none',padding:'12px 16px',borderBottom:'1px solid #F0F1F4'}},
+        h('div',{style:{display:'flex',gap:2,background:'#F1F3F6',padding:4,borderRadius:12,marginBottom:14}},['월','주','일'].map((m,i)=>h('span',{key:i,style:{flex:1,height:34,display:'inline-flex',alignItems:'center',justifyContent:'center',borderRadius:9,fontSize:13.5,fontWeight:i===0?700:600,background:i===0?'#fff':'transparent',color:i===0?'#2B61C4':'#7B828F',boxShadow:i===0?'0 1px 3px rgba(16,24,40,.12)':'none'}},m))),
+        head,grid),
+      // city legend + agenda
+      h('div',{className:'noscroll',style:{flex:1,minHeight:0,overflowY:'auto',padding:'14px 16px 20px',background:'#F7F8FA',display:'flex',flexDirection:'column',gap:12}},
+        h('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}},this.CITIES.map(c=>h('div',{key:c.key,style:{display:'inline-flex',alignItems:'center',gap:6,background:'#fff',border:'1px solid #ECEEF1',borderRadius:99,padding:'5px 11px 5px 9px'}},this.cityDot(c,9),h('span',{style:{fontSize:12,fontWeight:700,color:'#3A3F4B'}},c.name),h('span',{style:{fontSize:11,fontWeight:600,color:'#A8AEB8'}},c.range)))),
+        h('div',{style:{display:'flex',alignItems:'center',gap:8,marginTop:2}},this.cityDot(this.CITIES[1],9),h('span',{style:{fontSize:14,fontWeight:800,color:'#1B2030'}},'4월 11일 · 오사카 첫날')),
+        // transit segment card
+        this.transitCard(this.CITIES[0],this.CITIES[1],'train','신칸센 · 4/11 오전'),
+        [['도톤보리 다코야키','food','12:00'],['우메다 스카이빌딩','museum','15:00']].map((it,i)=>{const c=this.CAT[it[1]];return h('div',{key:i,style:{display:'flex',gap:11,alignItems:'center'}},h('span',{style:{width:44,flex:'none',fontSize:12.5,fontWeight:700,color:'#3A3F4B',textAlign:'right'}},it[2]),h('div',{style:{flex:1,display:'flex',alignItems:'center',gap:11,background:c.bg,borderLeft:'3px solid '+c.fg,borderRadius:'5px 12px 12px 5px',padding:'10px 12px'}},this.chip(it[1],32),h('span',{style:{fontSize:14,fontWeight:700,color:'#1B2030'}},it[0])));}))
+    ],'calM');
+  }
+
+  // ================= SECTION D: TRANSIT SEGMENTS =================
+  transitCard(from,to,mode,detail){
+    const h=React.createElement;
+    return h('div',{style:{display:'flex',alignItems:'center',gap:12,background:'#fff',border:'1px dashed #D3D8E0',borderRadius:14,padding:'12px 14px'}},
+      h('div',{style:{position:'relative',display:'flex',flexDirection:'column',alignItems:'center',flex:'none'}},
+        this.cityDot(from,10),h('div',{style:{width:2,height:20,background:'linear-gradient(to bottom,'+from.color+','+to.color+')',margin:'2px 0'}}),this.cityDot(to,10)),
+      h('div',{style:{width:40,height:40,flex:'none',borderRadius:12,background:'#F1F3F6',display:'flex',alignItems:'center',justifyContent:'center'}},this.icon(mode,{size:20,color:'#5A606B',sw:2})),
+      h('div',{style:{flex:1,minWidth:0}},
+        h('div',{style:{display:'flex',alignItems:'center',gap:6}},h('span',{style:{fontSize:14,fontWeight:700,color:'#1B2030'}},from.name),this.icon('chevron-right',{size:14,color:'#A8AEB8',sw:2.4}),h('span',{style:{fontSize:14,fontWeight:700,color:'#1B2030'}},to.name)),
+        h('span',{style:{fontSize:12,fontWeight:600,color:'#71767F'}},detail)),
+      h('span',{style:{fontSize:11.5,fontWeight:700,color:'#7B828F',background:'#F4F6F8',borderRadius:99,padding:'4px 10px',whiteSpace:'nowrap'}},mode==='train'?'기차':'항공'));
+  }
+  buildTransit(){
+    const h=React.createElement;
+    return this.deskFrame([
+      h('div',{style:{padding:'20px 24px 8px'}},h('span',{style:{fontSize:16,fontWeight:800,color:'#1B2030'}},'도시 간 이동 세그먼트'),h('div',{style:{fontSize:13,fontWeight:500,color:'#8A909B',marginTop:3}},'플랜·일정에서 도시가 바뀌는 지점에 이동 카드가 자동으로 놓여요.')),
+      h('div',{style:{padding:'12px 24px 24px',display:'flex',flexDirection:'column',gap:12}},
+        this.transitCard(this.CITIES[0],this.CITIES[1],'train','신칸센 노조미 · 4/11 오전 · 약 15분'),
+        this.transitCard(this.CITIES[1],this.CITIES[2],'train','한큐 특급 · 4/13 오전 · 약 45분'))
+    ],'transit',628);
+  }
+
+  colBlock(title,sub,children){const h=React.createElement;return h('div',{style:{display:'flex',flexDirection:'column'}},this.panelTitle(title,sub),h('div',{style:{display:'flex',gap:30,alignItems:'flex-start',flexWrap:'wrap'}},children));}
+
+  renderVals(){
+    const h=React.createElement;
+    const wrap=(tag,el)=>h('div',{style:{display:'flex',flexDirection:'column'}},this.platformTag(tag),el);
+    const sectionShell=(children)=>h('div',{style:{marginTop:36}},children);
+    return {
+      sectionA:sectionShell(this.colBlock('1 · 생성 마법사 — 도시 추가','도시명·박수를 여러 개(드래그 순서·추가/삭제) · 총 N박·각 도시 날짜 자동 계산',[wrap('데스크톱 1280',this.buildWizardDesktop()),wrap('모바일 375',this.buildWizardMobile())])),
+      sectionB:sectionShell(this.colBlock('2 · 플랜 — 도시 컨텍스트','Day 스위처에 현재 도시 라벨·경계 · 도시 전환(탭/드롭다운) · 지도는 도시 중심. 탭을 눌러 도쿄/오사카/교토 전환',[wrap('데스크톱 1280',this.buildPlanDesktop()),wrap('모바일 375',this.buildPlanMobile())])),
+      sectionC:sectionShell(this.colBlock('3 · 캘린더 — 도시 구분','도시별 색·라벨로 날짜 구간 구분 · 도시 시작일 배지',[wrap('데스크톱 1280',this.buildCalDesktop()),wrap('모바일 375',this.buildCalMobile())])),
+      sectionD:sectionShell(this.colBlock('4 · 도시 간 이동 (선택)','도시가 바뀌는 경계에 항공/기차 세그먼트 카드',[wrap('공통 컴포넌트',this.buildTransit())])),
+    };
+  }
+}
+</script>
+</body>
+</html>
