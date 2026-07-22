@@ -7,6 +7,7 @@ export { MapFallback } from "./MapFallback";
 export { clusterMarkers } from "./stubs";
 export {
   reverseGeocode,
+  geocodeCity,
   getPlaceDetails,
   type GeocodeResult,
   type PlaceDetails,

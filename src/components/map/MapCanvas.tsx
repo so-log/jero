@@ -38,6 +38,7 @@ export function MapCanvas({
   center,
   zoom,
   flyTo,
+  flyToBounds,
   onSelect,
   onMapClick,
   onPointerMove,
@@ -122,6 +123,19 @@ export function MapCanvas({
     map.panTo(flyTo.position);
     if (flyTo.zoom != null) map.setZoom(flyTo.zoom);
   }, [map, flyTo]);
+
+  // 도시 장소 묶음에 fit(다중 도시). applyView 자동 fit 이후 실행되도록 뒤에 배치 → 도시 bounds 가 우선.
+  useEffect(() => {
+    if (!map || !flyToBounds || flyToBounds.length === 0) return;
+    if (flyToBounds.length === 1) {
+      map.setCenter(flyToBounds[0]);
+      map.setZoom(14);
+      return;
+    }
+    const bounds = new google.maps.LatLngBounds();
+    flyToBounds.forEach((p) => bounds.extend(p));
+    map.fitBounds(bounds, 64);
+  }, [map, flyToBounds]);
 
   const onLoad = useCallback((instance: google.maps.Map) => setMap(instance), []);
   const onUnmount = useCallback(() => setMap(null), []);

@@ -24,6 +24,27 @@ export async function reverseGeocode(
   }
 }
 
+/**
+ * 도시명(+국가) → 대표 좌표 (forward geocoding, 다중 도시 Phase 3).
+ * 도시에 lat/lng 가 없을 때 지도 중심 이동 폴백용. 미로드/실패 시 null(폴백 없이 진행).
+ */
+export async function geocodeCity(
+  name: string,
+  country?: string | null,
+): Promise<LatLng | null> {
+  if (typeof google === "undefined" || !google.maps?.Geocoder) return null;
+  const address = country ? `${name}, ${country}` : name;
+  try {
+    const geocoder = new google.maps.Geocoder();
+    const { results } = await geocoder.geocode({ address });
+    const loc = results?.[0]?.geometry?.location;
+    if (!loc) return null;
+    return { lat: loc.lat(), lng: loc.lng() };
+  } catch {
+    return null;
+  }
+}
+
 /** POI 라벨 클릭 → 장소 상세(이름·주소·좌표·place_id). PlacesService.getDetails 래퍼. 실패 시 null. */
 export interface PlaceDetails {
   name: string;

@@ -1,9 +1,13 @@
 "use client";
 
 import { Icon, type IconName } from "@/components/ui/icon";
+import { type CitySegment } from "@/features/trip";
 import { cn } from "@/lib/utils";
 
+import { cityForDay, type CityView } from "../lib/citySelectors";
 import type { Day } from "../types";
+import { CityDayBadge } from "./CityDayBadge";
+import { CityTabs } from "./CityTabs";
 
 /**
  * 모바일 플랜 컨트롤(반응형 3-B) — Day 스위처(‹ Day N ›) + [리스트 | 지도] 세그먼트. md+ 에선 숨김.
@@ -22,6 +26,12 @@ interface MobilePlanControlsProps {
   onDayChange: (index: number) => void;
   mode: PlanMode;
   onModeChange: (mode: PlanMode) => void;
+  /** 다중 도시 탭(2개 이상일 때만 노출). */
+  cityViews?: CityView[];
+  activeCityId?: string | null;
+  onCitySelect?: (cityId: string) => void;
+  /** 도시 배지용 파생 구간. */
+  citySegments?: CitySegment[];
 }
 
 export function MobilePlanControls({
@@ -30,14 +40,36 @@ export function MobilePlanControls({
   onDayChange,
   mode,
   onModeChange,
+  cityViews,
+  activeCityId = null,
+  onCitySelect,
+  citySegments,
 }: MobilePlanControlsProps) {
   const day = days[activeDay];
   const move = (delta: number) =>
     onDayChange(Math.min(days.length - 1, Math.max(0, activeDay + delta)));
   const [, m, d] = day ? day.date.split("-").map(Number) : [0, 0, 0];
 
+  const multiCity = (cityViews?.length ?? 0) > 1;
+  const dayCity =
+    multiCity && citySegments
+      ? cityForDay(citySegments, day?.date)
+      : null;
+
   return (
     <div className="flex-none border-b border-line bg-background px-4 py-3 md:hidden">
+      {/* 도시 전환 탭(다중 도시) */}
+      {multiCity && cityViews && onCitySelect && (
+        <div className="mb-3">
+          <CityTabs
+            cities={cityViews}
+            activeCityId={activeCityId}
+            onSelect={onCitySelect}
+            scroll
+          />
+        </div>
+      )}
+
       {/* Day 스위처 */}
       <div className="flex items-center justify-center gap-1">
         <button
@@ -49,15 +81,17 @@ export function MobilePlanControls({
         >
           <Icon name="chevron-left" size={22} strokeWidth={2.2} />
         </button>
-        <div className="flex min-w-[150px] flex-col items-center">
+        <div className="flex min-w-[150px] flex-col items-center gap-0.5">
           <span className="text-[16px] font-extrabold tracking-tight text-ink">
             {day?.label ?? ""}
           </span>
-          {day && (
+          {day && dayCity ? (
+            <CityDayBadge dayCity={dayCity} date={day.date} center />
+          ) : day ? (
             <span className="text-[12px] font-semibold text-faint">
               {m}월 {d}일 · {day.weekday}요일
             </span>
-          )}
+          ) : null}
         </div>
         <button
           type="button"

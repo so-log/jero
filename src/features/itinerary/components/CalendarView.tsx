@@ -5,9 +5,13 @@ import { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon } from "@/components/ui/icon";
+import { cityForDate } from "@/features/trip";
+import { cityColor } from "@/lib/constants/cityColors";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
 
 import { useMembersQuery, usePlacesQuery } from "../api/usePlacesQuery";
+import { useCitySchedule } from "../hooks/useCitySchedule";
+import { cityForDay } from "../lib/citySelectors";
 import {
   addDays,
   addMonths,
@@ -24,8 +28,10 @@ import { useSelectionStore } from "../store/selectionStore";
 import type { PlaceDto } from "../types";
 import { CalendarToolbar } from "./CalendarToolbar";
 import { CalendarWeekStrip } from "./CalendarWeekStrip";
+import { CityDayBadge } from "./CityDayBadge";
+import { CityLegend } from "./CityLegend";
 import { DayTimeline } from "./DayTimeline";
-import { MonthGrid } from "./MonthGrid";
+import { MonthGrid, type MonthCityInfo } from "./MonthGrid";
 import { WeekTimeline } from "./WeekTimeline";
 
 /**
@@ -65,6 +71,33 @@ export function CalendarView({ tripId }: { tripId: string }) {
     () => (data ? placesByDate(data.places) : new Map()),
     [data],
   );
+
+  // 다중 도시(Phase 3) — 날짜 구간별 도시 색·라벨. isMulti(>1)에서만 노출(단일 도시 회귀 0).
+  const { schedule, cityViews, isMulti } = useCitySchedule(tripId, tripStart);
+  const monthCityOf = useMemo(() => {
+    if (!isMulti) return undefined;
+    return (date: string): MonthCityInfo | null => {
+      const seg = cityForDate(schedule, date);
+      if (!seg) return null;
+      const c = cityColor(seg.seq);
+      return {
+        name: seg.name,
+        color: c.color,
+        tint: c.tint,
+        isStart: seg.startDate === date,
+      };
+    };
+  }, [isMulti, schedule]);
+  const stripCityOf = useMemo(() => {
+    if (!isMulti) return undefined;
+    return (date: string) => {
+      const seg = cityForDate(schedule, date);
+      if (!seg) return null;
+      const c = cityColor(seg.seq);
+      return { color: c.color, tint: c.tint };
+    };
+  }, [isMulti, schedule]);
+  const cursorDayCity = isMulti ? cityForDay(schedule, cursor) : null;
 
   const canEdit = data ? roleCanEdit(data.trip.my_role) : false;
 
@@ -138,15 +171,23 @@ export function CalendarView({ tripId }: { tripId: string }) {
         ) : showDayEmpty ? (
           dayEmptyState
         ) : mode === "month" ? (
-          <div className="min-h-0 flex-1 p-[16px_22px_20px]">
-            <MonthGrid
-              weeks={buildMonthGrid(cursor, byDate, tripStart, tripEnd)}
-              selected={cursor}
-              onSelectDate={(date, isTrip) => {
-                setCursor(date);
-                if (isTrip) setMode("day");
-              }}
-            />
+          <div className="flex min-h-0 flex-1 flex-col gap-2.5 p-[16px_22px_20px]">
+            {isMulti && (
+              <div className="flex-none px-0.5">
+                <CityLegend cities={cityViews} />
+              </div>
+            )}
+            <div className="min-h-0 flex-1">
+              <MonthGrid
+                weeks={buildMonthGrid(cursor, byDate, tripStart, tripEnd)}
+                selected={cursor}
+                cityOf={monthCityOf}
+                onSelectDate={(date, isTrip) => {
+                  setCursor(date);
+                  if (isTrip) setMode("day");
+                }}
+              />
+            </div>
           </div>
         ) : mode === "week" ? (
           <div className="min-h-0 flex-1 p-[14px_22px_18px]">
@@ -203,9 +244,21 @@ export function CalendarView({ tripId }: { tripId: string }) {
                   tripStart={tripStart}
                   tripEnd={tripEnd}
                   onSelect={setCursor}
+                  cityOf={stripCityOf}
                 />
               </div>
             </div>
+
+            {isMulti && (
+              <div className="flex-none border-b border-line bg-surface px-[22px] py-3">
+                <CityLegend cities={cityViews} chip />
+                {cursorDayCity && (
+                  <div className="mt-2.5">
+                    <CityDayBadge dayCity={cursorDayCity} date={cursor} />
+                  </div>
+                )}
+              </div>
+            )}
 
             {dayPlaces.length === 0 ? (
               dayEmptyState

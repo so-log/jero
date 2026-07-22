@@ -19,6 +19,8 @@ interface CalendarWeekStripProps {
   tripStart: string;
   tripEnd: string;
   onSelect: (iso: string) => void;
+  /** 날짜 → 도시 색(다중 도시). 미지정이면 기존 primary 색(회귀 0). */
+  cityOf?: (date: string) => { color: string; tint: string } | null;
 }
 
 export function CalendarWeekStrip({
@@ -28,6 +30,7 @@ export function CalendarWeekStrip({
   tripStart,
   tripEnd,
   onSelect,
+  cityOf,
 }: CalendarWeekStripProps) {
   return (
     <div className="flex gap-1.5">
@@ -36,7 +39,19 @@ export function CalendarWeekStrip({
         const isTrip = iso >= tripStart && iso <= tripEnd;
         const dow = weekdayIndex(iso);
         const list = byDate.get(iso) ?? [];
-        const dotColor = list[0] ? CATEGORY[list[0].category].fg : null;
+        const city = cityOf?.(iso) ?? null;
+        const dotColor = city
+          ? city.color
+          : list[0]
+            ? CATEGORY[list[0].category].fg
+            : null;
+        // 도시 색은 인라인(팔레트). 선택=도시 강조색, 여행일=도시 tint. 없으면 기존 primary.
+        const bandStyle =
+          city && on
+            ? { background: city.color }
+            : city && isTrip
+              ? { background: city.tint }
+              : undefined;
         return (
           <button
             key={iso}
@@ -44,13 +59,16 @@ export function CalendarWeekStrip({
             aria-pressed={on}
             aria-label={`${dayOfMonth(iso)}일 ${weekdayKR(iso)}요일`}
             onClick={() => onSelect(iso)}
+            style={bandStyle}
             className={cn(
               "flex min-h-[52px] flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors",
-              on
-                ? "bg-primary"
-                : isTrip
-                  ? "bg-primary-tint hover:bg-primary-tint/70"
-                  : "hover:bg-secondary",
+              city
+                ? "hover:brightness-95"
+                : on
+                  ? "bg-primary"
+                  : isTrip
+                    ? "bg-primary-tint hover:bg-primary-tint/70"
+                    : "hover:bg-secondary",
             )}
           >
             <span
