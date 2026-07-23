@@ -4,11 +4,12 @@ import { useState } from "react";
 
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Icon } from "@/components/ui/icon";
-import type { FolderDto, PlaceDto } from "@/features/itinerary";
+import type { CityView, FolderDto, PlaceDto } from "@/features/itinerary";
+import { cityColor } from "@/lib/constants/cityColors";
 import { cn } from "@/lib/utils";
 
-import { folderCount } from "../lib/selectors";
-import { ALL_FOLDER } from "../types";
+import { cityCount, folderCount } from "../lib/selectors";
+import { ALL_CITIES, ALL_FOLDER } from "../types";
 
 /**
  * 폴더 사이드바(236px) — 전체 장소 + 사용자 폴더(아이콘·이름·개수) + 폴더 추가/이름변경/삭제(2차 B).
@@ -25,6 +26,10 @@ interface FolderSidebarProps {
   onCreateFolder?: (name: string) => void;
   onRenameFolder?: (id: string, name: string) => void;
   onDeleteFolder?: (id: string) => void;
+  /** 도시 축(다중 도시 Phase 4) — 2개 이상이면 폴더 위에 "도시" 필터 섹션 노출. 단일 도시면 미노출(회귀 0). */
+  cities?: CityView[];
+  cityId?: string;
+  onSelectCity?: (cityId: string) => void;
 }
 
 const ALL: FolderDto = {
@@ -43,7 +48,11 @@ export function FolderSidebar({
   onCreateFolder,
   onRenameFolder,
   onDeleteFolder,
+  cities = [],
+  cityId = ALL_CITIES,
+  onSelectCity,
 }: FolderSidebarProps) {
+  const showCities = cities.length > 1 && !!onSelectCity;
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -78,6 +87,34 @@ export function FolderSidebar({
 
   return (
     <aside className="flex w-[236px] flex-none flex-col border-r border-line bg-surface">
+      {/* 도시 축(다중 도시 Phase 4) — 폴더와 별개인 3번째 필터. 색 점으로 시각 구분(U2 IA). */}
+      {showCities && (
+        <div className="flex-none border-b border-line px-3 pt-4 pb-3">
+          <div className="px-1.5 pb-2 text-[13px] font-bold tracking-wide text-faint">
+            도시
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <CityButton
+              label="전체 도시"
+              count={saved.length}
+              color={null}
+              active={cityId === ALL_CITIES}
+              onSelect={() => onSelectCity?.(ALL_CITIES)}
+            />
+            {cities.map((c) => (
+              <CityButton
+                key={c.id}
+                label={c.name}
+                count={cityCount(saved, c.id)}
+                color={cityColor(c.seq).color}
+                active={cityId === c.id}
+                onSelect={() => onSelectCity?.(c.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-none items-center justify-between px-4 pt-4 pb-2.5">
         <span className="text-[13px] font-bold tracking-wide text-faint">폴더</span>
         {manage && (
@@ -213,6 +250,55 @@ export function FolderSidebar({
         }}
       />
     </aside>
+  );
+}
+
+/** 도시 필터 버튼(색 점 = 도시 축, 폴더의 아이콘과 시각 구분). */
+function CityButton({
+  label,
+  count,
+  color,
+  active,
+  onSelect,
+}: {
+  label: string;
+  count: number;
+  /** 도시 색(없으면 "전체 도시" = 중립 점). */
+  color: string | null;
+  active: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onSelect}
+      className={cn(
+        "flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-left transition-colors",
+        active ? "bg-primary-tint" : "hover:bg-secondary",
+      )}
+    >
+      <span
+        className="size-2.5 flex-none rounded-full"
+        style={{ background: color ?? "var(--color-mute)" }}
+      />
+      <span
+        className={cn(
+          "flex-1 truncate text-[13px]",
+          active ? "font-bold text-ink" : "font-semibold text-body",
+        )}
+      >
+        {label}
+      </span>
+      <span
+        className={cn(
+          "text-xs font-bold",
+          active ? "text-primary-hover" : "text-mute",
+        )}
+      >
+        {count}
+      </span>
+    </button>
   );
 }
 

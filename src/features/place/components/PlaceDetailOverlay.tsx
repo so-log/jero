@@ -11,7 +11,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dialog } from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
 import { Input } from "@/components/ui/input";
-import type { FolderDto, PlaceDto } from "@/features/itinerary";
+import type { CityView, FolderDto, PlaceDto } from "@/features/itinerary";
+import { cityColor } from "@/lib/constants/cityColors";
 import { cn } from "@/lib/utils";
 import type { PlacePrefill } from "@/store/overlayStore";
 
@@ -31,6 +32,8 @@ interface PlaceDetailOverlayProps {
   place?: PlaceDto;
   /** 지도 클릭 등록 프리필(좌표·주소) — 신규 추가 시 사용. */
   prefill?: PlacePrefill;
+  /** 도시 뷰모델(다중 도시 Phase 4). 2개 이상이면 "도시" 배정 필드 노출. 단일 도시면 [](필드 숨김, 회귀 0). */
+  cities?: CityView[];
 }
 
 export function PlaceDetailOverlay({
@@ -40,7 +43,9 @@ export function PlaceDetailOverlay({
   folders,
   place,
   prefill,
+  cities = [],
 }: PlaceDetailOverlayProps) {
+  const multiCity = cities.length > 1;
   const upsert = useUpsertPlace(tripId);
   const remove = useDeletePlace(tripId);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -63,6 +68,8 @@ export function PlaceDetailOverlay({
       lat: place?.lat ?? prefill?.lat ?? null,
       lng: place?.lng ?? prefill?.lng ?? null,
       googlePlaceId: place?.google_place_id ?? prefill?.googlePlaceId ?? null,
+      // 다중 도시 Phase 4 — 편집: 기존 배정 유지 / 신규: 현재 보고 있는 도시(prefill.cityId) 기본값.
+      cityId: place?.city_id ?? prefill?.cityId ?? null,
     },
   });
 
@@ -163,6 +170,50 @@ export function PlaceDetailOverlay({
           )}
         />
       </Field>
+
+      {multiCity && (
+        <Field label="도시">
+          <Controller
+            control={control}
+            name="cityId"
+            render={({ field }) => (
+              <div className="flex flex-wrap gap-1.5">
+                {cities.map((c) => {
+                  const on = field.value === c.id;
+                  const color = cityColor(c.seq);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => field.onChange(c.id)}
+                      style={
+                        on
+                          ? { borderColor: color.color, background: color.tint }
+                          : undefined
+                      }
+                      className={cn(
+                        "inline-flex h-[34px] items-center gap-1.5 rounded-pill border-[1.5px] px-3 text-[12.5px] font-semibold transition-colors",
+                        on
+                          ? ""
+                          : "border-line-strong bg-background text-subtle hover:bg-secondary",
+                      )}
+                    >
+                      <span
+                        className="size-2 flex-none rounded-full"
+                        style={{ background: color.color }}
+                      />
+                      <span style={on ? { color: color.color } : undefined}>
+                        {c.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          />
+        </Field>
+      )}
 
       <Field label="저장 폴더">
         <Controller

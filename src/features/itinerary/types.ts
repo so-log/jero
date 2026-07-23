@@ -27,6 +27,8 @@ export interface PlaceDto {
   scheduled_by?: string | null;
   /** 저장 위치(사용자 폴더) id — 06. null=미분류. */
   folder_id?: string | null;
+  /** 배정 도시(trip_city) id — 다중 도시 Phase 4. null=미배정. 단일 도시는 백필로 채워짐(하위호환). */
+  city_id?: string | null;
   /** 위치/지역 표시(06). */
   area?: string | null;
   /** 저장한 멤버 id(06 카드 아바타). */

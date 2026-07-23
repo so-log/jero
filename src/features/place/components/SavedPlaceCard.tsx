@@ -20,6 +20,8 @@ interface SavedPlaceCardProps {
   action: ReactNode;
   /** 삭제 액션(권한 있을 때만 주입) — 카드에서 바로 삭제(오버레이 안 열고). 없으면 삭제 버튼 미표시. */
   onDelete?: () => void;
+  /** 도시 칩/이동 메뉴(다중 도시 Phase 4). 단일 도시면 미주입 → 기존 카드 그대로(회귀 0). */
+  cityBadge?: ReactNode;
 }
 
 export function SavedPlaceCard({
@@ -29,6 +31,7 @@ export function SavedPlaceCard({
   onSelect,
   action,
   onDelete,
+  cityBadge,
 }: SavedPlaceCardProps) {
   return (
     <div
@@ -65,6 +68,8 @@ export function SavedPlaceCard({
               {CATEGORY[place.category].label}
             </span>
           </div>
+          {/* 도시 축(다중 도시 Phase 4) — 색 점으로 폴더·카테고리와 구분. 단일 도시면 미표시. */}
+          {cityBadge && <div className="mt-1.5 flex">{cityBadge}</div>}
         </div>
         {savedBy && (
           <span

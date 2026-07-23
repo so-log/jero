@@ -6,20 +6,24 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Icon, type IconName } from "@/components/ui/icon";
-import type { Day, MemberDto, PlaceDto } from "@/features/itinerary";
+import type { CityView, Day, MemberDto, PlaceDto } from "@/features/itinerary";
+import { cityColor } from "@/lib/constants/cityColors";
 import { cn } from "@/lib/utils";
 import { useOverlayStore } from "@/store/overlayStore";
 
 import { useAddPlaceToSchedule } from "../api/useAddPlaceToSchedule";
-import { useDeletePlace } from "../api/useUpsertPlace";
+import { useDeletePlace, useMovePlaceCity } from "../api/useUpsertPlace";
+import { groupByCity } from "../lib/selectors";
 import { usePlacesStore } from "../store/placesStore";
-import { SORT_LABEL, type SortKey } from "../types";
+import { ALL_CITIES, SORT_LABEL, type SortKey } from "../types";
 import { AddToScheduleMenu } from "./AddToScheduleMenu";
+import { PlaceCityMenu } from "./PlaceCityMenu";
 import { SavedPlaceCard } from "./SavedPlaceCard";
 
 /**
  * 중앙 장소 리스트 — 헤더(폴더·개수·장소추가) + 검색/정렬 + 2열 카드 그리드(또는 빈/로딩). 시안 place list.
  * UI 상태(검색·정렬·선택)는 placesStore, 데이터는 props(설계 §4 분리).
+ * 다중 도시(Phase 4): "전체 도시"면 도시별 그룹 섹션, 특정 도시면 그 도시만. 카드에 도시 칩·이동 메뉴.
  */
 interface PlaceListProps {
   tripId: string;
@@ -29,6 +33,10 @@ interface PlaceListProps {
   folder: { name: string; icon: IconName; color: string };
   canEdit: boolean;
   isLoading: boolean;
+  /** 도시 뷰모델(seq 순). 2개 이상이면 도시 축(칩·이동·그룹) 노출. 단일 도시면 [](회귀 0). */
+  cities?: CityView[];
+  /** 신규 "장소 추가" 기본 배정 도시(현재 보고 있는 도시). 없으면 미배정. */
+  defaultCityId?: string | null;
 }
 
 export function PlaceList({
@@ -39,11 +47,14 @@ export function PlaceList({
   folder,
   canEdit,
   isLoading,
+  cities = [],
+  defaultCityId = null,
 }: PlaceListProps) {
-  const { query, sort, selectedId, assigned, setQuery, setSort, select } =
+  const { query, sort, cityId, selectedId, assigned, setQuery, setSort, select } =
     usePlacesStore();
   const { assign, unassign } = useAddPlaceToSchedule(tripId);
   const deletePlace = useDeletePlace(tripId);
+  const moveCity = useMovePlaceCity(tripId);
   const openOverlay = useOverlayStore((s) => s.open);
   const memberById = new Map(members.map((m) => [m.id, m]));
 
@@ -54,8 +65,52 @@ export function PlaceList({
     setPendingDelete(null);
   };
 
+  const multiCity = cities.length > 1;
+  // "전체 도시" 선택 + 다중 도시일 때만 도시별 그룹 섹션. 특정 도시면 평면 그리드.
+  const grouped = multiCity && cityId === ALL_CITIES;
+
+  // 카드 렌더(평면·그룹 공용) — 도시 칩/이동 메뉴는 다중 도시에서만 주입.
+  const renderCard = (place: PlaceDto) => (
+    <SavedPlaceCard
+      key={place.id}
+      place={place}
+      savedBy={place.saved_by ? memberById.get(place.saved_by) : undefined}
+      selected={selectedId === place.id}
+      onSelect={select}
+      action={
+        <AddToScheduleMenu
+          days={days}
+          assignedDay={assigned[place.id] ?? null}
+          canEdit={canEdit}
+          onAssign={(day) => assign(place.id, day)}
+          onUnassign={() => unassign(place.id)}
+        />
+      }
+      onDelete={canEdit ? () => setPendingDelete(place) : undefined}
+      cityBadge={
+        multiCity ? (
+          <PlaceCityMenu
+            cities={cities}
+            currentCityId={place.city_id}
+            canEdit={canEdit}
+            onMove={(toCity) =>
+              moveCity.mutate({ placeId: place.id, cityId: toCity })
+            }
+          />
+        ) : undefined
+      }
+    />
+  );
+
   const toggleSort = () =>
     setSort(sort === "recent" ? "name" : ("recent" as SortKey));
+
+  // "장소 추가" — 다중 도시면 현재 도시로 기본 배정(prefill.cityId). 단일 도시는 기존과 동일.
+  const addPlace = () =>
+    openOverlay(
+      "place",
+      defaultCityId != null ? { placePrefill: { cityId: defaultCityId } } : undefined,
+    );
 
   return (
     <div className="flex min-w-0 flex-1 flex-col">
@@ -83,7 +138,7 @@ export function PlaceList({
               variant="primary"
               size="sm"
               className="gap-1.5 pr-4 pl-3"
-              onClick={() => openOverlay("place")}
+              onClick={addPlace}
             >
               <Icon name="plus" size={17} strokeWidth={2.3} />
               장소 추가
@@ -142,7 +197,7 @@ export function PlaceList({
                   <Button
                     variant="primary"
                     className="gap-2"
-                    onClick={() => openOverlay("place")}
+                    onClick={addPlace}
                   >
                     <Icon name="plus" size={19} strokeWidth={2.3} />
                     장소 추가하기
@@ -152,29 +207,37 @@ export function PlaceList({
             />
           )}
         </div>
+      ) : grouped ? (
+        // "전체 도시" — 도시별 그룹 섹션(seq 순, 빈 도시 제외, 미배정은 끝).
+        <div className="flex-1 overflow-y-auto p-5">
+          <div className="flex flex-col gap-5">
+            {groupByCity(places, cities).map((g) => {
+              const color = g.city ? cityColor(g.city.seq) : null;
+              return (
+                <section key={g.city?.id ?? "unassigned"}>
+                  <div className="mb-2.5 flex items-center gap-2">
+                    <span
+                      className="size-2.5 flex-none rounded-full"
+                      style={{ background: color?.color ?? "var(--color-mute)" }}
+                    />
+                    <span className="text-[13.5px] font-extrabold tracking-tight text-ink">
+                      {g.city?.name ?? "도시 미배정"}
+                    </span>
+                    <span className="text-[12px] font-semibold text-faint">
+                      {g.places.length}곳
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3.5">
+                    {g.places.map(renderCard)}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        </div>
       ) : (
         <div className="flex-1 overflow-y-auto p-5">
-          <div className="grid grid-cols-2 gap-3.5">
-            {places.map((place) => (
-              <SavedPlaceCard
-                key={place.id}
-                place={place}
-                savedBy={place.saved_by ? memberById.get(place.saved_by) : undefined}
-                selected={selectedId === place.id}
-                onSelect={select}
-                action={
-                  <AddToScheduleMenu
-                    days={days}
-                    assignedDay={assigned[place.id] ?? null}
-                    canEdit={canEdit}
-                    onAssign={(day) => assign(place.id, day)}
-                    onUnassign={() => unassign(place.id)}
-                  />
-                }
-                onDelete={canEdit ? () => setPendingDelete(place) : undefined}
-              />
-            ))}
-          </div>
+          <div className="grid grid-cols-2 gap-3.5">{places.map(renderCard)}</div>
         </div>
       )}
 

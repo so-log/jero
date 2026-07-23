@@ -23,6 +23,8 @@ export const placeSchema = z.object({
   lat: z.number().nullable().optional(),
   lng: z.number().nullable().optional(),
   googlePlaceId: z.string().nullable().optional(),
+  // 배정 도시(trip_city) id — 다중 도시 Phase 4. 단일 도시/구버전이면 미포함(하위호환).
+  cityId: z.string().nullable().optional(),
 });
 
 export type PlaceForm = z.infer<typeof placeSchema>;

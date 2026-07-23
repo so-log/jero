@@ -9,6 +9,9 @@ export { usePlacesQuery, useMembersQuery } from "./api/usePlacesQuery";
 export { useReorderPlaces, type ReorderInput } from "./api/useReorderPlaces";
 export { usePlanStore } from "./store/planStore";
 export { PLAN_FIXTURE, MEMBERS_FIXTURE } from "./api/fixtures";
+// 다중 도시(Phase 3·4) — 도시 스케줄 훅 + 셀렉터 뷰모델(장소 도시 축이 재사용).
+export { useCitySchedule, type TripCitySchedule } from "./hooks/useCitySchedule";
+export type { CityView } from "./lib/citySelectors";
 export {
   deriveDays,
   placesForDay,

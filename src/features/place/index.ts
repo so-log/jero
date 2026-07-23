@@ -5,5 +5,9 @@
 export { PlacesView } from "./components/PlacesView";
 export { PlaceDetailOverlay } from "./components/PlaceDetailOverlay";
 export { useAddPlaceToSchedule } from "./api/useAddPlaceToSchedule";
-export { useUpsertPlace, useDeletePlace } from "./api/useUpsertPlace";
+export {
+  useUpsertPlace,
+  useDeletePlace,
+  useMovePlaceCity,
+} from "./api/useUpsertPlace";
 export { useUpsertFolder, useDeleteFolder } from "./api/useFolders";

@@ -15,6 +15,8 @@ export interface PlacePrefill {
   googlePlaceId?: string | null;
   /** 플랜 Day 맥락 추가(B6) — 지정 시 저장하면 그 날짜에 배정(scheduled_date). 없으면 미배정. */
   scheduledDate?: string | null;
+  /** 다중 도시 Phase 4 — 신규 장소를 현재 보고 있는 도시로 기본 배정(city_id). 없으면 미배정. */
+  cityId?: string | null;
 }
 
 interface OverlayState {
