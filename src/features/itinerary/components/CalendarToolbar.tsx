@@ -18,6 +18,8 @@ interface CalendarToolbarProps {
   onToday: () => void;
   onNext: () => void;
   onModeChange: (mode: CalendarMode) => void;
+  /** "일정 추가"(editor+) — 선택 날짜에 장소 추가 플로우(B6 Day 맥락). */
+  onAddPlace: () => void;
 }
 
 const MODE_ITEMS = [
@@ -34,6 +36,7 @@ export function CalendarToolbar({
   onToday,
   onNext,
   onModeChange,
+  onAddPlace,
 }: CalendarToolbarProps) {
   const navBtn =
     "flex h-[34px] items-center justify-center border border-line-strong bg-background text-faint hover:bg-secondary";
@@ -78,7 +81,12 @@ export function CalendarToolbar({
           aria-label="달력 모드"
         />
         {canEdit && (
-          <Button variant="primary" size="sm" className="gap-1.5 pr-4 pl-3">
+          <Button
+            variant="primary"
+            size="sm"
+            className="gap-1.5 pr-4 pl-3"
+            onClick={onAddPlace}
+          >
             <Icon name="plus" size={17} strokeWidth={2.3} />
             일정 추가
           </Button>

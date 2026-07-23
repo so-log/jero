@@ -21,6 +21,8 @@ interface WeekTimelineProps {
   selected: string;
   tripStart: string;
   tripEnd: string;
+  /** 일정 블록 클릭 → 장소 상세 열기(감사 A 죽은 버튼 수정). 미지정 시 블록 비클릭. */
+  onSelect?: (placeId: string) => void;
 }
 
 const { startH, endH, hourH } = TIMELINE;
@@ -32,6 +34,7 @@ export function WeekTimeline({
   selected,
   tripStart,
   tripEnd,
+  onSelect,
 }: WeekTimelineProps) {
   const hourLabels = Array.from({ length: endH - startH }, (_, i) => startH + i);
 
@@ -111,7 +114,12 @@ export function WeekTimeline({
                     <button
                       key={b.place.id}
                       type="button"
-                      className="absolute right-[3px] left-[3px] overflow-hidden rounded-[4px_7px_7px_4px] px-1.5 py-1 text-left"
+                      aria-label={`${b.place.name} 상세`}
+                      onClick={() => onSelect?.(b.place.id)}
+                      className={cn(
+                        "absolute right-[3px] left-[3px] overflow-hidden rounded-[4px_7px_7px_4px] px-1.5 py-1 text-left transition-shadow",
+                        onSelect && "cursor-pointer hover:shadow-card",
+                      )}
                       style={{
                         top: b.top,
                         height: b.height,

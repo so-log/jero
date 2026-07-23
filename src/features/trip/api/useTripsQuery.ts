@@ -28,6 +28,7 @@ interface TripMemberRow {
     cover_color: string;
     start_date: string;
     end_date: string;
+    created_at: string | null;
     place: { name: string }[];
     trip_member: { profile: { name: string; avatar_color: string } | null }[];
   } | null;
@@ -47,7 +48,7 @@ interface TripHeaderRow {
 }
 
 const LIST_SELECT =
-  "role, trip:trip_id ( id, title, cover_icon, cover_color, start_date, end_date, place ( name ), trip_member ( profile:user_id ( name, avatar_color ) ) )";
+  "role, trip:trip_id ( id, title, cover_icon, cover_color, start_date, end_date, created_at, place ( name ), trip_member ( profile:user_id ( name, avatar_color ) ) )";
 
 function rowToSummary(row: TripMemberRow): TripSummaryDto | null {
   const t = row.trip;
@@ -61,6 +62,7 @@ function rowToSummary(row: TripMemberRow): TripSummaryDto | null {
     cover_icon: t.cover_icon as IconName,
     start_date: t.start_date,
     end_date: t.end_date,
+    created_at: t.created_at ?? undefined,
     my_role: row.role,
     member_avatars: t.trip_member
       .map((m) => m.profile)

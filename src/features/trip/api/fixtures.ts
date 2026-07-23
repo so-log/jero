@@ -12,6 +12,7 @@ export const TRIPS_FIXTURE: TripSummaryDto[] = [
     cover_icon: "building",
     start_date: "2026-04-18",
     end_date: "2026-04-21",
+    created_at: "2026-01-10T09:00:00Z",
     my_role: "owner",
     member_avatars: [
       { initial: "지", color: "#3B7DF0" },
@@ -29,6 +30,7 @@ export const TRIPS_FIXTURE: TripSummaryDto[] = [
     cover_icon: "palmtree",
     start_date: "2026-08-09",
     end_date: "2026-08-11",
+    created_at: "2026-02-15T09:00:00Z",
     my_role: "editor",
     member_avatars: [
       { initial: "지", color: "#3B7DF0" },
@@ -45,6 +47,7 @@ export const TRIPS_FIXTURE: TripSummaryDto[] = [
     cover_icon: "utensils",
     start_date: "2026-09-20",
     end_date: "2026-09-24",
+    created_at: "2026-03-20T09:00:00Z",
     my_role: "viewer",
     member_avatars: [
       { initial: "태", color: "#FF8A65" },
@@ -63,6 +66,7 @@ export const TRIPS_FIXTURE: TripSummaryDto[] = [
     cover_icon: "palmtree",
     start_date: "2025-11-02",
     end_date: "2025-11-06",
+    created_at: "2025-08-01T09:00:00Z",
     my_role: "owner",
     member_avatars: [
       { initial: "지", color: "#3B7DF0" },
@@ -78,6 +82,7 @@ export const TRIPS_FIXTURE: TripSummaryDto[] = [
     cover_icon: "mountain",
     start_date: "2025-09-13",
     end_date: "2025-09-14",
+    created_at: "2025-06-01T09:00:00Z",
     my_role: "editor",
     member_avatars: [
       { initial: "지", color: "#3B7DF0" },

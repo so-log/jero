@@ -31,6 +31,7 @@
 | B8 | 로그인 폼 pre-hydration 네이티브 제출 → 비번이 URL(?pw=)에 노출 | 버그/보안 | 🟢 낮 | ✅ `fix/login-form-submit` |
 | B9 | 장소 목록 카드에서 바로 삭제 없음(오버레이 휴지통만 = 발견성 나쁨) | 버그/UX | 🟠 중 | ✅ `fix/place-delete-combobox-mobile` |
 | B10 | 나라/지역 콤보박스 모바일 미동작(탭해도 제안 안 열림) | 버그 | 🔴 높음 | ✅ `fix/place-delete-combobox-mobile` |
+| B11 | 감사 A — 죽은 버튼(캘린더 "일정 추가"·목록 "최근 출발 순"·주 일정 블록) 동작 연결 | 버그 | 🟠 중 | ✅ `fix/dead-buttons` |
 
 ---
 
@@ -208,9 +209,25 @@
 
 ---
 
+### B11. 감사 A — 죽은 버튼 동작 연결
+- **현상**: 클릭해도 아무 동작 없는 버튼 3종(전체 UI 감사에서 발견).
+  1. 캘린더 툴바 "일정 추가"(`CalendarToolbar.tsx`) + 일 보기 빈 상태 "일정 추가하기"(`CalendarView.tsx`) — onClick 없음.
+  2. 내 여행 목록 "최근 출발 순"(`TripsHome.tsx`) — 정렬 미연결(장식).
+  3. 캘린더 주 모드 일정 블록(`WeekTimeline.tsx`) — 클릭 불가(다른 뷰 카드와 불일치).
+- **한 것**:
+  1. 캘린더 "일정 추가"/"일정 추가하기" → 선택 날짜(cursor)에 장소 추가 플로우(B6 Day 맥락 재사용 — `placePrefill.scheduledDate`). editor+만.
+  2. 목록 정렬 드롭다운(출발일 순 / 생성순) 실연결 — `groupTrips(…, sort)` 로컬 정렬. `TripSummaryDto.created_at` additive(쿼리·fixture 포함).
+  3. 주 일정 블록 클릭 → 장소 상세 오버레이(`openOverlay("place", { placeId })`).
+- **관련**: `CalendarToolbar.tsx`, `CalendarView.tsx`, `WeekTimeline.tsx`, `TripsHome.tsx`, `trip/lib/selectors.ts`, `useTripsQuery.ts`
+- **제외(별도 기능 예정)**: 프로필 업로드/삭제, 비밀번호 찾기 — 건드리지 않음.
+- **규모**: M · **상태**: ✅ `fix/dead-buttons`
+
+---
+
 ## 착수 로그
 - 2026-07-13: 문서 생성(피드백 11건 트리아지). **R1(반응형) 착수 시작.**
 - 2026-07-13: 추가 피드백 — B4(목록 버튼)·B5(플랜↔일정표 날짜 동기화)·U1(초대링크 위치)·U2(전체폴더 라벨) 추가. 설계질문(전체폴더·플랜vs일정표) 답변 완료 — 분리는 의도(공간/시간 렌즈), 선택 날짜는 공유돼야 함(B5).
 - 2026-07-13: 순차 진행 — B1·B4(죽은 버튼) → B2·F1·F2(마법사 Step1) → D1·D2·D3(날짜) → R1-2(마법사 반응형) → U4·U1 → B5·B6(플랜/캘린더 동작) → U2·U3·U5(장소 필터) → B3(날짜 수정) → F3(커스텀 커버색) 전부 완료. **남은 것: 워크스페이스 반응형(R1-3, 플랜/캘린더 모바일 시안 대기) · 팜플렛 반응형(R1-4).**
 - 2026-07-13: 데모 계정 시딩(scripts/seed-demo.mjs) — demo@jero.travel, 도쿄 여행 샘플 + 읽기전용 공유링크. README 체험 섹션 추가.
 - 2026-07-15: R1-3-D(장소·예산·통계 모바일) 완료. ★장소 최초 구현이 데스크톱/모바일 트리를 CSS 로만 이중 렌더 → PlaceList·TripMap 이중 마운트 + folder/place 텍스트 DOM 중복(e2e strict-mode 위반)이 있어 3-B PlanView 패턴(단일 트리 + `md:`/모드 CSS 분기)으로 재작성. folder.spec 폴더명 셀렉터를 데스크톱 사이드바 버튼으로 특정. ※마법사 e2e(flows:48·template ×2)는 step1 제목 미프리필로 **기존 실패**(3-D 무관, stash 검증) — R1 별개 후속.
+- 2026-07-23: B11(감사 A 죽은 버튼) 완료 `fix/dead-buttons` — 캘린더 일정추가(B6 프리필)·목록 정렬 드롭다운(출발일/생성순, created_at additive)·주 블록 클릭(장소 상세). 프로필/비번찾기는 제외(별도). 신규 테스트 5건, check·build 그린.
