@@ -8,6 +8,7 @@ import { cityForDay, type CityView } from "../lib/citySelectors";
 import type { Day } from "../types";
 import { CityDayBadge } from "./CityDayBadge";
 import { CityTabs } from "./CityTabs";
+import { CityTransferCard } from "./CityTransferCard";
 
 /**
  * 모바일 플랜 컨트롤(반응형 3-B) — Day 스위처(‹ Day N ›) + [리스트 | 지도] 세그먼트. md+ 에선 숨김.
@@ -32,6 +33,9 @@ interface MobilePlanControlsProps {
   onCitySelect?: (cityId: string) => void;
   /** 도시 배지용 파생 구간. */
   citySegments?: CitySegment[];
+  /** 도시 간 이동 카드(Phase 5)용. */
+  tripId?: string;
+  canEdit?: boolean;
 }
 
 export function MobilePlanControls({
@@ -44,6 +48,8 @@ export function MobilePlanControls({
   activeCityId = null,
   onCitySelect,
   citySegments,
+  tripId,
+  canEdit = false,
 }: MobilePlanControlsProps) {
   const day = days[activeDay];
   const move = (delta: number) =>
@@ -103,6 +109,17 @@ export function MobilePlanControls({
           <Icon name="chevron-right" size={22} strokeWidth={2.2} />
         </button>
       </div>
+
+      {/* 도시 간 이동 카드(Phase 5) — 경계일에만 렌더(그 외 null). */}
+      {multiCity && tripId && citySegments && (
+        <CityTransferCard
+          tripId={tripId}
+          schedule={citySegments}
+          date={day?.date}
+          canEdit={canEdit}
+          className="mt-3"
+        />
+      )}
 
       {/* 리스트 / 지도 세그먼트 */}
       <div

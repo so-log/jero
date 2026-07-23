@@ -32,6 +32,28 @@ export function firstDayIndexOfCity(days: Day[], segment: CitySegment): number {
   );
 }
 
+/** 도시 경계 이동(다중 도시 Phase 5) — from(이전 도시) → to(도착 도시). */
+export interface CityTransfer {
+  from: CitySegment;
+  to: CitySegment;
+}
+
+/**
+ * 그 날짜가 "도시 경계(이동)일"이면 이동 뷰모델을 반환 — 도착 도시(seq>0)의 첫날일 때만.
+ * from = 직전 도시(seq-1), to = 도착 도시. 아니면 null(카드 미노출). 도착 도시의 arrival 은 to.arrival.
+ */
+export function transferForDate(
+  schedule: CitySegment[],
+  date: string | undefined,
+): CityTransfer | null {
+  if (!date) return null;
+  const to = schedule.find((s) => s.startDate === date && s.seq > 0);
+  if (!to) return null;
+  const from = schedule.find((s) => s.seq === to.seq - 1);
+  if (!from) return null;
+  return { from, to };
+}
+
 /** 도시 날짜 구간에 속한(좌표 있는) 일정 장소 좌표 — 지도를 그 도시 장소 bounds 에 맞출 때(설계 §7). */
 export function positionsForCity(
   places: PlaceDto[],

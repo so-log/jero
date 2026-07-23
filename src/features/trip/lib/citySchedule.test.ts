@@ -50,6 +50,16 @@ describe("citySchedule", () => {
       dayCount: 1,
     });
   });
+
+  it("도착 이동(arrival)을 세그먼트로 전달(Phase 5)", () => {
+    const kyoto: TripCity = {
+      ...city("kyoto", 1, 1),
+      arrival: { mode: "train", name: "한큐 특급", time: "09:30", durationMin: 45 },
+    };
+    const segs = citySchedule([city("osaka", 2, 0), kyoto], "2026-08-01");
+    expect(segs[0].arrival).toBeNull(); // 첫 도시는 이동 없음
+    expect(segs[1].arrival).toMatchObject({ mode: "train", durationMin: 45 });
+  });
 });
 
 describe("cityForDate", () => {

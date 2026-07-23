@@ -196,6 +196,8 @@ export function PlanView({ tripId }: { tripId: string }) {
           activeCityId={activeCityId}
           onCitySelect={onCitySelect}
           citySegments={schedule}
+          tripId={tripId}
+          canEdit={canEdit}
         />
 
       {/* 리스트 패널 — 모바일: 리스트 모드일 때만 / 데스크톱: 항상 좌측 392px */}
@@ -218,6 +220,7 @@ export function PlanView({ tripId }: { tripId: string }) {
           }
           disableDrag={previewActive}
           citySegments={schedule}
+          tripId={tripId}
           routeControls={
             <RouteOptimizeControls
               canEdit={canEdit}
