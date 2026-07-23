@@ -23,6 +23,19 @@ export const newPasswordSchema = z
   .string()
   .min(8, "비밀번호는 8자 이상이어야 해요");
 
+/** 비밀번호 재설정 요청 — 이메일만(가입 여부 비노출, §8.5). */
+export const resetRequestSchema = z.object({ email });
+
+/** 새 비밀번호 설정 — 8자+ · 확인 일치(재설정 페이지). */
+export const resetPasswordSchema = z
+  .object({ pw: newPasswordSchema, confirm: z.string() })
+  .refine((v) => v.pw === v.confirm, {
+    path: ["confirm"],
+    message: "비밀번호가 일치하지 않아요",
+  });
+
+export type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
+
 /** 로그인 비밀번호 — 필수만(기존 계정 호환). */
 const loginPassword = z.string().min(1, "비밀번호를 입력해 주세요");
 

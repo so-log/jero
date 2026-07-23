@@ -59,5 +59,29 @@ export function useAuth() {
     },
   });
 
-  return { login, signup, googleLogin };
+  // 비밀번호 재설정 요청 — 복구 메일 발송. 복구 링크는 콜백(코드 교환)을 거쳐 /auth/reset 으로 온다.
+  // 보안: 계정 존재 여부 비노출(§8.5) — Supabase 는 미가입 이메일에도 성공 반환하고, 실패해도 일반 메시지.
+  const requestPasswordReset = useMutation<void, Error, string>({
+    mutationFn: async (email) => {
+      if (!hasSupabase) return;
+      const { error } = await createClient().auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?returnTo=/auth/reset`,
+      });
+      if (error) throw new Error("요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.");
+    },
+  });
+
+  // 새 비밀번호 설정 — 복구 세션(콜백에서 수립)에서 updateUser. 세션 없으면(만료/무효) 실패.
+  const updatePassword = useMutation<void, Error, string>({
+    mutationFn: async (password) => {
+      if (!hasSupabase) return;
+      const { error } = await createClient().auth.updateUser({ password });
+      if (error)
+        throw new Error(
+          "비밀번호를 변경하지 못했어요. 링크가 만료됐을 수 있어요.",
+        );
+    },
+  });
+
+  return { login, signup, googleLogin, requestPasswordReset, updatePassword };
 }

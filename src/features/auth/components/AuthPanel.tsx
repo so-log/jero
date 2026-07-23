@@ -11,7 +11,12 @@ import { Input } from "@/components/ui/input";
 import { hasSupabase } from "@/lib/supabase/env";
 
 import { useAuth } from "../api/useAuth";
-import { authSchema, type AuthForm, type AuthMode } from "../lib/authSchema";
+import {
+  authSchema,
+  resetRequestSchema,
+  type AuthForm,
+  type AuthMode,
+} from "../lib/authSchema";
 
 /**
  * 우측 인증 패널(01) — 모드 토글(로그인/회원가입) + 구글 + 이메일 폼 + 둘러보기. 시안 auth panel.
@@ -23,6 +28,11 @@ export function AuthPanel() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPw, setShowPw] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  // 비밀번호 재설정 요청(인라인 뷰) — 로그인 폼과 분리된 이메일-only 흐름.
+  const [forgot, setForgot] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetError, setResetError] = useState<string | null>(null);
+  const [resetSent, setResetSent] = useState(false);
 
   // 미들웨어가 보호 라우트에서 보낸 returnTo 로 복귀(안전 경로만).
   const safeReturnTo = () => {
@@ -41,7 +51,10 @@ export function AuthPanel() {
 
   const signup = mode === "signup";
   const loading =
-    auth.login.isPending || auth.signup.isPending || auth.googleLogin.isPending;
+    auth.login.isPending ||
+    auth.signup.isPending ||
+    auth.googleLogin.isPending ||
+    auth.requestPasswordReset.isPending;
 
   const toggleMode = () => {
     setMode(signup ? "login" : "signup");
@@ -90,17 +103,51 @@ export function AuthPanel() {
     }
   };
 
+  const openForgot = () => {
+    setForgot(true);
+    setResetSent(false);
+    setResetError(null);
+    setNotice(null);
+    setResetEmail("");
+  };
+  const backToLogin = () => {
+    setForgot(false);
+    setResetError(null);
+  };
+  const onResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = resetRequestSchema.safeParse({ email: resetEmail.trim() });
+    if (!parsed.success) {
+      setResetError(parsed.error.issues[0].message);
+      return;
+    }
+    setResetError(null);
+    // 보안(§8.5): 성공/실패 동일 처리 — 이메일 가입 여부를 노출하지 않는다.
+    try {
+      await auth.requestPasswordReset.mutateAsync(resetEmail.trim());
+    } catch {
+      /* 일반화 — 아래에서 동일 안내 */
+    }
+    setResetSent(true);
+  };
+
   return (
     <div className="relative flex flex-1 items-center justify-center p-6 sm:p-10">
       <div className="flex w-full max-w-[380px] flex-col">
         <div className="mb-6 flex flex-col gap-1.5">
           <h1 className="text-[25px] font-extrabold tracking-tight text-ink">
-            {signup ? "제이로 계정 만들기" : "다시 오신 걸 환영해요"}
+            {forgot
+              ? "비밀번호 재설정"
+              : signup
+                ? "제이로 계정 만들기"
+                : "다시 오신 걸 환영해요"}
           </h1>
           <span className="text-sm font-medium text-faint">
-            {signup
-              ? "몇 초면 끝나요. 바로 여행을 시작할 수 있어요."
-              : "로그인하고 함께 만들던 여행을 이어가세요."}
+            {forgot
+              ? "가입한 이메일로 재설정 링크를 보내드려요."
+              : signup
+                ? "몇 초면 끝나요. 바로 여행을 시작할 수 있어요."
+                : "로그인하고 함께 만들던 여행을 이어가세요."}
           </span>
         </div>
 
@@ -110,6 +157,17 @@ export function AuthPanel() {
           </div>
         )}
 
+        {forgot ? (
+          <ForgotForm
+            email={resetEmail}
+            onEmailChange={setResetEmail}
+            error={resetError}
+            sent={resetSent}
+            onSubmit={onResetSubmit}
+            onBack={backToLogin}
+          />
+        ) : (
+        <>
         {/* Google */}
         <button
           type="button"
@@ -172,6 +230,7 @@ export function AuthPanel() {
             <div className="-mt-1 flex justify-end">
               <button
                 type="button"
+                onClick={openForgot}
                 className="text-[12.5px] font-semibold text-faint hover:text-subtle"
               >
                 비밀번호를 잊으셨나요?
@@ -209,6 +268,8 @@ export function AuthPanel() {
             공유 링크로 둘러보기
           </Link>
         </div>
+        </>
+        )}
       </div>
 
       {loading && (
@@ -220,6 +281,67 @@ export function AuthPanel() {
         </div>
       )}
     </div>
+  );
+}
+
+/** 비밀번호 재설정 요청(이메일-only) 인라인 폼 — 발송 후엔 일반화된 확인 안내. */
+function ForgotForm({
+  email,
+  onEmailChange,
+  error,
+  sent,
+  onSubmit,
+  onBack,
+}: {
+  email: string;
+  onEmailChange: (v: string) => void;
+  error: string | null;
+  sent: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  onBack: () => void;
+}) {
+  if (sent) {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="rounded-md border border-primary/25 bg-primary-tint px-3.5 py-3 text-[13px] font-semibold leading-relaxed text-primary-strong">
+          입력하신 이메일이 가입돼 있다면 재설정 링크를 보냈어요. 메일함(스팸함 포함)을 확인해 주세요.
+        </div>
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center justify-center gap-1.5 text-[13.5px] font-bold text-primary-hover"
+        >
+          <Icon name="arrow-left" size={16} strokeWidth={2.3} />
+          로그인으로 돌아가기
+        </button>
+      </div>
+    );
+  }
+  return (
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-3.5">
+      <FormField label="이메일" error={error ?? undefined}>
+        <Input
+          value={email}
+          onChange={(e) => onEmailChange(e.target.value)}
+          type="email"
+          leftIcon="mail"
+          placeholder="you@email.com"
+          invalid={!!error}
+        />
+      </FormField>
+      <Button type="submit" variant="primary" size="lg" className="mt-1 gap-2">
+        재설정 링크 보내기
+        <Icon name="arrow-right" size={18} strokeWidth={2.3} />
+      </Button>
+      <button
+        type="button"
+        onClick={onBack}
+        className="mt-1 inline-flex items-center justify-center gap-1.5 text-[13px] font-semibold text-faint hover:text-subtle"
+      >
+        <Icon name="arrow-left" size={15} strokeWidth={2.2} />
+        로그인으로 돌아가기
+      </button>
+    </form>
   );
 }
 
