@@ -7,6 +7,7 @@ import {
   firstDayIndexOfCity,
   positionsForCity,
   toCityViews,
+  transferForDate,
 } from "./citySelectors";
 import { deriveDays } from "./selectors";
 import type { PlaceDto } from "../types";
@@ -80,5 +81,22 @@ describe("citySelectors", () => {
     expect(views).toHaveLength(2);
     expect(views[0]).toMatchObject({ name: "도쿄", nights: 2, seq: 0, lat: 35.68 });
     expect(views[1]).toMatchObject({ name: "오사카", nights: 1, seq: 1, lat: null });
+  });
+
+  it("transferForDate: 도착 도시 첫날에만 from→to 반환(Phase 5)", () => {
+    // 오사카 첫날 = 4/20(seq>0) → 이동일
+    const t = transferForDate(SCHEDULE, "2026-04-20");
+    expect(t?.from.name).toBe("도쿄");
+    expect(t?.to.name).toBe("오사카");
+    // 첫 도시 첫날(4/18)은 경계 아님
+    expect(transferForDate(SCHEDULE, "2026-04-18")).toBeNull();
+    // 도시 중간일(4/21 = 오사카 둘째날)도 아님
+    expect(transferForDate(SCHEDULE, "2026-04-21")).toBeNull();
+    expect(transferForDate(SCHEDULE, undefined)).toBeNull();
+  });
+
+  it("transferForDate: 단일 도시는 경계 없음(회귀 0)", () => {
+    const single = citySchedule([CITIES[0]], TRIP_START);
+    expect(transferForDate(single, "2026-04-18")).toBeNull();
   });
 });

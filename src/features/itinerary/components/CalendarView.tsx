@@ -30,6 +30,7 @@ import { CalendarToolbar } from "./CalendarToolbar";
 import { CalendarWeekStrip } from "./CalendarWeekStrip";
 import { CityDayBadge } from "./CityDayBadge";
 import { CityLegend } from "./CityLegend";
+import { CityTransferCard } from "./CityTransferCard";
 import { DayTimeline } from "./DayTimeline";
 import { MonthGrid, type MonthCityInfo } from "./MonthGrid";
 import { WeekTimeline } from "./WeekTimeline";
@@ -201,6 +202,15 @@ export function CalendarView({ tripId }: { tripId: string }) {
           </div>
         ) : (
           <div className="min-h-0 flex-1 overflow-y-auto py-1.5 pb-[22px]">
+            {isMulti && (
+              <CityTransferCard
+                tripId={tripId}
+                schedule={schedule}
+                date={cursor}
+                canEdit={canEdit}
+                className="mx-[22px] mt-1.5 mb-1"
+              />
+            )}
             <DayTimeline places={dayPlaces} members={members} />
           </div>
         )}
@@ -257,6 +267,13 @@ export function CalendarView({ tripId }: { tripId: string }) {
                     <CityDayBadge dayCity={cursorDayCity} date={cursor} />
                   </div>
                 )}
+                <CityTransferCard
+                  tripId={tripId}
+                  schedule={schedule}
+                  date={cursor}
+                  canEdit={canEdit}
+                  className="mt-2.5"
+                />
               </div>
             )}
 

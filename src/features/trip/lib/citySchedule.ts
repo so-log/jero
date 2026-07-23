@@ -3,6 +3,21 @@
  * 부수효과 없음. 도시 1개면 전체 여행을 덮어 기존 단일 도시 UX 와 동일(하위호환).
  */
 
+/** 도시 간 이동 수단(다중 도시 Phase 5, 설계 §11). */
+export type TransferMode = "train" | "flight" | "bus" | "car" | "etc";
+
+/**
+ * "도착 이동"(다중 도시 Phase 5) — non-first 도시가 "그 도시로 어떻게 왔는가"를 담는다(additive, 모두 nullable).
+ * trip_city 컬럼(arrival_*)과 1:1. 단일 도시/첫 도시엔 없음(하위호환).
+ */
+export interface CityArrival {
+  mode: TransferMode | null;
+  name: string | null;
+  /** 'HH:MM' 출발/이동 시각. */
+  time: string | null;
+  durationMin: number | null;
+}
+
 /** trip_city 행(seq 순 정렬 전제 아님 — 셀렉터가 정렬). */
 export interface TripCity {
   id: string;
@@ -14,6 +29,8 @@ export interface TripCity {
   nights: number;
   /** 여행 내 순서(0-based). */
   seq: number;
+  /** 도착 이동(Phase 5) — 없으면 null 필드. */
+  arrival?: CityArrival | null;
 }
 
 /** 도시별 파생 날짜 구간(startDate~endDate 포함, dayCount 일). */
@@ -27,6 +44,8 @@ export interface CitySegment {
   /** 이 도시가 차지하는 일수. */
   dayCount: number;
   seq: number;
+  /** 도착 이동(Phase 5) — 이 도시(seq>0)로 온 이동. startDate 가 경계(이동)일. */
+  arrival?: CityArrival | null;
 }
 
 /** 'YYYY-MM-DD' → UTC 자정 Date(타임존 영향 없이). */
@@ -63,6 +82,7 @@ export function citySchedule(cities: TripCity[], tripStart: string): CitySegment
       endDate,
       dayCount,
       seq: city.seq,
+      arrival: city.arrival ?? null,
     });
     cursor += dayCount;
   }

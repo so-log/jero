@@ -77,6 +77,8 @@ export type IconName =
   | "list"
   | "log-out"
   | "plane"
+  | "train"
+  | "car"
   | "arrow-up-down"
   // 팜플렛(2차)
   | "image"

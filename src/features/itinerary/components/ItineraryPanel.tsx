@@ -31,6 +31,7 @@ import { cityForDay } from "../lib/citySelectors";
 import { filterByCategory } from "../lib/selectors";
 import { CategoryBar } from "./CategoryBar";
 import { CityDayBadge } from "./CityDayBadge";
+import { CityTransferCard } from "./CityTransferCard";
 import { DaySwitcher } from "./DaySwitcher";
 import { FilterTodayToggle } from "./FilterTodayToggle";
 import { PlaceCard } from "./PlaceCard";
@@ -58,6 +59,8 @@ interface ItineraryPanelProps {
   disableDrag?: boolean;
   /** 다중 도시 파생 구간(seq 순). 2개 이상이면 Day 스위처 도시 색·경계 + 도시 배지 노출. */
   citySegments?: CitySegment[];
+  /** 도시 간 이동 카드(Phase 5)용 — 경계일에 노출. */
+  tripId?: string;
 }
 
 export function ItineraryPanel({
@@ -71,6 +74,7 @@ export function ItineraryPanel({
   routeControls,
   disableDrag = false,
   citySegments,
+  tripId,
 }: ItineraryPanelProps) {
   const {
     activeDay,
@@ -129,6 +133,16 @@ export function ItineraryPanel({
           <div className="mt-2.5">
             <CityDayBadge dayCity={dayCity} date={days[activeDay].date} />
           </div>
+        )}
+        {/* 도시 간 이동 카드(Phase 5) — 경계일에만 렌더(그 외 null). */}
+        {multiCity && tripId && citySegments && (
+          <CityTransferCard
+            tripId={tripId}
+            schedule={citySegments}
+            date={days[activeDay]?.date}
+            canEdit={canEdit}
+            className="mt-2.5"
+          />
         )}
       </div>
 
