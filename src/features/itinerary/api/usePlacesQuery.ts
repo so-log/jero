@@ -38,6 +38,7 @@ interface PlaceRow {
   duration_min: number | null;
   scheduled_by: string | null;
   folder_id: string | null;
+  city_id: string | null;
 }
 interface FolderRow {
   id: string;
@@ -60,7 +61,7 @@ interface TripHeaderRow {
 }
 
 const PLACE_COLS =
-  "id, name, category, area, lat, lng, google_place_id, memo, saved_by, scheduled_date, order_in_day, start_time, duration_min, scheduled_by, folder_id";
+  "id, name, category, area, lat, lng, google_place_id, memo, saved_by, scheduled_date, order_in_day, start_time, duration_min, scheduled_by, folder_id, city_id";
 
 function toPlace(r: PlaceRow): PlaceDto {
   return { ...r, start_time: r.start_time ? r.start_time.slice(0, 5) : null };

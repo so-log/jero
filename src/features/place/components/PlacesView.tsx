@@ -12,6 +12,7 @@ import {
 import { Icon } from "@/components/ui/icon";
 import {
   deriveDays,
+  useCitySchedule,
   useMembersQuery,
   usePlacesQuery,
 } from "@/features/itinerary";
@@ -21,6 +22,7 @@ import { useOverlayStore } from "@/store/overlayStore";
 
 import {
   filterBySearch,
+  placesInCity,
   placesInFolder,
   sortPlaces,
   toSavedMapMarkers,
@@ -29,7 +31,7 @@ import { useDeleteFolder, useUpsertFolder } from "../api/useFolders";
 import { useResizableMap } from "../hooks/useResizableMap";
 import { MAP_MIN_WIDTH } from "../lib/resize";
 import { usePlacesStore } from "../store/placesStore";
-import { ALL_FOLDER } from "../types";
+import { ALL_CITIES, ALL_FOLDER } from "../types";
 import { FolderSidebar } from "./FolderSidebar";
 import { MapSearchBox } from "./MapSearchBox";
 import { PlaceList } from "./PlaceList";
@@ -43,8 +45,10 @@ import { PlacesMobileControls, type PlacesMode } from "./PlacesMobileControls";
 export function PlacesView({ tripId }: { tripId: string }) {
   const { data, isLoading } = usePlacesQuery(tripId);
   const { data: members = [] } = useMembersQuery(tripId);
-  const { folderId, query, sort, selectedId, select, setFolder } =
+  const { folderId, cityId, query, sort, selectedId, select, setFolder, setCity } =
     usePlacesStore();
+  // 다중 도시(Phase 4) — 도시 뷰모델(seq 순). isMulti(>1)에서만 도시 축 노출(단일 도시 회귀 0).
+  const { cityViews, isMulti } = useCitySchedule(tripId, data?.trip.start_date);
   const upsertFolder = useUpsertFolder(tripId);
   const deleteFolder = useDeleteFolder(tripId);
   const openOverlay = useOverlayStore((s) => s.open);
@@ -81,6 +85,7 @@ export function PlacesView({ tripId }: { tripId: string }) {
                 lat: d.lat,
                 lng: d.lng,
                 googlePlaceId: d.placeId,
+                cityId: defaultCityId,
               },
             });
             return;
@@ -94,6 +99,7 @@ export function PlacesView({ tripId }: { tripId: string }) {
             lat: position.lat,
             lng: position.lng,
             googlePlaceId: geo?.placeId ?? null,
+            cityId: defaultCityId,
           },
         });
       }
@@ -109,16 +115,32 @@ export function PlacesView({ tripId }: { tripId: string }) {
         lat: sel.lat,
         lng: sel.lng,
         googlePlaceId: sel.placeId,
+        cityId: defaultCityId,
       },
     });
   };
 
-  // 폴더 → 검색 → 정렬: 리스트·지도가 공유하는 단일 가시 집합.
+  // 도시 → 폴더 → 검색 → 정렬: 리스트·지도가 공유하는 단일 가시 집합(도시 축은 다중 도시에서만 좁힘).
+  const effectiveCityId = isMulti ? cityId : ALL_CITIES;
   const visible = useMemo(
-    () => sortPlaces(filterBySearch(placesInFolder(saved, folderId), query), sort),
-    [saved, folderId, query, sort],
+    () =>
+      sortPlaces(
+        filterBySearch(
+          placesInFolder(placesInCity(saved, effectiveCityId), folderId),
+          query,
+        ),
+        sort,
+      ),
+    [saved, effectiveCityId, folderId, query, sort],
   );
   const markers = useMemo(() => toSavedMapMarkers(visible), [visible]);
+
+  // 신규 장소 기본 배정 도시(설계 §5 Phase 4) — 특정 도시 필터 중이면 그 도시, 아니면 첫 도시.
+  const defaultCityId = isMulti
+    ? cityId !== ALL_CITIES
+      ? cityId
+      : (cityViews[0]?.id ?? null)
+    : (cityViews[0]?.id ?? null);
 
   const folderMeta =
     folderId === ALL_FOLDER
@@ -158,6 +180,8 @@ export function PlacesView({ tripId }: { tripId: string }) {
       folder={folderMeta}
       canEdit={canEdit}
       isLoading={isLoading}
+      cities={cityViews}
+      defaultCityId={defaultCityId}
     />
   );
 
@@ -176,6 +200,9 @@ export function PlacesView({ tripId }: { tripId: string }) {
         onSelectFolder={setFolder}
         mode={mobileMode}
         onModeChange={setMobileMode}
+        cities={cityViews}
+        cityId={cityId}
+        onSelectCity={setCity}
       />
 
       {/* 폴더 사이드바 — 데스크톱 전용(모바일은 위 드롭다운이 대체). 접힘 시 숨김. */}
@@ -188,6 +215,9 @@ export function PlacesView({ tripId }: { tripId: string }) {
             folderId={folderId}
             canEdit={canEdit}
             onSelect={setFolder}
+            cities={cityViews}
+            cityId={cityId}
+            onSelectCity={setCity}
             onCreateFolder={
               canEdit ? (name) => upsertFolder.mutate({ name }) : undefined
             }

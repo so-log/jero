@@ -3,7 +3,12 @@
 import { useMemo } from "react";
 
 import { ExpenseOverlay, useBudgetQuery } from "@/features/budget";
-import { deriveDays, useMembersQuery, usePlacesQuery } from "@/features/itinerary";
+import {
+  deriveDays,
+  useCitySchedule,
+  useMembersQuery,
+  usePlacesQuery,
+} from "@/features/itinerary";
 import { PlaceDetailOverlay } from "@/features/place";
 import { useTripQuery } from "@/features/trip";
 import { useOverlayStore } from "@/store/overlayStore";
@@ -20,6 +25,8 @@ export function WorkspaceOverlays({ tripId }: { tripId: string }) {
   const { data: members = [] } = useMembersQuery(tripId);
   const { data: trip } = useTripQuery(tripId);
   const { data: budget } = useBudgetQuery(tripId);
+  // 다중 도시(Phase 4) — 장소 오버레이 "도시" 필드용 뷰모델(단일 도시면 필드 자동 숨김).
+  const { cityViews } = useCitySchedule(tripId, data?.trip.start_date);
 
   const days = useMemo(
     () => (data ? deriveDays(data.trip.start_date, data.trip.end_date) : []),
@@ -40,6 +47,7 @@ export function WorkspaceOverlays({ tripId }: { tripId: string }) {
         folders={data?.folders ?? []}
         place={place}
         prefill={placePrefill ?? undefined}
+        cities={cityViews}
       />
     );
   }

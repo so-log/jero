@@ -12,6 +12,14 @@ import type { PlaceForm } from "../lib/placeSchema";
 type PlaceUpsert = PlaceForm & { id?: string; scheduledDate?: string | null };
 
 /**
+ * 저장 시 도시 배정(다중 도시 Phase 4, additive). PlaceForm.cityId 로 전달되는 값을 row 에 실는다.
+ * undefined(구버전 폼)면 city_id 를 아예 건드리지 않는다(하위호환) — update 시 기존 배정 유지.
+ */
+function cityIdRow(input: PlaceUpsert): { city_id?: string | null } {
+  return input.cityId === undefined ? {} : { city_id: input.cityId };
+}
+
+/**
  * 장소 추가·편집·삭제 seam(오버레이 ①, 04 "장소 추가"). 계약 B5.
  * env 가드로 키 없으면 스텁. 무효화 키 ['places', tripId] 유지 → 04·05·06 동기화(설계 §5).
  * 서버 RLS(editor+)가 편집 권한을 강제(§8.2). 입력은 서버에서 재검증 대상(§8.3).
@@ -35,6 +43,8 @@ export function useUpsertPlace(tripId: string) {
         lat: input.lat ?? null,
         lng: input.lng ?? null,
         google_place_id: input.googlePlaceId ?? null,
+        // 다중 도시 Phase 4 — 배정 도시(있을 때만 포함, 하위호환).
+        ...cityIdRow(input),
       };
       if (input.id) {
         const { error } = await supabase
@@ -91,6 +101,51 @@ export function useDeletePlace(tripId: string) {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["places", tripId] });
+    },
+  });
+}
+
+/**
+ * 장소 도시 이동(다중 도시 Phase 4) — **city_id 만 patch**. 카드 도시 메뉴/이동에서 호출.
+ * 낙관적 setQueryData(['places', tripId]) 로 즉시 반영, 실패 시 롤백, settle 후 재동기화(무효화 유지).
+ * editor+ 권한은 서버 RLS(place_write)가 강제(§8.2). env 가드: 키 없으면 낙관 캐시만.
+ */
+export function useMovePlaceCity(tripId: string) {
+  const queryClient = useQueryClient();
+  const key = ["places", tripId];
+  return useMutation<
+    void,
+    Error,
+    { placeId: string; cityId: string | null },
+    { previous?: PlacesResponse }
+  >({
+    mutationFn: async ({ placeId, cityId }) => {
+      if (!hasSupabase) return;
+      const { error } = await createClient()
+        .from("place")
+        .update({ city_id: cityId })
+        .eq("id", placeId);
+      if (error) throw new Error("도시를 옮기지 못했어요.");
+    },
+    onMutate: async ({ placeId, cityId }) => {
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<PlacesResponse>(key);
+      if (previous) {
+        const patch = (p: PlacesResponse["places"][number]) =>
+          p.id === placeId ? { ...p, city_id: cityId } : p;
+        queryClient.setQueryData<PlacesResponse>(key, {
+          ...previous,
+          places: previous.places.map(patch),
+          saved_places: previous.saved_places.map(patch),
+        });
+      }
+      return { previous };
+    },
+    onError: (_e, _v, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(key, ctx.previous);
+    },
+    onSettled: () => {
+      if (hasSupabase) void queryClient.invalidateQueries({ queryKey: key });
     },
   });
 }

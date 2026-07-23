@@ -10,3 +10,6 @@ export const SORT_LABEL: Record<SortKey, string> = {
 
 /** 가상 "전체 장소" 폴더 키. */
 export const ALL_FOLDER = "all";
+
+/** 가상 "전체 도시" 필터 키(다중 도시 Phase 4) — 도시 축을 안 좁힘. */
+export const ALL_CITIES = "all-cities";

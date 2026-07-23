@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { ALL_FOLDER, type SortKey } from "../types";
+import { ALL_CITIES, ALL_FOLDER, type SortKey } from "../types";
 
 /**
  * 장소(06) UI 상태(설계 §4) — 폴더·선택·검색·정렬. 서버상태(장소·폴더)와 분리.
@@ -9,12 +9,15 @@ import { ALL_FOLDER, type SortKey } from "../types";
  */
 interface PlacesState {
   folderId: string;
+  /** 도시 필터(다중 도시 Phase 4) — ALL_CITIES=전체. 폴더·카테고리와 독립 축. */
+  cityId: string;
   selectedId: string | null;
   query: string;
   sort: SortKey;
   /** 로컬 배정 스텁: placeId → Day 번호(1-based). 서버 미반영. */
   assigned: Record<string, number>;
   setFolder: (folderId: string) => void;
+  setCity: (cityId: string) => void;
   select: (id: string | null) => void;
   setQuery: (query: string) => void;
   setSort: (sort: SortKey) => void;
@@ -24,12 +27,15 @@ interface PlacesState {
 
 export const usePlacesStore = create<PlacesState>((set) => ({
   folderId: ALL_FOLDER,
+  cityId: ALL_CITIES,
   selectedId: null,
   query: "",
   sort: "recent",
   assigned: {},
   // 폴더 전환 시 선택 초기화(설계 §6.1).
   setFolder: (folderId) => set({ folderId, selectedId: null }),
+  // 도시 전환 시 선택 초기화(폴더와 동일 규약).
+  setCity: (cityId) => set({ cityId, selectedId: null }),
   select: (id) => set((s) => ({ selectedId: s.selectedId === id ? null : id })),
   setQuery: (query) => set({ query }),
   setSort: (sort) => set({ sort }),
