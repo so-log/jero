@@ -11,6 +11,7 @@ import { Icon } from "@/components/ui/icon";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs";
 import { useProfileQuery } from "@/features/account";
 import { toISODate } from "@/lib/tripDate";
+import { cn } from "@/lib/utils";
 
 import {
   useSeedTripDetails,
@@ -20,6 +21,8 @@ import {
   filterBySearch,
   groupTrips,
   tripsSummaryText,
+  TRIP_SORT_LABEL,
+  type TripSortKey,
 } from "../lib/selectors";
 import type { TripFilter } from "../types";
 import { TripCard } from "./TripCard";
@@ -47,12 +50,15 @@ export function TripsHome({ tab }: { tab: TripFilter }) {
 
   const [search, setSearch] = useState("");
   const [today] = useState(() => toISODate(new Date()));
+  // 목록 정렬(감사 A 죽은 버튼 수정) — 로컬 UI 상태. 출발일 순(기본)/생성순.
+  const [sort, setSort] = useState<TripSortKey>("departure");
+  const [sortOpen, setSortOpen] = useState(false);
 
   const isEmpty = !isLoading && (trips?.length ?? 0) === 0;
   const groups = useMemo(() => {
     if (!trips) return [];
-    return groupTrips(filterBySearch(trips, search), tab, today);
-  }, [trips, search, tab, today]);
+    return groupTrips(filterBySearch(trips, search), tab, today, sort);
+  }, [trips, search, tab, today, sort]);
 
   const subtitle = isEmpty
     ? "함께 떠날 여행을 시작해 보세요"
@@ -95,11 +101,58 @@ export function TripsHome({ tab }: { tab: TripFilter }) {
                 onValueChange={(v) => router.push(`/trips?tab=${v}`)}
                 aria-label="여행 필터"
               />
-              <Button variant="secondary" size="sm" className="gap-1.5 font-semibold">
-                <Icon name="arrow-up-down" size={15} strokeWidth={2} className="text-faint" />
-                최근 출발 순
-                <Icon name="chevron-down" size={15} strokeWidth={2.2} className="text-mute" />
-              </Button>
+              <div className="relative">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="gap-1.5 font-semibold"
+                  aria-haspopup="menu"
+                  aria-expanded={sortOpen}
+                  onClick={() => setSortOpen((v) => !v)}
+                >
+                  <Icon name="arrow-up-down" size={15} strokeWidth={2} className="text-faint" />
+                  {TRIP_SORT_LABEL[sort]}
+                  <Icon name="chevron-down" size={15} strokeWidth={2.2} className="text-mute" />
+                </Button>
+                {sortOpen && (
+                  <>
+                    <button
+                      type="button"
+                      aria-hidden
+                      tabIndex={-1}
+                      className="fixed inset-0 z-10 cursor-default"
+                      onClick={() => setSortOpen(false)}
+                    />
+                    <div
+                      role="menu"
+                      className="absolute top-[calc(100%+6px)] right-0 z-20 w-[148px] rounded-lg border border-line bg-popover p-1.5 shadow-modal"
+                    >
+                      {(["departure", "created"] as TripSortKey[]).map((key) => {
+                        const on = sort === key;
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            role="menuitemradio"
+                            aria-checked={on}
+                            onClick={() => {
+                              setSort(key);
+                              setSortOpen(false);
+                            }}
+                            className={cn(
+                              "flex w-full items-center justify-between rounded-md px-2.5 py-2 text-[13px] font-semibold hover:bg-secondary",
+                              on ? "text-primary-hover" : "text-body",
+                            )}
+                          >
+                            {TRIP_SORT_LABEL[key]}
+                            {on && <Icon name="check" size={14} strokeWidth={2.6} />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>

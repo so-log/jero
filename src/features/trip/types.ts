@@ -19,6 +19,8 @@ export interface TripSummaryDto {
   /** 'YYYY-MM-DD'. */
   start_date: string;
   end_date: string;
+  /** 생성 시각(ISO) — 목록 "생성순" 정렬용(additive). 누락 시 정렬은 출발일로 폴백. */
+  created_at?: string;
   /** 현재 사용자의 이 여행 내 역할(카드 배지). */
   my_role: Role;
   member_avatars: TripMemberAvatar[];

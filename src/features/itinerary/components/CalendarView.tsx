@@ -8,6 +8,7 @@ import { Icon } from "@/components/ui/icon";
 import { cityForDate } from "@/features/trip";
 import { cityColor } from "@/lib/constants/cityColors";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
+import { useOverlayStore } from "@/store/overlayStore";
 
 import { useMembersQuery, usePlacesQuery } from "../api/usePlacesQuery";
 import { useCitySchedule } from "../hooks/useCitySchedule";
@@ -102,6 +103,12 @@ export function CalendarView({ tripId }: { tripId: string }) {
 
   const canEdit = data ? roleCanEdit(data.trip.my_role) : false;
 
+  // 죽은 버튼 수정(감사 A) — "일정 추가"는 선택 날짜(cursor)에 장소 추가(B6 Day 맥락 재사용).
+  // 데이터 통신은 오버레이 저장 seam(useUpsertPlace) 경유 — 컴포넌트 직접 fetch 없음(§7.1).
+  const openOverlay = useOverlayStore((s) => s.open);
+  const addToSelectedDate = () =>
+    openOverlay("place", { placePrefill: { scheduledDate: cursor || null } });
+
   const rangeLabel =
     mode === "month"
       ? monthLabel(cursor)
@@ -141,7 +148,12 @@ export function CalendarView({ tripId }: { tripId: string }) {
         description="시간과 장소를 더해 하루를 채워보세요. 추가하면 플랜 지도에도 동선이 그려져요."
         action={
           canEdit ? (
-            <Button variant="primary" size="lg" className="gap-2">
+            <Button
+              variant="primary"
+              size="lg"
+              className="gap-2"
+              onClick={addToSelectedDate}
+            >
               <Icon name="plus" size={20} strokeWidth={2.3} />
               일정 추가하기
             </Button>
@@ -163,6 +175,7 @@ export function CalendarView({ tripId }: { tripId: string }) {
           onToday={onToday}
           onNext={onNext}
           onModeChange={setMode}
+          onAddPlace={addToSelectedDate}
         />
 
         {isLoading || !data ? (
@@ -198,6 +211,7 @@ export function CalendarView({ tripId }: { tripId: string }) {
               selected={cursor}
               tripStart={tripStart}
               tripEnd={tripEnd}
+              onSelect={(id) => openOverlay("place", { placeId: id })}
             />
           </div>
         ) : (
