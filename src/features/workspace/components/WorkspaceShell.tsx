@@ -26,12 +26,13 @@ export function WorkspaceShell({
   const { data: members = [] } = useMembersQuery(tripId);
   const canEdit = trip ? roleCanEdit(trip.my_role) : false;
 
-  // 실시간: presence(접속) + 데이터 변경 동기화(계약 B4). online 은 presence 로 덮어쓴다.
+  // 실시간: presence(접속) + 데이터 변경 동기화(계약 B4).
+  // online = 실시간 presence ∪ 쿼리 기본(본인) — presence 없어도 본인은 접속 유지(감사 B).
   const onlineIds = useTripRealtime(tripId);
   const onlineSet = new Set(onlineIds);
   const membersWithPresence = members.map((m) => ({
     ...m,
-    online: onlineSet.has(m.id),
+    online: m.online || onlineSet.has(m.id),
   }));
 
   return (

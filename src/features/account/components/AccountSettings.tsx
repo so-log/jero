@@ -14,6 +14,7 @@ import {
   useProfileQuery,
   useUpdateProfile,
 } from "../api/useAccount";
+import { formatLastLogin } from "../lib/format";
 import { profileSchema, type ProfileForm } from "../lib/profileSchema";
 import type { ProfileDto } from "../types";
 import { AccountSection } from "./AccountSection";
@@ -136,7 +137,11 @@ export function AccountSettings() {
 
       {/* 모바일: 세로 스택(상단 탭 nav → 콘텐츠 → 저장 바) / 데스크톱: 좌 nav + 우 콘텐츠 2단 */}
       <main className="flex min-h-0 flex-1 flex-col md:flex-row">
-        <SettingsNav active={active} onSelect={goSection} />
+        <SettingsNav
+          active={active}
+          onSelect={goSection}
+          lastLogin={formatLastLogin(profile?.lastSignInAt)}
+        />
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <div className="flex-1 overflow-y-auto p-4 md:p-[30px_36px_28px]">

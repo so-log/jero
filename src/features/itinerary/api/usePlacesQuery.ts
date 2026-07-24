@@ -147,13 +147,19 @@ interface MemberRow {
   } | null;
 }
 
-/** useMembersQuery — 멤버(아바타·역할). online 은 presence 연동 전까지 false(설계 §8, 실시간 단계). */
+/**
+ * useMembersQuery — 멤버(아바타·역할·접속). online 기본은 **본인만 true**(실시간 presence 미연동/단독 폴백,
+ * 감사 B). WorkspaceShell 이 useTripRealtime 의 onlineIds 와 union 해 실제 접속을 덮어쓴다(§8, 실시간 단계).
+ */
 export function useMembersQuery(tripId: string) {
   return useQuery<MemberDto[]>({
     queryKey: ["members", tripId],
     queryFn: async () => {
       if (!hasSupabase) return MEMBERS_FIXTURE;
       const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from("trip_member")
         .select("role, profile:user_id ( id, name, avatar_color, avatar_url )")
@@ -171,7 +177,8 @@ export function useMembersQuery(tripId: string) {
           initial: m.profile.name.slice(0, 1),
           color: m.profile.avatar_color,
           role: m.role,
-          online: false,
+          // 본인은 항상 접속으로 간주(presence 없어도 "접속 중"에 자기 자신은 보이게).
+          online: !!user && m.profile.id === user.id,
           avatarUrl: m.profile.avatar_url,
         }));
     },

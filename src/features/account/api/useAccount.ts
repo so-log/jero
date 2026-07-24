@@ -27,12 +27,6 @@ const PROFILE_FIXTURE: ProfileDto = {
   notif: { trip: true, comment: true, settle: true, marketing: false },
 };
 
-/** 앱 메타(좌측 nav 하단). */
-export const ACCOUNT_META = {
-  version: "v2.4",
-  lastLogin: "2026.6.23 오전 9:12",
-};
-
 /** profile 테이블(본인) select 행 — 생성 타입 부재로 계약(§4.1) 기준 수기 정의(usePlacesQuery 패턴). */
 interface ProfileRow {
   name: string;
@@ -73,6 +67,8 @@ export function useProfileQuery() {
         email: row.email,
         avatarColor: row.avatar_color,
         avatarUrl: row.avatar_url,
+        // 마지막 로그인 실값(auth 세션) — 설정 하단 표기용. 없으면 숨김.
+        lastSignInAt: user.last_sign_in_at ?? null,
         currency: row.default_currency,
         notif: {
           trip: row.notif_trip,
