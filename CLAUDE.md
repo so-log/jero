@@ -55,7 +55,8 @@ yarn test               # Vitest 단위·통합 (1회 실행)
 yarn test:watch         # Vitest watch
 yarn test:e2e           # Playwright e2e (dev 서버 자동 기동)
 
-yarn check              # typecheck + lint + test 한 번에 (커밋/PR 전 게이트)
+yarn run check          # typecheck + lint + test 한 번에 (커밋/PR 전 게이트)
+                        # ※ `yarn check`(run 없이)는 yarn 1.x 내장 의존성 무결성 검사 — 게이트 아님
 ```
 
 > shadcn 컴포넌트 추가: `npx shadcn@latest add <component>` → `src/components/ui/` 에 생성.
@@ -133,7 +134,7 @@ jero/
    - 설계문서 기준으로 화면·기능 구현. 공통 컴포넌트·디자인 시스템 먼저, 이후 페이지.
    - 구현 중 지속적으로 `yarn typecheck` 로 회귀를 막는다.
 4. **검증 및 테스트**
-   - `yarn check`(typecheck+lint+`vitest`) + 핵심 플로우 `yarn test:e2e`(Playwright) + `yarn build` 확인.
+   - `yarn run check`(typecheck+lint+`vitest`) + 핵심 플로우 `yarn test:e2e`(Playwright) + `yarn build` 확인.
    - 테스트 우선순위: **데이터 응답 → 화면 렌더링** 검증(컴포넌트 통합 테스트)을 reducer/유틸 단위 테스트보다 먼저.
 
 > 1~2단계는 기획·설계 산출물이 핵심이므로 코드를 작성하지 않는다(잘못된 방향이면 즉시 중단·보고).
@@ -234,11 +235,15 @@ jero/
 
 - [x] 기능명세서 / 와이어프레임 확정 (`docs/spec/`)
 - [x] 디자인 시안 생성 (클로드 디자인) → `docs/design/prototype/`에 보관
-- [x] 프로젝트 스캐폴드 + 기본 셋팅 (Next 16 / Tailwind 4 / ESLint·Prettier / Vitest·Playwright / shadcn) — `yarn check` · `yarn build` green
-- [ ] **기획문서 작성 (진행 중)** — 페이지별
-- [ ] 설계문서
-- [ ] 코드 구현
-- [ ] 검증 및 테스트
+- [x] 프로젝트 스캐폴드 + 기본 셋팅 (Next 16 / Tailwind 4 / ESLint·Prettier / Vitest·Playwright / shadcn) — `yarn run check` · `yarn build` green
+- [x] 기획문서 작성 — 페이지별 (`docs/planning/` 01~17, 동선 최적화·다중 도시 포함)
+- [x] 설계문서 (`docs/architecture/` — 데이터 계약·상태·API·RLS·Realtime·동선 최적화·다중 도시·팜플렛)
+- [x] 코드 구현 — 워크스페이스 4뷰 + 인증·계정·공유·통계·팜플렛 + Supabase(Auth·RLS·Realtime) 연동
+- [x] 검증 및 테스트 — Vitest 295 + Playwright e2e(실 Supabase), `yarn run check` · `yarn build` green
+- [x] 릴리스 `v1.0.0`~`v1.4.0` · GitHub Actions CI(`.github/workflows/ci.yml`) · 데모 계정 시드(`scripts/seed-demo.mjs`)
+- [x] 감사 후속 — 죽은 버튼 연결, 비밀번호 재설정, 아바타 업로드, 고정 데이터 실값화, 문서 정합성
+
+> 이후 작업은 감사·개선 단위로 브랜치→PR(main 직행 금지). 미완료·후속은 `docs/qa/fix-requests.md`·`docs/remaining-features.md` 참고.
 
 ---
 
@@ -250,6 +255,6 @@ jero/
 |---|---|---|---|
 | 기획+설계 | `jero-planning-design` | `/jero기획설계` | `docs/planning/*.md`, `docs/architecture/*.md` |
 | 구현 | `jero-frontend-dev` | `/jero구현` | `src/**` (features 단위 컴포넌트·훅·스토어) |
-| 검증 | `jero-qa-test` | `/jero검증` | Vitest/Playwright 테스트 + `yarn check`·`build` 결과 |
+| 검증 | `jero-qa-test` | `/jero검증` | Vitest/Playwright 테스트 + `yarn run check`·`build` 결과 |
 
 > CVE/PMS 의 14개 풀 파이프라인을 솔로 포트폴리오 규모에 맞게 3종으로 압축한 것. GATE·zone 격리 같은 다중 에이전트용 machinery 는 의도적으로 생략했다.

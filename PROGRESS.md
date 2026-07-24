@@ -2,7 +2,7 @@
 
 > 컨텍스트 복구용 단일 기록. B8 롤아웃(①인증 → ②데이터 CRUD → ③실시간) 기준.
 > 상세 계약/설계는 `docs/architecture/데이터모델_계약.md`(단일 출처).
-> 최종 갱신: 2026-07-07.
+> 최종 갱신: 2026-07-24. (아래 "## 후속 — 동선/다중도시/감사 (2026-07)" 참조)
 
 ## 브랜치 / main 반영 상태
 
@@ -194,7 +194,22 @@
 - 검증: e2e pamphlet.spec(진입버튼·미리보기·테마·인쇄 라우트 멤버렌더·비멤버 차단·QR /share 열림). 인쇄 스크린샷 시안 일치.
   전체 e2e 21/21, `yarn run check`(125)·build 그린.
 
+## 후속 — 동선/다중도시/감사 (2026-07)
+
+위 기록 이후 진행분 요약(각 항목 브랜치→PR, main 직행 없음). 상세는 커밋·설계문서 참조.
+
+- **동선 최적화**(기획 16, 설계 `동선_최적화_설계.md`): NN+2-opt 알고리즘·비용 매트릭스(1단계) → 훅+미리보기 UI(2단계) → 실이동시간(Google Distance Matrix, 폴백)·숙소 앵커(3단계). `lib/route/` 순수 TDD.
+- **다중 도시**(기획 17, 설계 `다중_도시_설계.md`): Phase 1 스키마(`0006` trip_city+place.city_id·백필·하위호환) → Phase 3 플랜/캘린더 도시 컨텍스트 → Phase 4 장소 도시 축 → Phase 5 도시 간 이동 세그먼트(`0007` trip_city.arrival_*). `cities.length>1` 에서만 노출(회귀 0).
+- **감사 A — 죽은 버튼**: 캘린더 "일정 추가"(선택 날짜 B6), 목록 정렬 드롭다운(출발일/생성순), 주 일정 블록 클릭(장소 상세). `docs/qa/fix-requests.md` B11.
+- **감사 후속 — 비밀번호 재설정**: AuthPanel 인라인 요청 → `/auth/reset`(콜백 code 교환 → 새 비번). 계정 존재 비노출(§8.5).
+- **감사 후속 — 아바타 업로드**: Supabase Storage `avatars` 버킷 `{userId}/avatar.<ext>`(검증·본인 경로 RLS), Avatar 이미지↔이니셜 폴백. avatar_url 계약 additive.
+- **감사 B — 고정 데이터**: 설정 하단 마지막 로그인 실값(`last_sign_in_at`)·버전 표기 제거, 멤버 online = presence ∪ 본인(폴백).
+- **문서 정합성**: README 테스트 수·기능·마이그레이션·문서 지도, CLAUDE.md §9, 계약(0007·cover hex), 기획 인덱스(16·17) 등 현행화(이 브랜치).
+
+**마이그레이션 추가**: `0006_multicity.sql` · `0007_city_transfer.sql`(둘 다 Dashboard 적용됨). 스토리지: public `avatars` 버킷.
+**테스트**: Vitest 295 + Playwright e2e(실 Supabase). 릴리스 `v1.0.0`~`v1.4.0` · GitHub Actions CI(`.github/workflows/ci.yml`) · 데모 계정 시드(`scripts/seed-demo.mjs`).
+
 ## 남은 후속
 
-- **팜플렛**: AI 테마 추천(§7) · 서버 PDF 승격(Node 22 시) · 준비물 편집분 인쇄 반영.
-- **2차 D**(OAuth·설정) — `docs/architecture/2차_구현_설계.md`. (A·B·C·E·F + 팜플렛 1·2단계 완료)
+- **팜플렛**: AI 테마 추천(§7, LLM 키 필요 — 보류). (서버 PDF 승격·준비물 편집 인쇄 반영은 완료)
+- 그 외 후속·미완료는 `docs/qa/fix-requests.md` · `docs/remaining-features.md` 참조.
