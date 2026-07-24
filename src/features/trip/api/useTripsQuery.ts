@@ -30,7 +30,9 @@ interface TripMemberRow {
     end_date: string;
     created_at: string | null;
     place: { name: string }[];
-    trip_member: { profile: { name: string; avatar_color: string } | null }[];
+    trip_member: {
+      profile: { name: string; avatar_color: string; avatar_url: string | null } | null;
+    }[];
   } | null;
 }
 
@@ -48,7 +50,7 @@ interface TripHeaderRow {
 }
 
 const LIST_SELECT =
-  "role, trip:trip_id ( id, title, cover_icon, cover_color, start_date, end_date, created_at, place ( name ), trip_member ( profile:user_id ( name, avatar_color ) ) )";
+  "role, trip:trip_id ( id, title, cover_icon, cover_color, start_date, end_date, created_at, place ( name ), trip_member ( profile:user_id ( name, avatar_color, avatar_url ) ) )";
 
 function rowToSummary(row: TripMemberRow): TripSummaryDto | null {
   const t = row.trip;
@@ -66,8 +68,15 @@ function rowToSummary(row: TripMemberRow): TripSummaryDto | null {
     my_role: row.role,
     member_avatars: t.trip_member
       .map((m) => m.profile)
-      .filter((p): p is { name: string; avatar_color: string } => p !== null)
-      .map((p) => ({ initial: p.name.slice(0, 1), color: p.avatar_color })),
+      .filter(
+        (p): p is { name: string; avatar_color: string; avatar_url: string | null } =>
+          p !== null,
+      )
+      .map((p) => ({
+        initial: p.name.slice(0, 1),
+        color: p.avatar_color,
+        imageUrl: p.avatar_url,
+      })),
     place_count: names.length,
     search_text: [t.title, ...names].join(" ").toLowerCase(),
   };

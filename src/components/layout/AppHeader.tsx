@@ -13,7 +13,7 @@ interface AppHeaderProps {
   search?: string;
   onSearchChange?: (value: string) => void;
   /** 실제 프로필(없으면 로딩 중립 표시). */
-  user?: { initial: string; name: string; color: string };
+  user?: { initial: string; name: string; color: string; imageUrl?: string | null };
 }
 
 export function AppHeader({ search, onSearchChange, user }: AppHeaderProps) {
@@ -54,12 +54,22 @@ export function AppHeader({ search, onSearchChange, user }: AppHeaderProps) {
             href="/settings"
             className="flex h-[38px] items-center gap-2 rounded-pill border border-line-strong bg-background py-[3px] pr-[3px] pl-[3px] hover:bg-secondary sm:pr-2.5"
           >
-            <span
-              className="flex size-[30px] items-center justify-center rounded-full border-2 bg-background text-[12.5px] font-bold"
-              style={{ borderColor: user.color, color: user.color }}
-            >
-              {user.initial}
-            </span>
+            {user.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage 동적 아바타
+              <img
+                src={user.imageUrl}
+                alt=""
+                className="size-[30px] flex-none rounded-full object-cover"
+                style={{ boxShadow: `0 0 0 2px ${user.color}` }}
+              />
+            ) : (
+              <span
+                className="flex size-[30px] items-center justify-center rounded-full border-2 bg-background text-[12.5px] font-bold"
+                style={{ borderColor: user.color, color: user.color }}
+              >
+                {user.initial}
+              </span>
+            )}
             <span className="hidden text-[13px] font-semibold text-body sm:inline">
               {user.name}
             </span>

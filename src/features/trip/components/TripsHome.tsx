@@ -45,7 +45,12 @@ export function TripsHome({ tab }: { tab: TripFilter }) {
 
   // 실제 프로필 → 헤더. 로딩 중엔 undefined(중립 표시).
   const headerUser = profile
-    ? { initial: profile.name.slice(0, 1), name: profile.name, color: profile.avatarColor }
+    ? {
+        initial: profile.name.slice(0, 1),
+        name: profile.name,
+        color: profile.avatarColor,
+        imageUrl: profile.avatarUrl,
+      }
     : undefined;
 
   const [search, setSearch] = useState("");

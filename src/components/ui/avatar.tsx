@@ -10,6 +10,8 @@ export interface AvatarProps {
   size?: number;
   variant?: "solid" | "outline";
   className?: string;
+  /** 프로필 사진 URL(있으면 이미지, 없으면 색·이니셜 폴백). */
+  imageUrl?: string | null;
 }
 
 export function Avatar({
@@ -18,7 +20,25 @@ export function Avatar({
   size = 34,
   variant = "solid",
   className,
+  imageUrl,
 }: AvatarProps) {
+  // 사진이 있으면 이미지 아바타(경계는 식별 색 유지) — 없으면 기존 색·이니셜 폴백(회귀 0).
+  if (imageUrl) {
+    return (
+      // 사용자 업로드 아바타(Supabase Storage 동적 URL) — next/image 도메인 허용 대신 <img>.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={imageUrl}
+        alt=""
+        className={cn("flex-none rounded-full object-cover", className)}
+        style={{
+          width: size,
+          height: size,
+          boxShadow: variant === "outline" ? `0 0 0 2px ${color}` : undefined,
+        }}
+      />
+    );
+  }
   const colors =
     variant === "solid"
       ? { background: color, color: "#fff", border: "none" }
@@ -39,6 +59,7 @@ export function Avatar({
 export interface PresenceMember {
   initial: string;
   color: string;
+  imageUrl?: string | null;
 }
 
 /** 접속 멤버 묶음(겹친 아바타 + "+N") + 선택적 "N명 접속 중" 배지 */
@@ -65,7 +86,7 @@ export function Presence({
           className="rounded-full"
           style={{ marginLeft: i === 0 ? 0 : -10, boxShadow: "0 0 0 2.5px #fff" }}
         >
-          <Avatar initial={m.initial} color={m.color} size={size} />
+          <Avatar initial={m.initial} color={m.color} size={size} imageUrl={m.imageUrl} />
         </span>
       ))}
       {extra > 0 && (

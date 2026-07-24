@@ -116,7 +116,7 @@ export function WorkspaceTopBar({ trip, members, canEdit }: WorkspaceTopBarProps
           <Presence
             members={members
               .filter((m) => m.online)
-              .map((m) => ({ initial: m.initial, color: m.color }))}
+              .map((m) => ({ initial: m.initial, color: m.color, imageUrl: m.avatarUrl }))}
             size={32}
           />
         </div>

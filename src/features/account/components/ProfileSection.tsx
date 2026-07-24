@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 
 import { Icon } from "@/components/ui/icon";
@@ -7,10 +8,18 @@ import { Input } from "@/components/ui/input";
 import { MEMBER_COLORS } from "@/lib/constants/members";
 import { cn } from "@/lib/utils";
 
+import { useDeleteAvatar, useUploadAvatar } from "../api/useAccount";
 import type { ProfileForm } from "../lib/profileSchema";
 
-/** 프로필 섹션 — 사진/색 + 이름(편집) + 이메일(읽기 전용·인증됨). 시안 profile. */
-export function ProfileSection({ email }: { email: string }) {
+/** 프로필 섹션 — 사진(업로드/삭제)/색 + 이름(편집) + 이메일(읽기 전용·인증됨). 시안 profile. */
+export function ProfileSection({
+  email,
+  avatarUrl,
+}: {
+  email: string;
+  /** 현재 저장된 프로필 사진 URL(useProfileQuery). 없으면 색·이니셜. */
+  avatarUrl?: string | null;
+}) {
   const {
     control,
     register,
@@ -19,6 +28,29 @@ export function ProfileSection({ email }: { email: string }) {
   const name = useWatch({ control, name: "name" });
   const color = useWatch({ control, name: "avatarColor" });
   const initial = (name?.trim()?.[0] ?? "지").toUpperCase();
+
+  // 사진 업로드/삭제(폼 저장과 독립 — 즉시 반영, ['profile'] 무효화). 컴포넌트 직접 fetch 없음(§7.1).
+  const uploadAvatar = useUploadAvatar();
+  const deleteAvatar = useDeleteAvatar();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const busy = uploadAvatar.isPending || deleteAvatar.isPending;
+
+  const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // 같은 파일 재선택 허용
+    if (!file) return;
+    setAvatarError(null);
+    uploadAvatar.mutate(file, {
+      onError: (err) => setAvatarError(err.message),
+    });
+  };
+  const onDeleteAvatar = () => {
+    setAvatarError(null);
+    deleteAvatar.mutate(undefined, {
+      onError: (err) => setAvatarError(err.message),
+    });
+  };
 
   return (
     <section id="section-profile" className="flex flex-col gap-3.5">
@@ -32,29 +64,59 @@ export function ProfileSection({ email }: { email: string }) {
       <div className="overflow-hidden rounded-panel border border-line bg-background">
         {/* 사진 + 색 (좁은 폭에서 색 스와치가 다음 줄로) */}
         <div className="flex flex-wrap items-center gap-4 border-b border-line p-[18px]">
-          <span
-            className="flex size-16 flex-none items-center justify-center rounded-full text-2xl font-bold text-white"
-            style={{ background: color }}
-          >
-            {initial}
-          </span>
+          {avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage 동적 아바타
+            <img
+              src={avatarUrl}
+              alt="프로필 사진"
+              className="size-16 flex-none rounded-full object-cover"
+              style={{ boxShadow: `0 0 0 2px ${color}` }}
+            />
+          ) : (
+            <span
+              className="flex size-16 flex-none items-center justify-center rounded-full text-2xl font-bold text-white"
+              style={{ background: color }}
+            >
+              {initial}
+            </span>
+          )}
           <div className="flex flex-col gap-2">
             <span className="text-[13.5px] font-bold text-body">프로필 사진</span>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={onPickFile}
+            />
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="inline-flex h-[34px] items-center gap-1.5 rounded-md border border-line-strong bg-background px-3 text-[12.5px] font-bold text-body hover:bg-secondary"
+                onClick={() => fileRef.current?.click()}
+                disabled={busy}
+                className="inline-flex h-[34px] items-center gap-1.5 rounded-md border border-line-strong bg-background px-3 text-[12.5px] font-bold text-body hover:bg-secondary disabled:opacity-50"
               >
                 <Icon name="upload" size={15} strokeWidth={2} />
-                업로드
+                {uploadAvatar.isPending ? "올리는 중…" : "업로드"}
               </button>
-              <button
-                type="button"
-                className="h-[34px] rounded-md px-3 text-[12.5px] font-semibold text-mute hover:bg-secondary hover:text-subtle"
-              >
-                삭제
-              </button>
+              {avatarUrl && (
+                <button
+                  type="button"
+                  onClick={onDeleteAvatar}
+                  disabled={busy}
+                  className="h-[34px] rounded-md px-3 text-[12.5px] font-semibold text-mute hover:bg-secondary hover:text-subtle disabled:opacity-50"
+                >
+                  {deleteAvatar.isPending ? "삭제 중…" : "삭제"}
+                </button>
+              )}
             </div>
+            {avatarError ? (
+              <span className="text-[11.5px] font-semibold text-danger">{avatarError}</span>
+            ) : (
+              <span className="text-[11.5px] font-medium text-faint">
+                JPG · PNG · WEBP · 2MB 이하
+              </span>
+            )}
           </div>
           <Controller
             control={control}

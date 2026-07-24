@@ -111,12 +111,21 @@ export function AccountSettings() {
         </span>
         {profile && (
           <div className="ml-auto flex flex-none items-center gap-2.5">
-            <span
-              className="flex size-8 items-center justify-center rounded-full text-[13px] font-bold text-white"
-              style={{ background: profile.avatarColor }}
-            >
-              {profile.name[0]}
-            </span>
+            {profile.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage 동적 아바타
+              <img
+                src={profile.avatarUrl}
+                alt=""
+                className="size-8 flex-none rounded-full object-cover"
+              />
+            ) : (
+              <span
+                className="flex size-8 items-center justify-center rounded-full text-[13px] font-bold text-white"
+                style={{ background: profile.avatarColor }}
+              >
+                {profile.name[0]}
+              </span>
+            )}
             <div className="hidden flex-col leading-tight sm:flex">
               <span className="text-[13px] font-bold text-ink">{profile.name}</span>
               <span className="text-[11.5px] font-medium text-faint">{profile.email}</span>
@@ -133,7 +142,10 @@ export function AccountSettings() {
           <div className="flex-1 overflow-y-auto p-4 md:p-[30px_36px_28px]">
             <FormProvider {...methods}>
               <div className="flex max-w-[620px] flex-col gap-6 md:gap-[30px]">
-                <ProfileSection email={profile?.email ?? ""} />
+                <ProfileSection
+                  email={profile?.email ?? ""}
+                  avatarUrl={profile?.avatarUrl}
+                />
                 <PreferenceSection />
                 <AccountSection
                   onLogout={onLogout}

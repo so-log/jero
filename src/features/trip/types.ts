@@ -9,6 +9,8 @@ import type { Role } from "@/lib/constants/roles";
 export interface TripMemberAvatar {
   initial: string;
   color: string;
+  /** 프로필 사진 URL(있으면 이미지, 없으면 이니셜) — Presence 로 직접 전달. */
+  imageUrl?: string | null;
 }
 
 export interface TripSummaryDto {
