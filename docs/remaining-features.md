@@ -139,6 +139,6 @@
 - **팜플렛 서버 PDF 승격 — 완료**(2026-07-09, `architecture/팜플렛_설계.md` §5·§13): `POST /api/pamphlet/export`(`puppeteer-core`+`@sparticuz/chromium` headless)로 A4 무인 PDF 다운로드 전환, 실패 시 `window.print()` 폴백. **준비물 편집분 인쇄 반영 — ✅ 완료(2026-07-09, `57cd12a`)**: 편집된 준비물(체크·커스텀 항목)을 `lib/prep.ts` encode/decode로 export payload·print 라우트 쿼리·`window.print` 폴백 URL에 관통 → 프리뷰와 동일 데이터로 PDF 렌더(하드코딩 DEFAULT_PREP 제거). 137 tests 그린. **남은 팜플렛 후속: AI 테마 추천(LLM API 키 필요 — 보류).**
 - **Node ≥ 22.12 필요**: 툴체인(vitest 4/@vitejs/plugin-react 6, `std-env` ESM)이 `require(ESM)`(Node ≥22.12 기본)을 요구. 22.11 이하에서는 `yarn run check`(vitest) 실행 불가 → 개발/CI Node 를 22.12+ 로.
 - **번들 최적화 — ✅ 완료(2026-07-09, `8b535e0`)**: Recharts 파트를 `*Chart.tsx`로 분리 → 부모 카드가 `next/dynamic(ssr:false)` 지연 로드(예산 도넛·일별추이, 통계 파이·이동추이). 카드 크롬·범례는 즉시 렌더, 차트 영역만 고정 크기 스켈레톤(시프트 없음). 결과: 차트 없는 워크스페이스 뷰(플랜·일정·장소)의 초기 번들에서 Recharts **401KB raw / 115KB gz 제외**, 예산·통계 진입 시에만 청크 로드. (Next 16이 라우트별 First Load JS를 출력하지 않아 `react-loadable-manifest.json`으로 측정 — lazy 모듈 1→5.) 132 tests 그린.
-- **폰트 최적화(성능 1순위, `tech-decisions.md` §8.3)**: Pretendard Variable woff2가 페이지 전송량의 ~85%(≈2.0MB)·LCP 주원인. **한글 subset woff2로 교체** → 폰트 대폭 감축 + LCP 개선. (`src/app/fonts/` 교체)
-- **접근성 개선(Lighthouse 90 → 상향, §8.3)**: 색 대비 AA 미달 토큰(`text-faint`·`text-mute`·primary 버튼) 명도 상향, `<main>` 랜드마크 추가, 비밀번호 보기 버튼 타깃 24px+.
-- **성능 지표는 측정 완료**(§8.1~8.3): 번들·빌드·Lighthouse 반영됨. Lighthouse 점수 성능90·접근성90·권장96·SEO100.
+- **폰트 최적화(성능 1순위, `tech-decisions.md` §8.3) — ✅ 완료**: Pretendard Variable woff2가 페이지 전송량의 ~85%(≈2.0MB)·LCP 주원인이었음. **동적 한글 subset woff2로 교체** → LCP 2.3s → **0.6s**, 성능 87 → **100**.
+- **접근성 개선(Lighthouse) — ✅ 완료**: 색 대비 AA 미달 토큰 명도 상향, `<main>` 랜드마크 추가, 비밀번호 보기 등 타깃 24px+ → 접근성 **100**.
+- **성능 지표 측정 완료**(§8.1~8.3): 번들·빌드·Lighthouse 반영. **Lighthouse(프로덕션 `/`, 데스크톱): 성능 100 · 접근성 100 · 권장사항 100 · SEO 100.**

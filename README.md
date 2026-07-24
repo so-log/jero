@@ -60,12 +60,13 @@
 - **동선 최적화** — 하루 동선을 버튼 한 번으로 **최소 이동 순서로 자동 정렬**(Nearest-Neighbor + **2-opt** 휴리스틱). **직선거리** 또는 **실제 이동시간**(Google Distance Matrix, 실패 시 직선거리 폴백), 숙소 **시작/복귀 앵커** 지원. 적용 전 **총 이동 전/후 비교** 미리보기 + 되돌리기. 순수 알고리즘은 `lib/route/`로 분리(TDD).
 - **지도에서 장소 추가** — Google **Places 검색**(오버레이 + 지도 상단 검색창)·**지도 빈 곳 클릭**(reverse geocoding)·**POI 라벨 클릭**(place 상세) 네 경로로 좌표째 저장 → 지도 마커·플랜 동선에 표시. 장소 패널은 **드래그로 넓히거나 접어** 지도를 크게 볼 수 있습니다.
 - **일정표 / 장소 / 폴더** — 월·주·일 캘린더 조망, 장소를 **폴더로 분류·관리**하고 특정 날짜에 "일정에 추가" / "일정에서 빼기". 메모 인라인 자동저장(debounce).
+- **다중 도시 여행** — 한 여행에 여러 도시(박수·순서)를 두면 날짜가 자동 배분됩니다. 플랜·캘린더에 **도시 컨텍스트**(도시 라벨·색·시작일 배지·경계), 도시 전환 시 지도 중심 이동, 장소를 **도시 축**으로 필터/그룹, 도시가 바뀌는 경계에 **이동 세그먼트 카드**(기차/항공/버스, 출발 시각·소요). 단일 도시 여행은 기존과 동일(회귀 0).
 - **여행 생성 마법사** — 다단계 폼(제목·지역·기간·멤버·권한). 빈 여행 또는 **템플릿 복제로 시작**(도쿄·제주 시드를 서버 RPC로 복제).
 - **예산·정산** — 카테고리 도넛·일별 추이 차트 + 지출 테이블. 지출 추가·편집, 분담(split) 관리, 멤버별 정산 **라이브 재계산**.
 - **여행 통계** — 총 이동거리(Haversine)·일자별 이동·카테고리 분포를 차트로 요약(`?view=stats`).
 - **팜플렛 내보내기** — 완성한 일정을 **A4 3단 접이 팜플렛**으로. 테마 프리셋(패턴 + 일러스트 씬)·섹션 체크 선택·QR(읽기 전용 공유 링크 재사용)·인쇄/PDF.
 - **공유·초대·권한** — `owner` / `editor` / `viewer`. 읽기 전용 공개 링크(토큰 스코프·민감 필드 제외), 편집 초대 링크 수락. 권한은 UI가 아니라 서버/RLS에서 강제.
-- **인증·계정** — 이메일/비번 + **구글 OAuth** 로그인. 프로필·기본 통화 설정, 계정 탈퇴(소유 여행 owner 승계 또는 cascade 삭제).
+- **인증·계정** — 이메일/비번 + **구글 OAuth** 로그인, **비밀번호 재설정**(복구 메일 → 새 비밀번호 설정). 프로필·기본 통화 설정, **프로필 사진 업로드**(Supabase Storage, 없으면 색·이니셜 폴백), 계정 탈퇴(소유 여행 owner 승계 또는 cascade 삭제).
 
 ## 기술 스택
 
@@ -172,11 +173,11 @@ yarn 1.x에서 `yarn check`는 **의존성 무결성 검사(내장 명령)**라 
 
 ## 테스트
 
-- **단위·통합**: Vitest + Testing Library — 144 tests. "데이터 응답 → 화면 렌더링" 통합 검증을 유닛 테스트보다 우선.
+- **단위·통합**: Vitest + Testing Library — 295 tests. "데이터 응답 → 화면 렌더링" 통합 검증을 유닛 테스트보다 우선.
 - **e2e**: Playwright — 21 tests, **실 Supabase** 대상. service_role 부트스트랩으로 실인증, 생성 데이터 티어다운. 2계정 2컨텍스트로 실시간 협업(데이터 동기화·presence·커서)까지 검증(account·budget·flows·home·realtime·folder·stats·pamphlet 등).
 
 ```bash
-yarn run check      # typecheck + lint + Vitest(144 tests) — 커밋/PR 전 게이트
+yarn run check      # typecheck + lint + Vitest(295 tests) — 커밋/PR 전 게이트
 yarn test           # Vitest 단위·통합 (1회)
 yarn test:e2e       # Playwright e2e (실 Supabase)
 ```
@@ -200,7 +201,7 @@ yarn dev                    # http://localhost:3000
 yarn build && yarn start    # 프로덕션
 ```
 
-Supabase 스키마는 `supabase/migrations/`를 순서대로 적용합니다: `0001_auth`(인증·profile 프로비저닝) · `0002_data`(trips/places/budget·RLS·RPC) · `0003_share`(공유·초대) · `0004_realtime`(퍼블리케이션·realtime.messages RLS) · `0005_templates`(여행 템플릿 카탈로그·시드 + `create_trip` 복제).
+Supabase 스키마는 `supabase/migrations/`를 순서대로 적용합니다: `0001_auth`(인증·profile 프로비저닝) · `0002_data`(trips/places/budget·RLS·RPC) · `0003_share`(공유·초대) · `0004_realtime`(퍼블리케이션·realtime.messages RLS) · `0005_templates`(여행 템플릿 카탈로그·시드 + `create_trip` 복제) · `0006_multicity`(`trip_city` + `place.city_id` + 백필·하위호환) · `0007_city_transfer`(`trip_city.arrival_*` 도시 간 이동). 아바타 업로드에는 public `avatars` 스토리지 버킷(본인 경로 쓰기 RLS)이 필요합니다.
 
 > Google Maps API 키는 클라이언트 노출 전제입니다. 콘솔에서 **HTTP referrer(도메인) 제한 + 사용 API 범위 제한**을 걸어 두세요. 장소 기능에는 **Maps JavaScript · Places · Geocoding API**를 사용 설정해야 합니다. 구글 소셜 로그인은 Google OAuth 클라이언트의 리디렉션 URI를 **Supabase 콜백**(`https://<ref>.supabase.co/auth/v1/callback`)으로 등록합니다. `SUPABASE_SERVICE_ROLE_KEY`는 서버 전용이며 절대 클라이언트에 노출하지 않습니다.
 
@@ -210,8 +211,11 @@ Supabase 스키마는 `supabase/migrations/`를 순서대로 적용합니다: `0
 |---|---|---|
 | 기능명세서 | [`docs/spec/기능명세서.md`](./docs/spec/기능명세서.md) | 무엇을 만드는가(기능·범위·데이터·권한) |
 | 화면구조 와이어프레임 | [`docs/spec/화면구조_와이어프레임.md`](./docs/spec/화면구조_와이어프레임.md) | 어떤 화면에 무엇이 들어가는가 |
-| 페이지별 기획 | [`docs/planning/`](./docs/planning) | 화면 단위 상세 기획(01~15, 팜플렛·통계 포함) + 수용 기준 |
+| 페이지별 기획 | [`docs/planning/`](./docs/planning) | 화면 단위 상세 기획(01~17, 동선 최적화·다중 도시 포함) + 수용 기준 |
 | 설계문서 · 계약 | [`docs/architecture/`](./docs/architecture) | 데이터 모델·상태관리·API 계약·RLS·Realtime·2차 구현·팜플렛 설계 |
+| 동선 최적화 설계 | [`docs/architecture/동선_최적화_설계.md`](./docs/architecture/동선_최적화_설계.md) | NN+2-opt·비용 매트릭스·실이동시간·앵커 |
+| 다중 도시 설계 | [`docs/architecture/다중_도시_설계.md`](./docs/architecture/다중_도시_설계.md) | 도시 정규화·날짜 파생·하위호환·Phase 1~5(이동 세그먼트) |
+| QA 수정 트래킹 | [`docs/qa/fix-requests.md`](./docs/qa/fix-requests.md) | 테스트·피드백 수정 요청과 상태 |
 | 미구현 기능 갭 | [`docs/remaining-features.md`](./docs/remaining-features.md) | 설계 대비 구현 갭·후속 목록 |
 | 디자인 시안 | [`docs/design/prototype/`](./docs/design/prototype) | 시각 참고(HTML) |
 | 기술 선택 근거 · 현업 대비 | [`docs/tech-decisions.md`](./docs/tech-decisions.md) | 왜 이 스택인가 + 현업(B2B) 대비 코드·운영 차이 (보고서) |
