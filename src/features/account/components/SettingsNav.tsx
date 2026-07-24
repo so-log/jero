@@ -3,9 +3,7 @@
 import { Icon, type IconName } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
-import { ACCOUNT_META } from "../api/useAccount";
-
-/** 좌측 섹션 내비게이션(230px) — 현재 섹션 강조 + 버전/마지막 로그인. 시안 nav. */
+/** 좌측 섹션 내비게이션(230px) — 현재 섹션 강조 + 마지막 로그인(실값). 시안 nav. */
 export type SettingsSection = "profile" | "pref" | "account";
 
 const NAV: { key: SettingsSection; label: string; icon: IconName }[] = [
@@ -17,9 +15,12 @@ const NAV: { key: SettingsSection; label: string; icon: IconName }[] = [
 export function SettingsNav({
   active,
   onSelect,
+  lastLogin,
 }: {
   active: SettingsSection;
   onSelect: (section: SettingsSection) => void;
+  /** 포맷된 마지막 로그인(실값). 없으면 하단 표기 숨김. */
+  lastLogin?: string | null;
 }) {
   return (
     // 모바일: 상단 가로 탭(3분할) / 데스크톱: 좌측 세로 사이드바(230px)
@@ -54,11 +55,13 @@ export function SettingsNav({
           </button>
         );
       })}
-      <div className="mt-auto hidden px-2.5 py-3 text-[11.5px] font-medium leading-relaxed text-mute md:block">
-        jero {ACCOUNT_META.version} · 마지막 로그인
-        <br />
-        {ACCOUNT_META.lastLogin}
-      </div>
+      {lastLogin && (
+        <div className="mt-auto hidden px-2.5 py-3 text-[11.5px] font-medium leading-relaxed text-mute md:block">
+          마지막 로그인
+          <br />
+          {lastLogin}
+        </div>
+      )}
     </nav>
   );
 }

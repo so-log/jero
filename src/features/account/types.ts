@@ -12,6 +12,8 @@ export interface ProfileDto {
   avatarColor: string;
   /** 프로필 사진 URL(Supabase Storage public URL). 없으면 색·이니셜 폴백. */
   avatarUrl?: string | null;
+  /** 마지막 로그인 시각(ISO, auth user.last_sign_in_at). 없으면 설정 하단 표기 숨김. */
+  lastSignInAt?: string | null;
   /** 07 예산 기본 통화로 연결. */
   currency: Currency;
   notif: Record<NotifKey, boolean>;
