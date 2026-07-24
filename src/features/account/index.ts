@@ -3,4 +3,9 @@
  * 파괴적 동작(계정 삭제)은 ConfirmDialog 확인 + 서버 재확인(§8.7).
  */
 export { AccountSettings } from "./components/AccountSettings";
-export { useProfileQuery, useUpdateProfile } from "./api/useAccount";
+export {
+  useProfileQuery,
+  useUpdateProfile,
+  useUploadAvatar,
+  useDeleteAvatar,
+} from "./api/useAccount";

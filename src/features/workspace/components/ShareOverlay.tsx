@@ -265,12 +265,22 @@ export function ShareOverlay({
         </div>
         {list.map((m) => (
           <div key={m.id} className="flex items-center gap-2.5 px-1 py-2">
-            <span
-              className="flex size-9 flex-none items-center justify-center rounded-full border-2 bg-background text-[13px] font-bold"
-              style={{ borderColor: m.color, color: m.color }}
-            >
-              {m.initial}
-            </span>
+            {m.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- Supabase Storage 동적 아바타
+              <img
+                src={m.avatarUrl}
+                alt=""
+                className="size-9 flex-none rounded-full object-cover"
+                style={{ boxShadow: `0 0 0 2px ${m.color}` }}
+              />
+            ) : (
+              <span
+                className="flex size-9 flex-none items-center justify-center rounded-full border-2 bg-background text-[13px] font-bold"
+                style={{ borderColor: m.color, color: m.color }}
+              >
+                {m.initial}
+              </span>
+            )}
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="text-[13.5px] font-bold text-body">
                 {m.name}

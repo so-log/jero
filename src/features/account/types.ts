@@ -10,6 +10,8 @@ export interface ProfileDto {
   /** 읽기 전용(인증된 로그인 이메일). */
   email: string;
   avatarColor: string;
+  /** 프로필 사진 URL(Supabase Storage public URL). 없으면 색·이니셜 폴백. */
+  avatarUrl?: string | null;
   /** 07 예산 기본 통화로 연결. */
   currency: Currency;
   notif: Record<NotifKey, boolean>;

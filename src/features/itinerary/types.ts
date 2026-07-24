@@ -89,4 +89,6 @@ export interface MemberDto {
   color: string;
   role: Role;
   online: boolean;
+  /** 프로필 사진 URL — 있으면 이미지 아바타, 없으면 색·이니셜 폴백(아바타 업로드). */
+  avatarUrl?: string | null;
 }

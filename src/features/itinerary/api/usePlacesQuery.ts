@@ -139,7 +139,12 @@ export function usePlacesQuery(tripId: string) {
 
 interface MemberRow {
   role: Role;
-  profile: { id: string; name: string; avatar_color: string } | null;
+  profile: {
+    id: string;
+    name: string;
+    avatar_color: string;
+    avatar_url: string | null;
+  } | null;
 }
 
 /** useMembersQuery — 멤버(아바타·역할). online 은 presence 연동 전까지 false(설계 §8, 실시간 단계). */
@@ -151,7 +156,7 @@ export function useMembersQuery(tripId: string) {
       const supabase = createClient();
       const { data, error } = await supabase
         .from("trip_member")
-        .select("role, profile:user_id ( id, name, avatar_color )")
+        .select("role, profile:user_id ( id, name, avatar_color, avatar_url )")
         .eq("trip_id", tripId)
         .returns<MemberRow[]>();
       if (error) throw new Error("멤버를 불러오지 못했어요.");
@@ -167,6 +172,7 @@ export function useMembersQuery(tripId: string) {
           color: m.profile.avatar_color,
           role: m.role,
           online: false,
+          avatarUrl: m.profile.avatar_url,
         }));
     },
   });
