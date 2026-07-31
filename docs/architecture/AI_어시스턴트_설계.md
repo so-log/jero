@@ -1,6 +1,7 @@
 # AI 여행 어시스턴트 — 설계문서
 
-> 기획: `docs/planning/18_AI_여행_어시스턴트.md`. 이 문서는 **스택·RAG 파이프라인·grounding·툴콜·보안·비용·단계**를 다룬다.
+> 기획: `docs/planning/18_AI_여행_어시스턴트.md` · 시안: `docs/design/prototype/AI 어시스턴트.dc.html`(전용, 고정).
+> 이 문서는 **스택·RAG 파이프라인·grounding·툴콜·보안·비용·단계**를 다룬다.
 > 핵심 원칙: **LLM 키는 서버 전용**, **장소는 Places 로 grounding**, **실행은 기존 훅 재사용**, **기존 흐름 무영향(additive · feature flag)**.
 > 데이터 계약 증분(임베딩 테이블·RPC·RLS)은 단일 출처인 `데이터모델_계약.md` **Part C** 에 반영한다(이 문서는 그것을 참조·해설).
 
@@ -227,13 +228,15 @@ export const coursePlanSchema = z.object({
 ```
 src/features/assistant/
 ├─ components/
-│   ├─ AssistantFab.tsx           # 진입 FAB
-│   ├─ AssistantPanel.tsx         # 패널 셸(dialog·포커스 트랩·Esc)
-│   ├─ MessageList.tsx            # 말풍선·스트리밍·aria-live
-│   ├─ EvidenceChips.tsx          # 근거 칩
-│   ├─ RecommendationCard.tsx     # 실존 장소 카드 + 액션
-│   ├─ CoursePlanBlock.tsx        # 코스 제안 + 코스 적용
-│   └─ AssistantComposer.tsx      # 입력창 + 빠른 질문 칩
+│   ├─ AssistantFab.tsx           # 진입 FAB(데스크톱 알약형 / 모바일 원형)
+│   ├─ AssistantPanel.tsx         # 패널 셸 392px · 모바일 바텀시트(dialog·포커스 트랩·Esc)
+│   ├─ AssistantHeader.tsx        # 아바타·제목·서브텍스트·viewer 배지·닫기
+│   ├─ MessageList.tsx            # 말풍선·스트리밍·타이핑 점·aria-live
+│   ├─ MessageActions.tsx         # 다시 제안 · 복사
+│   ├─ EvidenceChips.tsx          # "참고" 근거 칩
+│   ├─ RecommendationCard.tsx     # 미니맵 썸네일 + 장소 정보 + 저장/일정에
+│   ├─ CoursePlanBlock.tsx        # Day 타임라인 + 코스 적용/동선 최적화 · viewer 안내
+│   └─ AssistantComposer.tsx      # 빠른 질문 칩 + 입력창 + 전송
 ├─ hooks/
 │   ├─ useAssistantChat.ts        # AI SDK useChat 래핑(스트리밍·중지)
 │   ├─ useAssistantActions.ts     # 저장/배정/코스적용/되돌리기/최적화 연계
