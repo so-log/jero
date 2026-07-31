@@ -327,7 +327,7 @@ supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·
 - **definer 자가 인가 3단계 명문화** + `set search_path = public`. invoker RPC 2종은 무변경(근거 명시) — §3.2 / Part **C1-a**
 - **임베딩 `content` 에서 `memo` 제외** — §6.5 / Part **C2-b**
 - **쿼리 임베딩 = 저장과 동일 모델·768차원·L2 정규화**(task type 만 분기, 생성 함수 1개 공유) — §3.4 / Part **C2-a**
-- 기존 definer 함수 3종의 `search_path` 미설정은 **범위 밖 후속 하드닝**으로 기록(Part C10)
+- `set search_path = public` 은 **기존 관례 준수** — `0001`~`0006` definer 함수 9개에 이미 전부 적용돼 있다(직전 리비전의 "기존 함수 미설정" 기록은 오류였고 Part C10 에서 정정. 후속 하드닝 대상 없음)
 
 ---
 
