@@ -10,7 +10,7 @@
 |---|---|---|
 | 오케스트레이션 | **Vercel AI SDK** (`ai` + `@ai-sdk/google`) | 스트리밍·tool calling·구조화 출력을 한 API로. Next 16 App Router 라우트 핸들러와 직결 |
 | LLM | **Google Gemini**(무료 티어, `gemini-2.x-flash` 급 저가 모델) | 무료 티어로 시작, 키 서버 전용. provider 교체는 AI SDK 모델 어댑터 1줄 |
-| 임베딩 | **1536차원 텍스트 임베딩 모델**(OpenAI `text-embedding-3-small` 급, ≈$0.02/1M tok) | 저렴·품질 충분. 차원은 마이그레이션에서 고정 |
+| 임베딩 | **Gemini `gemini-embedding-001` · 768차원**(MRL 절단 + L2 정규화) | **LLM 과 키 1개로 통일**(별도 벤더·과금 계정 없음). 768 은 pgvector ANN 인덱스 한계(2000차원) 안이라 장래 승격 여지 확보 — 계약 **Part C2** |
 | 벡터 저장 | **Supabase pgvector** | 이미 쓰는 DB에 확장만 켜면 됨(추가 인프라·비용 0). RLS 로 접근 통제 재사용 |
 | Grounding | **Google Maps Places** (이미 연동됨) | 실존성·좌표·`place_id` 확보. 신규 벤더 없음 |
 | UI | 기존 shadcn/ui + Tailwind v4 `@theme` 토큰 | 신규 스타일 방식 도입 금지(CLAUDE.md §7.1) |
@@ -46,67 +46,44 @@ app/api/assistant/chat/route.ts   (서버)
 
 ## 3. RAG 파이프라인
 
-### 3.1 스키마 (계약 증분 — Part C)
+### 3.1 스키마 (계약 증분 — **Part C 가 단일 출처**)
 
 **결정: 신규 테이블 `place_embedding`** (place 테이블에 vector 컬럼 추가 아님).
 
 이유: ① 임베딩은 **파생 데이터**라 원본 행과 수명·갱신 주기가 다르다 ② `place` 를 읽는 모든 기존 쿼리에 벡터가 딸려오는 것을 막는다(페이로드·캐시 오염) ③ 모델/차원 교체 시 테이블만 재생성하면 된다.
 
-```sql
-create extension if not exists vector;
+> **DDL·RLS·RPC 전문은 `데이터모델_계약.md` Part C(C4~C8)** — 계약은 한 곳에서만 정의한다(§7.2). 여기서는 **왜 그렇게 정했는지**만 남긴다.
 
-create table public.place_embedding (
-  place_id   uuid primary key references public.place(id) on delete cascade,
-  trip_id    uuid not null references public.trip(id) on delete cascade,  -- RLS 판정용(조인 회피)
-  content    text not null,          -- 임베딩 원문(name + category + area + memo)
-  content_hash text not null,        -- 변경 감지(동일 해시면 재임베딩 skip = 비용 절감)
-  embedding  vector(1536) not null,
-  model      text not null,          -- 생성 모델 ID(교체 이력 추적)
-  updated_at timestamptz not null default now()
-);
+| 항목 | 결정 | 근거(요약) |
+|---|---|---|
+| 벡터 타입 | **`vector(768)`** | Gemini `gemini-embedding-001` 을 768 로 절단(+L2 재정규화). 3072 기본값은 pgvector ANN 인덱스 **2000차원 한계**를 넘어 승격 불가 |
+| ANN 인덱스 | **만들지 않음(정확 검색) + `btree(trip_id)`** | 검색이 항상 `trip_id` 로 좁혀지는 소규모(여행당 10~50행) — **IVFFlat 은 학습 기반이라 빈/작은 테이블에서 재현율만 잃는다**. 총 5만 행 초과 시 **HNSW** 로 승격 |
+| 쓰기 경로 | **`upsert_place_embedding` RPC 단독**(직접 쓰기 정책 없음) | 아래 §3.2 |
+| 조회 | 멤버면 역할 무관(`viewer` 포함) | RAG 는 읽기 근거일 뿐 — 조회 권한과 동일선상 |
+| `trip_id` 비정규화 | 채택 | 벡터 검색 hot path 의 핵심 필터. 값은 RPC 가 place 행에서 파생하므로 조작 불가 |
 
-create index on public.place_embedding
-  using ivfflat (embedding vector_cosine_ops) with (lists = 100);
-create index on public.place_embedding (trip_id);
-```
+### 3.2 인덱싱 쓰기 경로 (★검토 반영)
 
-> `trip_id` 는 여기서만 **의도적으로 비정규화**한다(RLS 판정을 parent 조인 없이 하기 위함 — `expense_split`[C결정]과 반대 선택이며, 근거는 벡터 검색이 hot path 라 조인 비용을 피한다는 점. `place` cascade 로 고아는 발생하지 않는다).
+직전 설계는 "select 정책만 두고 쓰기는 서버만"이라고 적었는데, **RLS 는 정책이 없으면 거부**다. 어시스턴트는 `service_role` 을 쓰지 않기로 했으므로(§6.2) **인덱싱이 아예 불가능한 상태**였다. 확정:
 
-**RLS**
-```sql
-alter table public.place_embedding enable row level security;
+**`security definer` RPC `upsert_place_embedding(place_id, embedding, model)`** — 직접 INSERT/UPDATE 정책은 두지 않는다.
 
-create policy pe_select on public.place_embedding for select
-  using ( public.is_trip_member(trip_id) );
--- 쓰기는 서버(서비스 경로/RPC)만 — 클라이언트 직접 insert/update 정책 없음.
-```
+- 호출자는 **`place_id` 와 벡터만** 넘긴다. **`trip_id`·`content` 는 함수가 `place` 행에서 파생**한다 → 남의 trip 으로 행을 심거나 임의 텍스트를 주입(RAG 오염 = 인젝션 벡터)하는 경로가 사라진다.
+- 함수 내부에서 `is_trip_member` 를 직접 검증 — 기존 `create_trip`·`accept_invite`(B2.1)와 같은 규율.
+- `editor+` 직접 쓰기 정책을 주지 않은 이유: viewer 만 접속한 여행은 인덱싱이 영영 안 되고, `trip_id`/`content` 스푸핑 표면이 남는다(비교표는 Part C1).
 
-**유사 검색 RPC** (`security invoker` — 호출자 RLS 그대로 적용 = 요청자 권한 내 데이터만 검색됨)
-```sql
-create or replace function public.match_place_embeddings(
-  p_trip_id uuid, p_query vector(1536), p_limit int default 8
-) returns table (place_id uuid, content text, similarity float)
-language sql stable security invoker as $$
-  select e.place_id, e.content, 1 - (e.embedding <=> p_query) as similarity
-  from public.place_embedding e
-  where e.trip_id = p_trip_id
-  order by e.embedding <=> p_query
-  limit p_limit;
-$$;
-```
+### 3.3 인덱싱 시점
 
-### 3.2 인덱싱(임베딩 생성) 시점
-
-- **트리거**: `place` insert/update 후 **서버 경로에서 비동기 upsert**(`POST /api/assistant/index` 또는 뮤테이션 후속 호출).
-- **변경 시에만**: `content_hash` 가 같으면 skip → **장소 편집이 잦아도 임베딩 비용은 실제 텍스트 변경 시에만** 발생.
+- **트리거**: `place` insert/update 후 **서버 경로에서 비동기 upsert**(`POST /api/assistant/index`).
+- **변경 시에만**: `stale_place_embeddings` RPC 가 `content_hash` 불일치 행만 돌려준다 → **장소 편집이 잦아도 임베딩 비용은 실제 텍스트 변경 시에만** 발생.
 - **배치**: 여행 최초 진입 시 미인덱싱 place 를 한 번에 배치 임베딩(1 요청 다건).
-- **비용 감각**: 장소 1건 ≈ 30~60 토큰. 여행당 30곳 → 약 2K 토큰 ≈ **$0.00004**. 사실상 무시 가능.
+- **비용 감각**: 장소 1건 ≈ 30~60 토큰. 여행당 30곳 → 약 2K 토큰. Gemini 임베딩 무료 티어 내에서 사실상 0.
 - **실패 허용**: 임베딩 실패는 조용히 스킵(로그만) — RAG 근거가 줄 뿐 어시스턴트는 계속 동작(폴백 §7).
 
 ### 3.3 검색 → 컨텍스트 주입
 
-1. 사용자 질문을 임베딩(1회).
-2. `match_place_embeddings(trip_id, q, 8)` → 유사 장소 상위 K.
+1. 사용자 질문을 임베딩(1회, 768차원 + L2 정규화 — 저장 벡터와 동일 전처리여야 코사인 비교가 성립).
+2. `match_place_embeddings(trip_id, q, 8)` → 유사 장소 상위 K. **`security invoker`** 라 호출자 RLS 가 그대로 걸린다(비멤버는 0행).
 3. **구조 컨텍스트**(순수 함수 `buildTripContext`)와 합쳐 시스템 메시지로 주입:
    - 여행 메타(제목·기간·나라/지역·도시 목록), Day별 장소 수·카테고리 분포, 현재 선택 Day/도시, 유사 장소 K개.
    - **상한**: 컨텍스트 총 ~1.5K 토큰, 대화는 **최근 8턴**만 전송(비용·지연 관리).
@@ -180,13 +157,15 @@ export const coursePlanSchema = z.object({
 
 | 변수 | 노출 | 용도 |
 |---|---|---|
-| `AI_PROVIDER` / `AI_MODEL` | **서버 전용** | provider·모델 ID(무료 티어 변동 대응) |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | **서버 전용** | Gemini 호출 |
-| `EMBEDDING_API_KEY` (+ `EMBEDDING_MODEL`) | **서버 전용** | 임베딩 생성 |
-| `GOOGLE_PLACES_SERVER_KEY` | **서버 전용** | 서버측 Places 조회(기존 클라 키와 **분리**, IP 제한) |
+| `AI_MODEL` | **서버 전용** | LLM 모델 ID(무료 티어 정책 변동 대응) |
+| `EMBEDDING_MODEL` | **서버 전용** | 임베딩 모델 ID — 기본 `gemini-embedding-001` |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | **서버 전용** | **Gemini 채팅 + 임베딩 공용**(provider 통일로 키 1개, Part C2) |
+| `GOOGLE_PLACES_SERVER_KEY` | **서버 전용** | 서버측 Places 조회 — 기존 클라 키(`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`)와 **별도 발급** |
+| `ASSISTANT_DAILY_LIMIT` | **서버 전용** | rate limit 한도(기본 30) — `consume_assistant_quota` 인자로만 사용 |
 | `ASSISTANT_ENABLED` | 서버 → 클라에 boolean 만 전달 | feature flag(키 없으면 false) |
 
 - **`NEXT_PUBLIC_` 접두 절대 금지**(§8.1). 모든 LLM/임베딩/서버 Places 호출은 **라우트 핸들러 안에서만** 발생 → 키가 클라 번들·네트워크 응답에 나타나지 않는다.
+- **서버 Places 키 제한 방식 [확정 · 검토 반영]**: **API 제한(Places API 만 허용)** + 클라 키와 분리 + 주기적 로테이션. ~~IP 제한~~ 은 채택하지 않는다 — **Vercel 서버리스는 고정 egress IP 를 보장하지 않아** IP 허용목록이 실무적으로 성립하지 않는다(기존 클라 키의 HTTP referrer 제한과는 성격이 다르다). 서버 키는 애초에 브라우저에 노출되지 않으므로 1차 방어는 "노출 안 함", 2차가 API 범위 제한이다.
 - feature flag 는 **키 존재 여부를 서버에서 판정**해 boolean 만 내려보낸다(키 자체 노출 금지). 키 없으면 FAB 미노출 + 엔드포인트 404/비활성.
 - `.env.example` 에 위 변수 주석 예시만 추가. `.env*` 커밋 금지(기존 `.gitignore`).
 
@@ -207,9 +186,9 @@ export const coursePlanSchema = z.object({
 
 ### 6.4 Rate limit · 남용 방지 (§8.7)
 
-- **사용자당 일일 N회**(예: 30) + **여행당 시간당 M회** + 동시 요청 1개. 판정은 **서버**.
-- 저장소: Supabase 테이블 `assistant_usage(user_id, day, count)` upsert(추가 인프라 불필요) — 계약 Part C 에 포함.
-- 초과 시 429 + 리셋 시각. 클라는 잔여만 표시(우회 불가 — 서버 판정).
+- **사용자당 30회/일**(확정, `ASSISTANT_DAILY_LIMIT`) + 동시 요청 1개. 판정은 **서버**.
+- 저장소: `assistant_usage(user_id, usage_date, count)` — **소비는 `consume_assistant_quota` RPC 로만**(계약 Part C6). 테이블에 **클라 쓰기 정책이 없어** 사용자가 자기 카운터를 되돌릴 수 없다. `count < p_limit` 조건부 UPDATE 라 증가가 **원자적**(동시 요청 경합에도 한도 초과 없음).
+- 초과 시 429 + 리셋 안내. 클라는 잔여만 표시(우회 불가 — 서버 판정).
 - 요청당 도구 호출 상한(`searchPlaces` ≤ 3), 최대 스텝 수 상한(AI SDK `stopWhen`/maxSteps) → 무한 툴콜 루프 차단.
 
 ### 6.5 로깅 · 데이터 노출 (§8.5)
@@ -234,11 +213,11 @@ export const coursePlanSchema = z.object({
 ## 8. 비용 · 성능
 
 - **LLM**: Gemini 무료 티어 우선(분당/일일 쿼터 내). 대화 1회 ≈ 컨텍스트 1.5K + 출력 0.5K 토큰. 저가 flash 급 모델 고정.
-- **임베딩**: 변경 시에만(`content_hash`), 배치 처리. 여행당 최초 1회 ≈ $0.00004 수준.
+- **임베딩**: 변경 시에만(`stale_place_embeddings` + `content_hash`), 배치 처리. Gemini 임베딩 무료 티어 내(여행당 최초 2K 토큰 수준).
 - **Places**: 요청당 ≤ 3콜, 결과 캐시(같은 쿼리 5분 메모리 캐시)로 중복 억제.
 - **지연**: 스트리밍으로 체감 지연 흡수(첫 토큰 목표 3초). RAG 검색은 pgvector 인덱스로 수 ms.
 - **상한 이중화**: rate limit(사용자) + 도구 호출 상한(요청) + maxSteps(루프) → 비용 폭주 경로 3중 차단.
-- **무료 티어 변동성**: 모델 ID·provider 를 env 로 분리했으므로 쿼터 정책 변경 시 **코드 변경 없이 교체** 가능. 유료 전환 시에도 동일 인터페이스.
+- **무료 티어 변동성**: 모델 ID(`AI_MODEL`·`EMBEDDING_MODEL`)를 env 로 분리했으므로 쿼터 정책 변경 시 **코드 변경 없이 교체** 가능. 다만 **임베딩 모델을 바꾸면 차원·벡터 공간이 달라져 전체 재인덱싱이 필요**하다(파생 데이터라 손실은 없음. 차원이 바뀌면 컬럼 타입 마이그레이션 1개 — Part C2).
 
 ## 9. 폴더 · 네이밍 매핑
 
@@ -296,18 +275,19 @@ supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·
 - **통합(컴포넌트)**: 모킹된 스트림 → 말풍선·카드 렌더 / 카드 액션이 `useUpsertPlace`·`useAddPlaceToSchedule` 을 **정확한 payload 로** 호출 / `viewer` 는 액션 미노출.
   - ※ 모킹은 배럴이 아니라 **리프 모듈** 기준(프로젝트 기존 함정 회피).
 - **라우트 핸들러**: 비로그인 401, 비멤버 403, 스키마 위반 400, rate limit 429, 키 없음 비활성.
+- **DB 계약(실 Supabase)**: ① `place_embedding` 직접 INSERT 시도가 **RLS 로 거부**된다 ② `upsert_place_embedding` 이 **다른 trip 의 place_id 로 호출되면 `forbidden`** ③ `match_place_embeddings` 를 비멤버가 호출하면 **0행**(invoker RLS) ④ `consume_assistant_quota` 를 한도 초과까지 호출하면 `allowed=false` 이고 **count 가 더 늘지 않는다**.
 - **grounding 회귀**: 도구 결과에 없는 장소는 카드로 렌더되지 않음(환각 차단 테스트).
 - **e2e(선택)**: 플래그 on + 스텁 provider 로 "질문 → 카드 → Day 추가 → 일정 반영" 1 플로우.
 - **회귀 0 확인**: 플래그 off 상태에서 기존 Vitest 전량 + `yarn build` 그린.
 
-## 12. 계약 문서 반영 (Part C 예정)
+## 12. 계약 문서 반영 — `데이터모델_계약.md` **Part C (작성 완료)**
 
-`데이터모델_계약.md` 에 다음을 **증분 추가**한다(설계 승인 후):
-- `place_embedding` 테이블 + 인덱스 + RLS(`is_trip_member` 재사용).
-- `match_place_embeddings` RPC(`security invoker`).
-- `assistant_usage` 테이블(rate limit) + 본인 행만 접근 RLS.
-- 응답 예시(테스트 fixture 재사용용): 추천 카드 배열, 코스 제안 객체.
-- 마이그레이션 `0008_assistant.sql` + 생성 타입 재생성.
+계약 증분은 단일 출처 문서에 반영했다(이 문서는 근거·설계 의도만 보유):
+- **C0** 확정 결정 5종 · **C1** 임베딩 쓰기 RPC 채택 근거(A/B 비교) · **C2** Gemini 768차원 · **C3** 인덱스 전략(ivfflat 폐기 → 정확 검색 + HNSW 승격 임계치)
+- **C4** `place_embedding` 테이블 + RLS · **C5** RPC 3종(`upsert_place_embedding`·`stale_place_embeddings`·`match_place_embeddings`) + `place_embed_content` 헬퍼
+- **C6** `assistant_usage` + `consume_assistant_quota`(원자적 소비) · **C7** 응답 예시(fixture 4종) · **C8** `0008_assistant.sql` 초안 · **C9** 열린질문 확정 · **C10** GATE 2
+
+> 실제 `supabase/migrations/0008_assistant.sql` 파일 생성과 생성 타입 재생성(B1)은 **구현 phase 1** 에서 한다(기획·설계 단계는 `docs/` 만 수정).
 
 ## 13. 구현 순서 (phase = 독립 PR)
 
@@ -321,20 +301,26 @@ supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·
 
 각 단계 후 `yarn run check` + `yarn build` 그린 유지. **main 직행 금지**(CLAUDE.md §7).
 
-## 14. 열린 질문 (승인 시 확정 필요)
+## 14. 열린 질문 — **전부 확정** (계약 C9)
 
-| # | 질문 | 제안 |
+| # | 질문 | **확정** |
 |---|---|---|
-| 1 | 임베딩 provider — Gemini 임베딩(무료 티어)로 통일 vs OpenAI `text-embedding-3-small` | **Gemini 로 통일 제안**(키 1개·무료). 품질 부족 시 env 로 교체 |
-| 2 | 대화 영속화 | **MVP 비영속**. 필요 시 후속(보관기간·삭제 UI 동반) |
-| 3 | 일일 rate limit 수치 | 사용자당 **30회/일** 제안(데모·포트폴리오 기준) |
-| 4 | 서버 Places 키 분리 | 기존 클라 키 재사용 대신 **서버 전용 키 신규 발급 + IP 제한** 제안 |
-| 5 | `calendar`/`budget` 뷰 진입 | 1차 제외(plan·places만). 후속 확장 |
+| 1 | 임베딩 provider | **Gemini `gemini-embedding-001` · 768차원**(LLM 과 키 통일, 절단 후 L2 정규화) |
+| 2 | 대화 영속화 | **MVP 비영속** — 대화 테이블 없음. 영속화는 후속(보관기간·삭제 UI 동반) |
+| 3 | 일일 rate limit | **사용자당 30회/일**(UTC 리셋), `consume_assistant_quota` 서버 판정 |
+| 4 | 서버 Places 키 | **별도 발급 + API 제한(Places API 만)**. IP 제한은 서버리스 고정 IP 부재로 배제 |
+| 5 | 진입 뷰 | **`plan`·`places` 만**(1차). `calendar`·`budget`·`stats` 후속 |
+
+**추가 확정(GATE 2 검토 반영)**
+- ★수정1 임베딩 쓰기 = **`security definer` RPC 단독**(직접 쓰기 정책 없음, `trip_id`·`content` 서버 파생) — §3.2 / Part C1
+- ★수정2 벡터 **768차원** — Part C2
+- **ivfflat 폐기** → 정확 검색 + `btree(trip_id)`, 5만 행 초과 시 HNSW 승격 — Part C3
+- rate limit 테이블 **클라 쓰기 정책 없음** + 원자적 소비 RPC — Part C6
 
 ---
 
 ## GATE 상태
 
-- **GATE 1 (기획 승인)**: ⏳ 대기 — `docs/planning/18_AI_여행_어시스턴트.md`
-- **GATE 2 (설계 승인)**: ⏳ 대기 — 이 문서 + `데이터모델_계약.md` Part C 증분(승인 후 반영)
-- 승인 전 **구현 착수 금지**(`src/` 무변경).
+- **GATE 1 (기획 승인)**: ✅ 승인 (2026-07-31) — `docs/planning/18_AI_여행_어시스턴트.md`
+- **GATE 2 (설계 승인)**: ⏳ 대기 — 이 문서 + `데이터모델_계약.md` **Part C**(작성 완료)
+- 승인 전 **구현 착수 금지**. 현재 `src/`·`supabase/` **무변경**.
