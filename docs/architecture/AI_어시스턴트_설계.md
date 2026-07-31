@@ -61,6 +61,7 @@ app/api/assistant/chat/route.ts   (서버)
 | 쓰기 경로 | **`upsert_place_embedding` RPC 단독**(직접 쓰기 정책 없음) | 아래 §3.2 |
 | 조회 | 멤버면 역할 무관(`viewer` 포함) | RAG 는 읽기 근거일 뿐 — 조회 권한과 동일선상 |
 | `trip_id` 비정규화 | 채택 | 벡터 검색 hot path 의 핵심 필터. 값은 RPC 가 place 행에서 파생하므로 조작 불가 |
+| **임베딩 원문** | `name` + `category` + `area` — **`memo` 제외** | 자유 입력 PII 가 외부 임베딩 provider 로 나가는 것을 막는다(§6.5 전송 최소화와 정합). 메모는 가장 자주 바뀌는 필드라 재임베딩 churn 도 줄어든다 — Part **C2-b** |
 
 ### 3.2 인덱싱 쓰기 경로 (★검토 반영)
 
@@ -69,8 +70,9 @@ app/api/assistant/chat/route.ts   (서버)
 **`security definer` RPC `upsert_place_embedding(place_id, embedding, model)`** — 직접 INSERT/UPDATE 정책은 두지 않는다.
 
 - 호출자는 **`place_id` 와 벡터만** 넘긴다. **`trip_id`·`content` 는 함수가 `place` 행에서 파생**한다 → 남의 trip 으로 행을 심거나 임의 텍스트를 주입(RAG 오염 = 인젝션 벡터)하는 경로가 사라진다.
-- 함수 내부에서 `is_trip_member` 를 직접 검증 — 기존 `create_trip`·`accept_invite`(B2.1)와 같은 규율.
-- `editor+` 직접 쓰기 정책을 주지 않은 이유: viewer 만 접속한 여행은 인덱싱이 영영 안 되고, `trip_id`/`content` 스푸핑 표면이 남는다(비교표는 Part C1).
+- **자가 인가 필수(definer 는 RLS 를 우회한다)** — ①`auth.uid()` 확인 ②대상 `place` 행을 **DB 에서 조회** ③**조회한 `p.trip_id`** 로 `is_trip_member` 판정(클라가 넘긴 값 아님). 실패 시 `raise`. 여기에 **`set search_path = public`** 을 더해 동명 객체 하이재킹을 막는다. 상세·근거는 Part **C1-a**.
+- 판정 역할은 **member**(역할 무관, viewer 포함) — 임베딩은 파생 읽기 근거라 조회 권한과 같은 선. `editor+` 로 좁히면 viewer 만 접속한 여행의 RAG 가 영구 공백이 된다(비교표 Part C1).
+- **`match_place_embeddings`·`stale_place_embeddings` 는 `security invoker` 이므로 자가 인가 불필요** — 호출자 RLS 가 그대로 적용된다.
 
 ### 3.3 인덱싱 시점
 
@@ -80,9 +82,9 @@ app/api/assistant/chat/route.ts   (서버)
 - **비용 감각**: 장소 1건 ≈ 30~60 토큰. 여행당 30곳 → 약 2K 토큰. Gemini 임베딩 무료 티어 내에서 사실상 0.
 - **실패 허용**: 임베딩 실패는 조용히 스킵(로그만) — RAG 근거가 줄 뿐 어시스턴트는 계속 동작(폴백 §7).
 
-### 3.3 검색 → 컨텍스트 주입
+### 3.4 검색 → 컨텍스트 주입
 
-1. 사용자 질문을 임베딩(1회, 768차원 + L2 정규화 — 저장 벡터와 동일 전처리여야 코사인 비교가 성립).
+1. 사용자 질문을 임베딩(1회). **저장 벡터와 동일한 모델(`EMBEDDING_MODEL`)·768차원·L2 정규화**를 거친다 — 하나라도 어긋나면 유사도가 **에러 없이 조용히 무의미해진다**. 저장·쿼리 모두 `lib/ai/embed.ts` **한 함수**를 공유하고 task type(`RETRIEVAL_DOCUMENT`/`RETRIEVAL_QUERY`)만 분기한다(Part **C2-a**).
 2. `match_place_embeddings(trip_id, q, 8)` → 유사 장소 상위 K. **`security invoker`** 라 호출자 RLS 가 그대로 걸린다(비멤버는 0행).
 3. **구조 컨텍스트**(순수 함수 `buildTripContext`)와 합쳐 시스템 메시지로 주입:
    - 여행 메타(제목·기간·나라/지역·도시 목록), Day별 장소 수·카테고리 분포, 현재 선택 Day/도시, 유사 장소 K개.
@@ -196,7 +198,8 @@ export const coursePlanSchema = z.object({
 - 로그에 **API 키·프롬프트 전문·사용자 메시지·PII 금지**. 남기는 것: `trip_id` 해시·모델명·토큰 수·지연·에러 코드.
 - 대화는 **DB 미저장**(MVP 비영속) → 보관정책 리스크 최소화. 영속화는 후속(그때 보관기간·삭제 UI 동반).
 - 에러는 클라에 일반화 메시지만("지금은 답할 수 없어요") — provider 원문·스택 노출 금지.
-- LLM provider 로 전송되는 여행 데이터는 **필요한 최소 범위**(장소명·카테고리·날짜). 멤버 **이메일·프로필·예산/정산 금액은 전송하지 않는다**.
+- LLM provider 로 전송되는 여행 데이터는 **필요한 최소 범위**(장소명·카테고리·지역·날짜). 멤버 **이메일·프로필·예산/정산 금액은 전송하지 않는다**.
+- **`place.memo` 는 어느 경로로도 전송하지 않는다** — 채팅 컨텍스트에서 제외하고, **임베딩 원문에서도 제외**한다(Part C2-b). 자유 입력 필드라 예약번호·동행자 실명 같은 PII 가 섞일 수 있어 한쪽 경로만 막으면 의미가 없다.
 
 ## 7. 실패 · 폴백 매트릭스
 
@@ -271,11 +274,11 @@ supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·
 
 ## 11. 테스트 (데이터 → 렌더 우선)
 
-- **순수 함수 유닛**: `buildTripContext`(상한·요약 정확성), `systemPrompt`(데이터 블록 분리), `assistantSchema`(좌표 없는 코스 항목 reject).
+- **순수 함수 유닛**: `buildTripContext`(상한·요약 정확성, **`memo` 미포함 회귀**), `systemPrompt`(데이터 블록 분리), `assistantSchema`(좌표 없는 코스 항목 reject), `embed`(저장·쿼리가 같은 모델·차원·정규화를 쓰는지 — 정규화 후 노름 ≈ 1).
 - **통합(컴포넌트)**: 모킹된 스트림 → 말풍선·카드 렌더 / 카드 액션이 `useUpsertPlace`·`useAddPlaceToSchedule` 을 **정확한 payload 로** 호출 / `viewer` 는 액션 미노출.
   - ※ 모킹은 배럴이 아니라 **리프 모듈** 기준(프로젝트 기존 함정 회피).
 - **라우트 핸들러**: 비로그인 401, 비멤버 403, 스키마 위반 400, rate limit 429, 키 없음 비활성.
-- **DB 계약(실 Supabase)**: ① `place_embedding` 직접 INSERT 시도가 **RLS 로 거부**된다 ② `upsert_place_embedding` 이 **다른 trip 의 place_id 로 호출되면 `forbidden`** ③ `match_place_embeddings` 를 비멤버가 호출하면 **0행**(invoker RLS) ④ `consume_assistant_quota` 를 한도 초과까지 호출하면 `allowed=false` 이고 **count 가 더 늘지 않는다**.
+- **DB 계약(실 Supabase)**: ① `place_embedding` 직접 INSERT 시도가 **RLS 로 거부**된다 ② `upsert_place_embedding` 이 **다른 trip 의 place_id 로 호출되면 `forbidden`**(자가 인가 ③, C1-a) ③ 존재하지 않는 place_id → `place_not_found` ④ 저장된 `content` 에 **`memo` 문자열이 포함되지 않는다**(C2-b 회귀) ⑤ `match_place_embeddings` 를 비멤버가 호출하면 **0행**(invoker RLS) ⑥ `consume_assistant_quota` 를 한도 초과까지 호출하면 `allowed=false` 이고 **count 가 더 늘지 않는다**.
 - **grounding 회귀**: 도구 결과에 없는 장소는 카드로 렌더되지 않음(환각 차단 테스트).
 - **e2e(선택)**: 플래그 on + 스텁 provider 로 "질문 → 카드 → Day 추가 → 일정 반영" 1 플로우.
 - **회귀 0 확인**: 플래그 off 상태에서 기존 Vitest 전량 + `yarn build` 그린.
@@ -311,11 +314,17 @@ supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·
 | 4 | 서버 Places 키 | **별도 발급 + API 제한(Places API 만)**. IP 제한은 서버리스 고정 IP 부재로 배제 |
 | 5 | 진입 뷰 | **`plan`·`places` 만**(1차). `calendar`·`budget`·`stats` 후속 |
 
-**추가 확정(GATE 2 검토 반영)**
+**추가 확정(GATE 2 검토 반영 — 1차)**
 - ★수정1 임베딩 쓰기 = **`security definer` RPC 단독**(직접 쓰기 정책 없음, `trip_id`·`content` 서버 파생) — §3.2 / Part C1
 - ★수정2 벡터 **768차원** — Part C2
 - **ivfflat 폐기** → 정확 검색 + `btree(trip_id)`, 5만 행 초과 시 HNSW 승격 — Part C3
 - rate limit 테이블 **클라 쓰기 정책 없음** + 원자적 소비 RPC — Part C6
+
+**추가 확정(GATE 2 검토 반영 — 2차 마감 보강)**
+- **definer 자가 인가 3단계 명문화** + `set search_path = public`. invoker RPC 2종은 무변경(근거 명시) — §3.2 / Part **C1-a**
+- **임베딩 `content` 에서 `memo` 제외** — §6.5 / Part **C2-b**
+- **쿼리 임베딩 = 저장과 동일 모델·768차원·L2 정규화**(task type 만 분기, 생성 함수 1개 공유) — §3.4 / Part **C2-a**
+- 기존 definer 함수 3종의 `search_path` 미설정은 **범위 밖 후속 하드닝**으로 기록(Part C10)
 
 ---
 
