@@ -211,10 +211,11 @@ Supabase 스키마는 `supabase/migrations/`를 순서대로 적용합니다: `0
 |---|---|---|
 | 기능명세서 | [`docs/spec/기능명세서.md`](./docs/spec/기능명세서.md) | 무엇을 만드는가(기능·범위·데이터·권한) |
 | 화면구조 와이어프레임 | [`docs/spec/화면구조_와이어프레임.md`](./docs/spec/화면구조_와이어프레임.md) | 어떤 화면에 무엇이 들어가는가 |
-| 페이지별 기획 | [`docs/planning/`](./docs/planning) | 화면 단위 상세 기획(01~17, 동선 최적화·다중 도시 포함) + 수용 기준 |
+| 페이지별 기획 | [`docs/planning/`](./docs/planning) | 화면 단위 상세 기획(01~18, 동선 최적화·다중 도시·AI 어시스턴트 포함) + 수용 기준 |
 | 설계문서 · 계약 | [`docs/architecture/`](./docs/architecture) | 데이터 모델·상태관리·API 계약·RLS·Realtime·2차 구현·팜플렛 설계 |
 | 동선 최적화 설계 | [`docs/architecture/동선_최적화_설계.md`](./docs/architecture/동선_최적화_설계.md) | NN+2-opt·비용 매트릭스·실이동시간·앵커 |
 | 다중 도시 설계 | [`docs/architecture/다중_도시_설계.md`](./docs/architecture/다중_도시_설계.md) | 도시 정규화·날짜 파생·하위호환·Phase 1~5(이동 세그먼트) |
+| AI 어시스턴트 설계 | [`docs/architecture/AI_어시스턴트_설계.md`](./docs/architecture/AI_어시스턴트_설계.md) | RAG(pgvector)·Places grounding·툴콜·가드레일·비용 — 계약은 `데이터모델_계약.md` **Part C**. **설계 승인 대기, 미구현** |
 | QA 수정 트래킹 | [`docs/qa/fix-requests.md`](./docs/qa/fix-requests.md) | 테스트·피드백 수정 요청과 상태 |
 | 미구현 기능 갭 | [`docs/remaining-features.md`](./docs/remaining-features.md) | 설계 대비 구현 갭·후속 목록 |
 | 디자인 시안 | [`docs/design/prototype/`](./docs/design/prototype) | 시각 참고(HTML) |
