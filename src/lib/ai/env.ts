@@ -29,6 +29,25 @@ export function getEmbeddingModel(): string {
   return process.env.EMBEDDING_MODEL ?? "gemini-embedding-001";
 }
 
+/**
+ * 채팅 모델 ID — 무료 티어 flash 급(설계 §1). 쿼터·모델 정책 변동 시 env 로 교체.
+ *
+ * ★ 기본값이 별칭(`-latest`)인 이유: 실제 키로 확인해보니 `gemini-2.5-flash`·`gemini-2.0-flash` 는
+ *   "no longer available to new users"(404)로 거절됐고 별칭만 응답했다. 구글이 세대를 정리해도
+ *   별칭은 살아 있는 모델을 가리키므로, 고정 버전보다 무료 티어 변동에 강하다.
+ *   특정 버전을 고정하고 싶으면 `AI_MODEL` 로 지정한다.
+ */
+export function getChatModel(): string {
+  assertServer();
+  return process.env.AI_MODEL ?? "gemini-flash-latest";
+}
+
+/** 대화 컨텍스트로 보낼 최근 턴 수 상한(설계 §3.4 — 비용·지연 관리). */
+export const MAX_HISTORY_TURNS = 8;
+
+/** 사용자 메시지 1건의 최대 길이(설계 §6.3 입력 검증). */
+export const MAX_MESSAGE_CHARS = 2000;
+
 /** 임베딩 차원 — pgvector 컬럼 `vector(768)` 과 반드시 일치(계약 C2). */
 export const EMBEDDING_DIM = 768;
 

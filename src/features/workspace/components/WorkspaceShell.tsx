@@ -2,11 +2,13 @@
 
 import type { ReactNode } from "react";
 
+import { AssistantLauncher } from "@/features/assistant";
 import { useMembersQuery } from "@/features/itinerary";
 import { useTripQuery } from "@/features/trip";
 import { canEdit as roleCanEdit } from "@/lib/constants/roles";
 
 import { useTripRealtime } from "../api/useTripRealtime";
+import { useWorkspaceView } from "../hooks/useWorkspaceView";
 import { WorkspaceMobileBar } from "./WorkspaceMobileBar";
 import { WorkspaceOverlays } from "./WorkspaceOverlays";
 import { WorkspaceTopBar } from "./WorkspaceTopBar";
@@ -25,6 +27,7 @@ export function WorkspaceShell({
   const { data: trip } = useTripQuery(tripId);
   const { data: members = [] } = useMembersQuery(tripId);
   const canEdit = trip ? roleCanEdit(trip.my_role) : false;
+  const { current: view } = useWorkspaceView();
 
   // 실시간: presence(접속) + 데이터 변경 동기화(계약 B4).
   // online = 실시간 presence ∪ 쿼리 기본(본인) — presence 없어도 본인은 접속 유지(감사 B).
@@ -53,6 +56,15 @@ export function WorkspaceShell({
       )}
       <main className="flex min-h-0 flex-1">{children}</main>
       <WorkspaceOverlays tripId={tripId} />
+      {/* AI 어시스턴트(18) — 플래그 off·범위 밖 뷰에서는 아무것도 렌더하지 않는다. */}
+      {trip ? (
+        <AssistantLauncher
+          tripId={tripId}
+          tripTitle={trip.title}
+          canEdit={canEdit}
+          view={view}
+        />
+      ) : null}
     </div>
   );
 }

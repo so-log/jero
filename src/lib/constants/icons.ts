@@ -62,6 +62,8 @@ export type IconName =
   | "trending-up"
   | "piggy-bank"
   | "sparkles"
+  | "send"
+  | "stop"
   | "home"
   | "refresh"
   | "activity"
