@@ -6,6 +6,7 @@ import { Icon } from "@/components/ui/icon";
 
 import type { ChatMessage, EvidenceChip } from "../types";
 import { EvidenceChips } from "./EvidenceChips";
+import { RecommendationCard } from "./RecommendationCard";
 
 /**
  * 메시지 리스트 (기획 §3 D·K, 시안 chatBody).
@@ -54,11 +55,13 @@ export function MessageList({
   streaming,
   evidence,
   error,
+  canEdit,
 }: {
   messages: ChatMessage[];
   streaming: boolean;
   evidence: EvidenceChip[];
   error: string | null;
+  canEdit: boolean;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
   const lastId = messages[messages.length - 1]?.id;
@@ -105,15 +108,32 @@ export function MessageList({
           );
         }
 
-        if (message.content.length === 0) return null;
+        const cards = message.cards ?? [];
+        if (message.content.length === 0 && cards.length === 0) return null;
 
         return (
           <div key={message.id} className="flex items-start gap-2.5">
             <AiAvatar />
             <div className="flex min-w-0 flex-1 flex-col gap-2">
-              <div className="rounded-[16px] rounded-bl-[5px] bg-secondary px-3.5 py-[11px] text-[13.5px] leading-relaxed font-medium whitespace-pre-wrap text-body">
-                {message.content}
-              </div>
+              {message.content.length > 0 ? (
+                <div className="rounded-[16px] rounded-bl-[5px] bg-secondary px-3.5 py-[11px] text-[13.5px] leading-relaxed font-medium whitespace-pre-wrap text-body">
+                  {message.content}
+                </div>
+              ) : null}
+
+              {/* 실존이 확인된 장소만 카드가 된다(설계 §4 grounding). */}
+              {cards.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {cards.map((card) => (
+                    <RecommendationCard
+                      key={card.googlePlaceId}
+                      place={card}
+                      canEdit={canEdit}
+                    />
+                  ))}
+                </div>
+              ) : null}
+
               {isLast && !streaming ? <EvidenceChips items={evidence} /> : null}
             </div>
           </div>

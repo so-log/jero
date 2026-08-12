@@ -6,15 +6,17 @@ import {
   MAX_HISTORY_TURNS,
   MAX_MESSAGE_CHARS,
 } from "../lib/assistantSchema";
+import { decodeChunk } from "../lib/streamProtocol";
 import { useAssistantStore } from "../store/assistantStore";
 import type { ChatMessage, EvidenceChip } from "../types";
 
 /**
  * 챗 스트리밍 훅 (설계 §2). 컴포넌트는 이 훅만 쓴다 — 직접 fetch 금지(§7.1).
  *
- * 서버가 `toTextStreamResponse()` 로 **순수 텍스트 스트림**을 주므로 여기서 직접 읽어 누적한다.
+ * 서버 스트림은 텍스트 사이에 카드 프레임이 끼어 있는 형식이다(`streamProtocol.ts`).
+ * 여기서 읽어 텍스트는 말풍선에, 프레임은 추천 카드로 나눠 담는다.
  * (AI SDK 의 `useChat` 은 별도 패키지 `@ai-sdk/react` 가 필요해 도입하지 않았다 — 프로토콜을
- *  양쪽 다 우리가 정의하므로 텍스트 스트림이 단순하고 검증도 쉽다.)
+ *  양쪽 다 우리가 정의하므로 단순하고 검증도 쉽다.)
  */
 
 const EVIDENCE_HEADER = "x-assistant-evidence";
@@ -67,6 +69,7 @@ export function useAssistantChat(tripId: string) {
   const appendMessage = useAssistantStore((s) => s.appendMessage);
   const appendDelta = useAssistantStore((s) => s.appendDelta);
   const dropMessage = useAssistantStore((s) => s.dropMessage);
+  const setCards = useAssistantStore((s) => s.setCards);
   const setEvidence = useAssistantStore((s) => s.setEvidence);
   const setStreaming = useAssistantStore((s) => s.setStreaming);
   const setError = useAssistantStore((s) => s.setError);
@@ -126,12 +129,25 @@ export function useAssistantChat(tripId: string) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let received = 0;
+        let pending = "";
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
-          const delta = decoder.decode(value, { stream: true });
-          received += delta.length;
-          appendDelta(assistantId, delta);
+
+          // 텍스트와 카드 프레임을 분리한다(프레임이 청크 경계에 걸릴 수 있어 pending 을 이어 넘긴다).
+          const chunk = decodeChunk(decoder.decode(value, { stream: true }), pending);
+          pending = chunk.pending;
+
+          if (chunk.text) {
+            received += chunk.text.length;
+            appendDelta(assistantId, chunk.text);
+          }
+          for (const frame of chunk.frames) {
+            if (frame.cards?.length) {
+              received += 1; // 카드만 오고 텍스트가 없어도 "응답 있음"으로 본다.
+              setCards(assistantId, frame.cards);
+            }
+          }
         }
 
         // ★ 모델 오류는 200 헤더가 나간 뒤 스트림 도중에 터진다 — 그러면 내용 없이 끝난다.
@@ -158,6 +174,7 @@ export function useAssistantChat(tripId: string) {
       appendMessage,
       appendDelta,
       dropMessage,
+      setCards,
       setEvidence,
       setStreaming,
       setError,

@@ -1,4 +1,4 @@
-import { streamText } from "ai";
+import { stepCountIs, streamText } from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -7,11 +7,20 @@ import {
   buildTripContext,
 } from "@/features/assistant/lib/buildTripContext";
 import { chatRequestSchema } from "@/features/assistant/lib/assistantSchema";
+import { encodeFrame } from "@/features/assistant/lib/streamProtocol";
 import { buildSystemPrompt } from "@/features/assistant/lib/systemPrompt";
-import type { TripContextInput } from "@/features/assistant/types";
-import { getAssistantDailyLimit, isAssistantEnabled } from "@/lib/ai/env";
+import type { PlaceCard, TripContextInput } from "@/features/assistant/types";
+import {
+  getAssistantDailyLimit,
+  isAssistantEnabled,
+  isGroundingEnabled,
+} from "@/lib/ai/env";
 import { chatModel } from "@/lib/ai/provider";
 import { searchSimilarPlaces } from "@/lib/ai/retrieve";
+import {
+  createSearchPlacesTool,
+  MAX_TOOL_CALLS,
+} from "@/lib/ai/tools/searchPlaces";
 import { hasSupabase } from "@/lib/supabase/env";
 import { createServerSupabase } from "@/lib/supabase/server";
 
@@ -47,6 +56,48 @@ const placeRowsSchema = z.array(
     scheduled_date: z.string().nullable(),
   }),
 );
+
+type FullStream = AsyncIterable<{ type: string; text?: string }>;
+type Grounding = ReturnType<typeof createSearchPlacesTool> | null;
+
+/**
+ * 모델 스트림 → 클라 와이어 포맷 변환 (`streamProtocol.ts`).
+ *
+ * 텍스트 델타는 그대로 흘리고, 스트림이 끝나면 **Places 가 확인해준 장소만** 카드 프레임으로 덧붙인다.
+ *
+ * ★ grounding 2중 방어의 서버측: 카드 목록의 출처는 모델 출력이 아니라 **도구가 수집한 `collected`** 다.
+ *   모델이 본문에 어떤 이름을 지어내든 이 배열에 없으면 카드가 되지 않는다.
+ */
+function toFramedStream(fullStream: FullStream, grounding: Grounding): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        for await (const part of fullStream) {
+          if (part.type === "text-delta" && part.text) {
+            controller.enqueue(encoder.encode(part.text));
+          }
+        }
+      } catch {
+        // 스트림 도중 실패 — 여기서 끊는다. 클라는 "내용 없이 끝난 스트림"을 실패로 처리한다.
+      }
+
+      const cards: PlaceCard[] = (grounding?.collected ?? []).map((p) => ({
+        name: p.name,
+        address: p.address,
+        lat: p.lat,
+        lng: p.lng,
+        googlePlaceId: p.googlePlaceId,
+        category: p.category,
+      }));
+      if (cards.length > 0) {
+        controller.enqueue(encoder.encode(encodeFrame({ cards })));
+      }
+      controller.close();
+    },
+  });
+}
 
 export async function POST(request: Request) {
   if (!hasSupabase) {
@@ -133,27 +184,45 @@ export async function POST(request: Request) {
     similar: similar.map((s) => ({ content: s.content, similarity: s.similarity })),
   };
 
-  const system = buildSystemPrompt(buildTripContext(contextInput));
+  const groundingAvailable = isGroundingEnabled();
+  const system = buildSystemPrompt(buildTripContext(contextInput), {
+    grounding: groundingAvailable,
+  });
   const evidence = buildEvidenceChips(contextInput);
 
-  // ── ⑦ 스트리밍. 도구 없음(Phase 2).
+  // ── ⑦ 스트리밍 + grounding 도구(Phase 3).
+  //    Places 키가 없으면 도구를 **등록하지 않는다** → 모델은 텍스트로만 답한다(폴백, 설계 §7).
+  const grounding = groundingAvailable
+    ? createSearchPlacesTool(request.signal)
+    : null;
+
   try {
     const result = streamText({
       model: chatModel(),
       system,
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
       abortSignal: request.signal,
+      ...(grounding
+        ? {
+            tools: grounding.tools,
+            // 무한 툴콜 루프 차단 — 도구 호출 상한(3) + 마무리 답변 1스텝.
+            stopWhen: stepCountIs(MAX_TOOL_CALLS + 1),
+          }
+        : {}),
       // ★ 모델 오류는 응답 헤더가 나간 **뒤** 스트림 도중에 터진다 — 아래 try/catch 로는 못 잡는다.
       //   여기서 삼켜 unhandled rejection 을 막고, 클라는 "내용 없이 끝난 스트림"을 실패로 처리한다.
       //   (원문은 키·프롬프트를 담을 수 있어 로깅하지 않는다 — §8.5)
       onError: () => {},
     });
 
-    return result.toTextStreamResponse({
+    return new Response(toFramedStream(result.fullStream, grounding), {
+      status: 200,
       headers: {
+        "content-type": "text/plain; charset=utf-8",
         [EVIDENCE_HEADER]: encodeURIComponent(JSON.stringify(evidence)),
         // 스트림이 프록시에 버퍼링되지 않게(첫 토큰 지연 방지).
         "cache-control": "no-store",
+        "x-accel-buffering": "no",
       },
     });
   } catch {

@@ -51,6 +51,24 @@ export const MAX_MESSAGE_CHARS = 2000;
 /** 임베딩 차원 — pgvector 컬럼 `vector(768)` 과 반드시 일치(계약 C2). */
 export const EMBEDDING_DIM = 768;
 
+/**
+ * 서버 전용 Google Places 키 (설계 §6.1, 계약 C9 #4).
+ * ★ 클라 키(`NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`)와 **반드시 별도 발급**한다 —
+ *   클라 키는 HTTP referrer 제한이 걸려 있어 서버에서 호출하면 거부된다.
+ *   이 키는 노출되지 않으므로 referrer 대신 **API 제한(Places API only)** 으로 방어한다
+ *   (Vercel 서버리스는 고정 egress IP 가 없어 IP 제한은 성립하지 않는다).
+ */
+export function getPlacesServerKey(): string {
+  assertServer();
+  return process.env.GOOGLE_PLACES_SERVER_KEY ?? "";
+}
+
+/** Places grounding 가능 여부 — 키가 없으면 도구를 등록하지 않는다(텍스트 답변으로 폴백). */
+export function isGroundingEnabled(): boolean {
+  assertServer();
+  return getPlacesServerKey().length > 0;
+}
+
 /** 일일 요청 한도(계약 C6). `consume_assistant_quota` 인자로만 쓰인다 — 클라 입력 아님. */
 export function getAssistantDailyLimit(): number {
   assertServer();
