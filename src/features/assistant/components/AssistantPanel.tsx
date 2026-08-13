@@ -27,7 +27,7 @@ export function AssistantPanel({
   canEdit: boolean;
   onClose: () => void;
 }) {
-  const { messages, streaming, error, evidence, send, stop } =
+  const { messages, streaming, error, evidence, usage, send, stop } =
     useAssistantChat(tripId);
   // 실행 액션은 패널이 **한 번만** 만든다 — 카드·코스 블록이 같은 진행 상태(적용 중·되돌리기)를 공유한다.
   const actions = useAssistantActions(tripId);
@@ -92,6 +92,7 @@ export function AssistantPanel({
         <AssistantComposer
           streaming={streaming}
           canEdit={canEdit}
+          usage={usage}
           onSend={(text) => void send(text)}
           onStop={stop}
         />

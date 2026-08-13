@@ -441,3 +441,81 @@ test.describe("AI 어시스턴트 — 코스 적용", () => {
     });
   });
 });
+
+/**
+ * 가드레일(Phase 5) — 사용량 표시·한도 소진 잠금.
+ * 챗 응답만 가로채 헤더/429 를 흉내낸다(실제 한도를 소진시키지 않는다).
+ */
+test.describe("AI 어시스턴트 — 가드레일", () => {
+  test.skip(!hasBackend, ".env.local 키 필요");
+  test.beforeAll(async () => {
+    data = await bootstrap(`assistant-guard-${RUN}`);
+  });
+  test.afterAll(async () => {
+    if (data) await teardown(data);
+  });
+
+  async function openPanel(page: Page) {
+    await login(page, data.a);
+    await page.goto(`/trips/${data.tripId}?view=plan`);
+    const enabled = await fab(page)
+      .waitFor({ state: "visible", timeout: 15000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!enabled, "LLM 키 없음");
+    await fab(page).click();
+    return page.getByRole("dialog", { name: "AI 여행 어시스턴트" });
+  }
+
+  test("잔여 사용량을 캡션으로 보여준다", async ({ page }) => {
+    test.setTimeout(120000);
+    await page.route("**/api/assistant/chat", async (route) => {
+      await route.fulfill({
+        status: 200,
+        headers: {
+          "content-type": "text/plain; charset=utf-8",
+          "x-assistant-remaining": "12",
+          "x-assistant-limit": "30",
+        },
+        body: "시부야에 조용한 카페가 몇 곳 있어요.",
+      });
+    });
+
+    const panel = await openPanel(page);
+    await panel.getByRole("button", { name: /카페 추천/ }).click();
+
+    await expect(panel.getByText("오늘 12회 남음")).toBeVisible({ timeout: 20000 });
+    await page.screenshot({
+      path: "e2e/__screenshots__/assistant-usage.png",
+      fullPage: false,
+    });
+  });
+
+  test("★ 한도 소진 시 안내 + 입력 잠금", async ({ page }) => {
+    test.setTimeout(120000);
+    await page.route("**/api/assistant/chat", async (route) => {
+      await route.fulfill({
+        status: 429,
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ error: "rate_limited", remaining: 0, limit: 30 }),
+      });
+    });
+
+    const panel = await openPanel(page);
+    await panel.getByRole("button", { name: /카페 추천/ }).click();
+
+    await expect(panel.getByRole("status")).toContainText(
+      "오늘 사용량을 다 썼어요(30/30)",
+      { timeout: 20000 },
+    );
+    await expect(
+      panel.getByPlaceholder("내일 다시 이용할 수 있어요"),
+    ).toBeDisabled();
+    await expect(panel.getByRole("button", { name: /카페 추천/ })).toBeDisabled();
+
+    await page.screenshot({
+      path: "e2e/__screenshots__/assistant-rate-limited.png",
+      fullPage: false,
+    });
+  });
+});
