@@ -2,7 +2,13 @@
 
 import { create } from "zustand";
 
-import type { ChatMessage, EvidenceChip, PlaceCard } from "../types";
+import type {
+  ChatMessage,
+  CourseApplyResult,
+  CoursePlan,
+  EvidenceChip,
+  PlaceCard,
+} from "../types";
 
 /**
  * 어시스턴트 UI 상태 (설계 §10). **비영속** — 패널을 닫거나 새로고침하면 대화가 사라진다.
@@ -19,6 +25,11 @@ interface AssistantState {
   streaming: boolean;
   /** 사용자에게 보여줄 일반화된 에러 문구(§8.5 — 원문 노출 금지). */
   error: string | null;
+  /**
+   * 코스 적용 결과 — **메시지 id 별**. 패널을 닫았다 열어도 남아야 한다:
+   * 남지 않으면 이미 적용한 코스에 "코스 적용" 버튼이 다시 떠 **중복 생성**으로 이어진다.
+   */
+  courseResults: Record<string, CourseApplyResult>;
 
   openPanel: () => void;
   closePanel: () => void;
@@ -29,6 +40,12 @@ interface AssistantState {
   dropMessage: (id: string) => void;
   /** grounding 을 통과한 추천 카드를 해당 답변에 붙인다(Phase 3). */
   setCards: (id: string, cards: PlaceCard[]) => void;
+  /** Zod 재검증을 통과한 코스 제안을 해당 답변에 붙인다(Phase 4). */
+  setCourse: (id: string, course: CoursePlan) => void;
+  /** 코스 적용 결과를 기록한다(되돌리기·중복 적용 방지의 근거). */
+  setCourseResult: (id: string, result: CourseApplyResult) => void;
+  /** 되돌리기 완료 — 다시 적용할 수 있는 상태로 되돌린다. */
+  clearCourseResult: (id: string) => void;
   setEvidence: (evidence: EvidenceChip[]) => void;
   setStreaming: (streaming: boolean) => void;
   setError: (error: string | null) => void;
@@ -41,6 +58,7 @@ export const useAssistantStore = create<AssistantState>((set) => ({
   evidence: [],
   streaming: false,
   error: null,
+  courseResults: {},
 
   openPanel: () => set({ open: true }),
   closePanel: () => set({ open: false }),
@@ -63,9 +81,31 @@ export const useAssistantStore = create<AssistantState>((set) => ({
       messages: s.messages.map((m) => (m.id === id ? { ...m, cards } : m)),
     })),
 
+  setCourse: (id, course) =>
+    set((s) => ({
+      messages: s.messages.map((m) => (m.id === id ? { ...m, course } : m)),
+    })),
+
+  setCourseResult: (id, result) =>
+    set((s) => ({ courseResults: { ...s.courseResults, [id]: result } })),
+
+  clearCourseResult: (id) =>
+    set((s) => {
+      const next = { ...s.courseResults };
+      delete next[id];
+      return { courseResults: next };
+    }),
+
   setEvidence: (evidence) => set({ evidence }),
   setStreaming: (streaming) => set({ streaming }),
   setError: (error) => set({ error, streaming: false }),
 
-  reset: () => set({ messages: [], evidence: [], streaming: false, error: null }),
+  reset: () =>
+    set({
+      messages: [],
+      evidence: [],
+      streaming: false,
+      error: null,
+      courseResults: {},
+    }),
 }));

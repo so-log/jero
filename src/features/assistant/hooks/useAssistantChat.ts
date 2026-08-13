@@ -3,6 +3,7 @@
 import { useCallback, useRef } from "react";
 
 import {
+  coursePlanSchema,
   MAX_HISTORY_TURNS,
   MAX_MESSAGE_CHARS,
 } from "../lib/assistantSchema";
@@ -70,6 +71,7 @@ export function useAssistantChat(tripId: string) {
   const appendDelta = useAssistantStore((s) => s.appendDelta);
   const dropMessage = useAssistantStore((s) => s.dropMessage);
   const setCards = useAssistantStore((s) => s.setCards);
+  const setCourse = useAssistantStore((s) => s.setCourse);
   const setEvidence = useAssistantStore((s) => s.setEvidence);
   const setStreaming = useAssistantStore((s) => s.setStreaming);
   const setError = useAssistantStore((s) => s.setError);
@@ -147,6 +149,15 @@ export function useAssistantChat(tripId: string) {
               received += 1; // 카드만 오고 텍스트가 없어도 "응답 있음"으로 본다.
               setCards(assistantId, frame.cards);
             }
+            if (frame.course) {
+              // ★ 모델 출력은 렌더 직전에 다시 검증한다(설계 §6.3). 좌표 없는 항목이 하나라도
+              //   섞이면 스키마가 통째로 떨어지고 **코스 블록만 생략**된다 — 텍스트 답변은 남는다(§7).
+              const parsed = coursePlanSchema.safeParse(frame.course);
+              if (parsed.success) {
+                received += 1;
+                setCourse(assistantId, parsed.data);
+              }
+            }
           }
         }
 
@@ -175,6 +186,7 @@ export function useAssistantChat(tripId: string) {
       appendDelta,
       dropMessage,
       setCards,
+      setCourse,
       setEvidence,
       setStreaming,
       setError,

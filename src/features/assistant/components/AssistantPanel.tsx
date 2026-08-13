@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
+import { useAssistantActions } from "../hooks/useAssistantActions";
 import { useAssistantChat } from "../hooks/useAssistantChat";
 import { AssistantComposer } from "./AssistantComposer";
 import { AssistantHeader } from "./AssistantHeader";
@@ -28,6 +29,8 @@ export function AssistantPanel({
 }) {
   const { messages, streaming, error, evidence, send, stop } =
     useAssistantChat(tripId);
+  // 실행 액션은 패널이 **한 번만** 만든다 — 카드·코스 블록이 같은 진행 상태(적용 중·되돌리기)를 공유한다.
+  const actions = useAssistantActions(tripId);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Esc 로 닫기 — 스트리밍 중이면 먼저 중지한다(작업 취소 → 닫기 순서).
@@ -78,11 +81,13 @@ export function AssistantPanel({
           onClose={onClose}
         />
         <MessageList
+          tripId={tripId}
           messages={messages}
           streaming={streaming}
           evidence={evidence}
           error={error}
           canEdit={canEdit}
+          actions={actions}
         />
         <AssistantComposer
           streaming={streaming}

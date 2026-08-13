@@ -1,6 +1,8 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { renderWithClient } from "@/test/utils";
 
 import { useAssistantStore } from "../store/assistantStore";
 import { AssistantPanel } from "./AssistantPanel";
@@ -16,6 +18,37 @@ const TRIP = "11111111-1111-4111-8111-111111111111";
 function withCards(text: string, cards: unknown[]) {
   return text + "" + JSON.stringify({ cards }) + "";
 }
+
+/** 코스 프레임 — 카드와 같은 프레임 구분자를 쓴다(Phase 4 와이어 포맷). */
+function withCourse(text: string, course: unknown) {
+  return withCards(text, []).replace(
+    JSON.stringify({ cards: [] }),
+    JSON.stringify({ course }),
+  );
+}
+
+function coursePlace(name: string, id: string, day: number, order: number) {
+  return {
+    name,
+    category: "cafe",
+    lat: 35.6,
+    lng: 139.7,
+    googlePlaceId: id,
+    address: `${name} 주소`,
+    day,
+    order,
+    reason: `${name} 이유`,
+  };
+}
+
+const COURSE = {
+  summary: "도보 위주 2일 코스",
+  places: [
+    coursePlace("첫째날 A", "p1", 1, 1),
+    coursePlace("첫째날 B", "p2", 1, 2),
+    coursePlace("둘째날 C", "p3", 2, 1),
+  ],
+};
 
 const CARD = {
   name: "블루보틀 아오야마",
@@ -42,7 +75,7 @@ function streamResponse(chunks: string[], headers: Record<string, string> = {}) 
 function renderPanel(canEdit = true, onClose = vi.fn()) {
   return {
     onClose,
-    ...render(
+    ...renderWithClient(
       <AssistantPanel
         tripId={TRIP}
         tripTitle="도쿄, 우리끼리 4일"
@@ -235,7 +268,7 @@ describe("AssistantPanel — 추천 카드 (Phase 3 grounding)", () => {
     expect(await within(log).findByText(/가상의 카페 ABC/)).toBeVisible();
     // 카드에만 있는 액션 버튼이 없다 = 카드가 렌더되지 않았다.
     expect(screen.queryByRole("button", { name: "저장" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "일정에" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /일정에/ })).toBeNull();
   });
 
   it("editor 는 카드에 저장·일정에 버튼이 보인다", async () => {
@@ -249,7 +282,7 @@ describe("AssistantPanel — 추천 카드 (Phase 3 grounding)", () => {
     await user.click(screen.getByRole("button", { name: /카페 추천/ }));
 
     expect(await screen.findByRole("button", { name: "저장" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "일정에" })).toBeVisible();
+    expect(screen.getByRole("button", { name: /일정에/ })).toBeVisible();
   });
 
   it("★ viewer 는 카드는 보되 액션 버튼이 없다(기획 §7.1)", async () => {
@@ -264,7 +297,7 @@ describe("AssistantPanel — 추천 카드 (Phase 3 grounding)", () => {
 
     expect(await screen.findByText("블루보틀 아오야마")).toBeVisible();
     expect(screen.queryByRole("button", { name: "저장" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "일정에" })).toBeNull();
+    expect(screen.queryByRole("button", { name: /일정에/ })).toBeNull();
   });
 
   it("카드가 여러 청크에 걸쳐 와도 렌더된다", async () => {
@@ -282,5 +315,102 @@ describe("AssistantPanel — 추천 카드 (Phase 3 grounding)", () => {
     await user.click(screen.getByRole("button", { name: /카페 추천/ }));
 
     expect(await screen.findByText("블루보틀 아오야마")).toBeVisible();
+  });
+});
+
+describe("AssistantPanel — 코스 제안 (Phase 4)", () => {
+  it("코스 프레임이 오면 Day 타임라인으로 렌더한다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(streamResponse([withCourse("이런 코스 어때요?", COURSE)])),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPanel(true);
+
+    await user.click(screen.getByRole("button", { name: /2일 코스 짜줘/ }));
+
+    const log = screen.getByRole("log", { name: "대화 내용" });
+    expect(await within(log).findByText("2일 코스 제안")).toBeVisible();
+    expect(within(log).getByText("도보 위주 2일 코스")).toBeVisible();
+    expect(within(log).getByText("Day 1")).toBeVisible();
+    expect(within(log).getByText("Day 2")).toBeVisible();
+    expect(within(log).getByText("첫째날 A")).toBeVisible();
+    expect(within(log).getByText("둘째날 C")).toBeVisible();
+    // 왜 골랐는지 한 줄 이유도 함께.
+    expect(within(log).getByText("첫째날 A 이유")).toBeVisible();
+    expect(within(log).getByText("3곳")).toBeVisible();
+  });
+
+  it("editor 는 '코스 적용' 버튼을 본다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(streamResponse([withCourse("코스", COURSE)]))),
+    );
+    const user = userEvent.setup();
+    renderPanel(true);
+
+    await user.click(screen.getByRole("button", { name: /2일 코스 짜줘/ }));
+
+    expect(await screen.findByRole("button", { name: "코스 적용" })).toBeVisible();
+  });
+
+  it("★ viewer 는 실행 버튼 대신 읽기 전용 안내를 본다(기획 §7.1)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(streamResponse([withCourse("코스", COURSE)]))),
+    );
+    const user = userEvent.setup();
+    renderPanel(false);
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+
+    // 코스 내용은 보인다.
+    expect(await screen.findByText("첫째날 A")).toBeVisible();
+    expect(
+      screen.getByText("읽기 전용 — 코스를 적용하려면 편집 권한이 필요해요"),
+    ).toBeVisible();
+    expect(screen.queryByRole("button", { name: "코스 적용" })).toBeNull();
+  });
+
+  it("★ 좌표 없는 항목이 섞이면 코스 블록을 렌더하지 않는다(Zod 재검증)", async () => {
+    const noCoords = { ...coursePlace("좌표 없음", "px", 1, 1), lat: undefined };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          streamResponse([
+            withCourse("코스예요", { summary: "s", places: [noCoords] }),
+          ]),
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPanel(true);
+
+    await user.click(screen.getByRole("button", { name: /2일 코스 짜줘/ }));
+
+    // 텍스트 답변은 남고 코스 블록만 빠진다(설계 §7 폴백).
+    expect(await screen.findByText("코스예요")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "코스 적용" })).toBeNull();
+    expect(screen.queryByText("좌표 없음")).toBeNull();
+  });
+
+  it("'코스 적용' 은 확인 다이얼로그를 먼저 띄운다(설계 §5.2-1)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(streamResponse([withCourse("코스", COURSE)]))),
+    );
+    const user = userEvent.setup();
+    renderPanel(true);
+
+    await user.click(screen.getByRole("button", { name: /2일 코스 짜줘/ }));
+    await user.click(await screen.findByRole("button", { name: "코스 적용" }));
+
+    expect(
+      await screen.findByRole("alertdialog", { name: "코스를 일정에 적용할까요?" }),
+    ).toBeVisible();
+    expect(screen.getByText(/장소 3곳이 여행에 추가되고/)).toBeVisible();
   });
 });

@@ -4,7 +4,9 @@ import { useEffect, useRef } from "react";
 
 import { Icon } from "@/components/ui/icon";
 
+import type { AssistantActions } from "../hooks/useAssistantActions";
 import type { ChatMessage, EvidenceChip } from "../types";
+import { CoursePlanBlock } from "./CoursePlanBlock";
 import { EvidenceChips } from "./EvidenceChips";
 import { RecommendationCard } from "./RecommendationCard";
 
@@ -51,17 +53,21 @@ function TypingDots() {
 }
 
 export function MessageList({
+  tripId,
   messages,
   streaming,
   evidence,
   error,
   canEdit,
+  actions,
 }: {
+  tripId: string;
   messages: ChatMessage[];
   streaming: boolean;
   evidence: EvidenceChip[];
   error: string | null;
   canEdit: boolean;
+  actions: AssistantActions;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
   const lastId = messages[messages.length - 1]?.id;
@@ -109,7 +115,10 @@ export function MessageList({
         }
 
         const cards = message.cards ?? [];
-        if (message.content.length === 0 && cards.length === 0) return null;
+        const course = message.course;
+        if (message.content.length === 0 && cards.length === 0 && !course) {
+          return null;
+        }
 
         return (
           <div key={message.id} className="flex items-start gap-2.5">
@@ -129,9 +138,21 @@ export function MessageList({
                       key={card.googlePlaceId}
                       place={card}
                       canEdit={canEdit}
+                      actions={actions}
                     />
                   ))}
                 </div>
+              ) : null}
+
+              {/* 코스 제안(Phase 4) — 적용 전까지는 아무것도 저장되지 않는다. */}
+              {course ? (
+                <CoursePlanBlock
+                  tripId={tripId}
+                  messageId={message.id}
+                  course={course}
+                  canEdit={canEdit}
+                  actions={actions}
+                />
               ) : null}
 
               {isLast && !streaming ? <EvidenceChips items={evidence} /> : null}
