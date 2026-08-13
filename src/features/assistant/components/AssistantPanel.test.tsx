@@ -88,6 +88,8 @@ function renderPanel(canEdit = true, onClose = vi.fn()) {
 
 beforeEach(() => {
   useAssistantStore.getState().reset();
+  // reset() 은 사용량을 지우지 않는다(서버 카운터는 대화와 무관) — 테스트만 명시적으로 비운다.
+  useAssistantStore.setState({ usage: null });
   vi.stubGlobal(
     "fetch",
     vi.fn(() => Promise.resolve(streamResponse(["시부야 카페 두 곳이에요."]))),
@@ -412,5 +414,139 @@ describe("AssistantPanel — 코스 제안 (Phase 4)", () => {
       await screen.findByRole("alertdialog", { name: "코스를 일정에 적용할까요?" }),
     ).toBeVisible();
     expect(screen.getByText(/장소 3곳이 여행에 추가되고/)).toBeVisible();
+  });
+});
+
+describe("AssistantPanel — 사용량 가드레일 (Phase 5)", () => {
+  const composer = () =>
+    screen.getByPlaceholderText(/무엇이든 물어보세요|내일 다시 이용할 수 있어요/);
+
+  it("성공 응답의 잔여 헤더를 캡션으로 보여준다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          streamResponse(["답변"], {
+            "x-assistant-remaining": "12",
+            "x-assistant-limit": "30",
+          }),
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+
+    expect(await screen.findByText("오늘 12회 남음")).toBeVisible();
+  });
+
+  it("잔여 헤더가 없으면 아무것도 표시하지 않는다(0으로 넘겨짚지 않는다)", async () => {
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+    await screen.findByText("시부야 카페 두 곳이에요.");
+
+    expect(screen.queryByText(/회 남음/)).toBeNull();
+    expect(screen.queryByText(/다 썼어요/)).toBeNull();
+    expect(composer()).toBeEnabled();
+  });
+
+  it("★ 429 면 N/N·리셋 시각을 안내하고 입력을 막는다(기획 §6)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({ error: "rate_limited", remaining: 0, limit: 30 }),
+            { status: 429, headers: { "content-type": "application/json" } },
+          ),
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+
+    // 말풍선은 짧게, 입력창 배너가 정확한 N/N·리셋 시각을 안내한다(중복 금지).
+    expect(
+      await screen.findByText("오늘 사용량을 다 썼어요. 내일 다시 이용할 수 있어요."),
+    ).toBeVisible();
+    const banner = screen.getByRole("status");
+    expect(banner).toHaveTextContent("오늘 사용량을 다 썼어요(30/30)");
+    expect(banner).toHaveTextContent("다시 채워져요");
+
+    // 입력·전송·빠른 질문이 전부 잠긴다 — 더 눌러봐야 429 다.
+    expect(composer()).toBeDisabled();
+    expect(screen.getByRole("button", { name: "전송" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /카페 추천/ })).toBeDisabled();
+  });
+
+  it("★ 잔여가 0이 되면 다음 질문 전에 미리 막는다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          streamResponse(["마지막 답변"], {
+            "x-assistant-remaining": "0",
+            "x-assistant-limit": "30",
+          }),
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+    await screen.findByText("마지막 답변");
+
+    expect(composer()).toBeDisabled();
+  });
+
+  it("★ 서버 에러는 일반화된 문구만 보여준다(provider 원문 미노출)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ error: "chat_failed" }), {
+            status: 502,
+            headers: { "content-type": "application/json" },
+          }),
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+
+    expect(
+      await screen.findByText("지금은 답할 수 없어요. 잠시 후 다시 시도해주세요."),
+    ).toBeVisible();
+  });
+
+  it("모르는 에러 코드도 일반 문구로 떨어진다(새 코드가 새지 않는다)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({ error: "some_new_internal_code_v2" }),
+            { status: 500, headers: { "content-type": "application/json" } },
+          ),
+        ),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+
+    expect(
+      await screen.findByText("지금은 답할 수 없어요. 잠시 후 다시 시도해주세요."),
+    ).toBeVisible();
+    expect(screen.queryByText(/some_new_internal_code_v2/)).toBeNull();
   });
 });

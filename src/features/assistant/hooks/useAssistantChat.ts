@@ -8,6 +8,7 @@ import {
   MAX_MESSAGE_CHARS,
 } from "../lib/assistantSchema";
 import { decodeChunk } from "../lib/streamProtocol";
+import type { AssistantUsage } from "../lib/usage";
 import { useAssistantStore } from "../store/assistantStore";
 import type { ChatMessage, EvidenceChip } from "../types";
 
@@ -21,12 +22,25 @@ import type { ChatMessage, EvidenceChip } from "../types";
  */
 
 const EVIDENCE_HEADER = "x-assistant-evidence";
+const REMAINING_HEADER = "x-assistant-remaining";
+const LIMIT_HEADER = "x-assistant-limit";
 
-/** 사용자에게 보여줄 일반화된 문구 — provider·서버 원문은 노출하지 않는다(§8.5). */
+/**
+ * 사용자에게 보여줄 일반화된 문구 — provider·서버 원문은 노출하지 않는다(§8.5).
+ * ★ 서버가 내려보내는 코드는 **여기 있는 어휘뿐**이고, 목록에 없으면 `default` 로 떨어진다.
+ *   새 코드가 생겨도 원문이 새는 일은 없다(모르는 코드 = 일반 문구).
+ */
 const ERROR_COPY: Record<string, string> = {
+  /*
+   * ★ 말풍선은 "방금 무슨 일이 일어났는지"만 짧게 말한다.
+   *   정확한 한도(N/N)와 리셋 시각은 **입력창 배너**가 맡는다(`AssistantComposer`) —
+   *   같은 문장을 두 곳에 띄우면 화면만 시끄럽고, 안내는 입력이 잠긴 자리에 붙어야 읽힌다.
+   */
   rate_limited: "오늘 사용량을 다 썼어요. 내일 다시 이용할 수 있어요.",
   forbidden: "이 여행에 접근할 권한이 없어요.",
+  unauthorized: "로그인이 필요해요. 다시 로그인한 뒤 시도해주세요.",
   assistant_disabled: "어시스턴트가 지금은 비활성 상태예요.",
+  supabase_disabled: "어시스턴트가 지금은 비활성 상태예요.",
   default: "지금은 답할 수 없어요. 잠시 후 다시 시도해주세요.",
 };
 
@@ -46,14 +60,35 @@ function parseEvidence(header: string | null): EvidenceChip[] {
   }
 }
 
-async function readErrorCode(response: Response): Promise<string> {
+interface ErrorPayload {
+  code: string;
+  /** 429 일 때 서버가 함께 주는 사용량(잔여·한도) — "N/N" 문구와 리셋 안내에 쓴다. */
+  usage: AssistantUsage | null;
+}
+
+async function readErrorPayload(response: Response): Promise<ErrorPayload> {
   try {
     const data: unknown = await response.json();
-    const code = (data as { error?: unknown })?.error;
-    return typeof code === "string" ? code : "default";
+    const body = data as { error?: unknown; remaining?: unknown; limit?: unknown };
+    const code = typeof body?.error === "string" ? body.error : "default";
+    const usage =
+      typeof body?.remaining === "number" && typeof body?.limit === "number"
+        ? { remaining: body.remaining, limit: body.limit }
+        : null;
+    return { code, usage };
   } catch {
-    return "default";
+    return { code: "default", usage: null };
   }
+}
+
+/** 성공 응답 헤더의 잔여 사용량(설계 §6.4 — 클라는 표시만). */
+function parseUsage(response: Response): AssistantUsage | null {
+  const remaining = Number(response.headers.get(REMAINING_HEADER));
+  const limit = Number(response.headers.get(LIMIT_HEADER));
+  if (!Number.isFinite(remaining) || !Number.isFinite(limit) || limit <= 0) {
+    return null;
+  }
+  return { remaining, limit };
 }
 
 let messageSeq = 0;
@@ -72,6 +107,8 @@ export function useAssistantChat(tripId: string) {
   const dropMessage = useAssistantStore((s) => s.dropMessage);
   const setCards = useAssistantStore((s) => s.setCards);
   const setCourse = useAssistantStore((s) => s.setCourse);
+  const usage = useAssistantStore((s) => s.usage);
+  const setUsage = useAssistantStore((s) => s.setUsage);
   const setEvidence = useAssistantStore((s) => s.setEvidence);
   const setStreaming = useAssistantStore((s) => s.setStreaming);
   const setError = useAssistantStore((s) => s.setError);
@@ -118,11 +155,16 @@ export function useAssistantChat(tripId: string) {
         });
 
         if (!response.ok || !response.body) {
-          const code = await readErrorCode(response);
+          const { code, usage: blockedUsage } = await readErrorPayload(response);
+          // 429 가 함께 준 잔여·한도 → 입력창 배너가 N/N·리셋 시각을 그린다.
+          if (blockedUsage) setUsage(blockedUsage);
           setError(ERROR_COPY[code] ?? ERROR_COPY.default);
           return;
         }
 
+        // 헤더가 없으면 **표시하지 않는다** — 0으로 넘겨짚으면 멀쩡한데 "다 썼어요"가 뜬다.
+        const freshUsage = parseUsage(response);
+        if (freshUsage) setUsage(freshUsage);
         setEvidence(parseEvidence(response.headers.get(EVIDENCE_HEADER)));
 
         const assistantId = nextId("a");
@@ -188,10 +230,11 @@ export function useAssistantChat(tripId: string) {
       setCards,
       setCourse,
       setEvidence,
+      setUsage,
       setStreaming,
       setError,
     ],
   );
 
-  return { messages, streaming, error, evidence, send, stop };
+  return { messages, streaming, error, evidence, usage, send, stop };
 }

@@ -12,9 +12,11 @@ import { buildSystemPrompt } from "@/features/assistant/lib/systemPrompt";
 import type { PlaceCard, TripContextInput } from "@/features/assistant/types";
 import {
   getAssistantDailyLimit,
+  getChatModel,
   isAssistantEnabled,
   isGroundingEnabled,
 } from "@/lib/ai/env";
+import { hashTripId, logAssistant } from "@/lib/ai/logging";
 import { chatModel } from "@/lib/ai/provider";
 import { searchSimilarPlaces } from "@/lib/ai/retrieve";
 import { createProposeScheduleTool } from "@/lib/ai/tools/proposeSchedule";
@@ -38,6 +40,12 @@ import { createServerSupabase } from "@/lib/supabase/server";
 
 /** 근거 칩을 스트림과 함께 전달하는 헤더(본문은 순수 텍스트 스트림이라 메타는 헤더로). */
 const EVIDENCE_HEADER = "x-assistant-evidence";
+/**
+ * 잔여 사용량 헤더(설계 §6.4 "클라는 잔여만 표시"). 판정은 서버가 이미 끝냈고,
+ * 이 값은 **표시용**이라 조작해도 한도를 넘길 수 없다(소비는 원자적 RPC).
+ */
+const REMAINING_HEADER = "x-assistant-remaining";
+const LIMIT_HEADER = "x-assistant-limit";
 
 const tripRowSchema = z.object({
   title: z.string(),
@@ -82,6 +90,7 @@ function toFramedStream(
   fullStream: FullStream,
   grounding: Grounding,
   course: Course,
+  onDone?: () => void,
 ): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
 
@@ -117,16 +126,55 @@ function toFramedStream(
         );
       }
       controller.close();
+      onDone?.();
     },
   });
 }
 
+/**
+ * 토큰 수 — provider 가 주면 로그에 남긴다(§6.5 허용 필드). 못 주면 생략한다.
+ * 로깅이 요청을 깨뜨리지 않도록 실패는 전부 삼킨다.
+ */
+async function resolveTokens(result: { usage?: unknown }): Promise<number | undefined> {
+  try {
+    const usage: unknown = await Promise.resolve(result.usage);
+    if (usage && typeof usage === "object" && "totalTokens" in usage) {
+      const total = (usage as { totalTokens?: unknown }).totalTokens;
+      return typeof total === "number" ? total : undefined;
+    }
+  } catch {
+    // provider 가 usage 를 제공하지 않는 경우 — 토큰 없이 나머지만 남긴다.
+  }
+  return undefined;
+}
+
 export async function POST(request: Request) {
+  const startedAt = Date.now();
+
+  /**
+   * 차단 응답 + 로깅을 한 곳에서 처리한다(§6.5).
+   * 로그에 나가는 것은 **코드·상태·여행 해시**뿐 — 사용자 메시지나 provider 원문은 담지 않는다.
+   */
+  const blocked = (
+    code: string,
+    status: number,
+    extra?: { tripHash?: string; body?: Record<string, unknown> },
+  ) => {
+    logAssistant({
+      event: "chat_blocked",
+      code,
+      status,
+      tripHash: extra?.tripHash,
+      latencyMs: Date.now() - startedAt,
+    });
+    return NextResponse.json({ error: code, ...extra?.body }, { status });
+  };
+
   if (!hasSupabase) {
-    return NextResponse.json({ error: "supabase_disabled" }, { status: 503 });
+    return blocked("supabase_disabled", 503);
   }
   if (!isAssistantEnabled()) {
-    return NextResponse.json({ error: "assistant_disabled" }, { status: 503 });
+    return blocked("assistant_disabled", 503);
   }
 
   const supabase = await createServerSupabase();
@@ -134,20 +182,22 @@ export async function POST(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+    return blocked("unauthorized", 401);
   }
 
   let raw: unknown;
   try {
     raw = await request.json();
   } catch {
-    return NextResponse.json({ error: "invalid_json" }, { status: 400 });
+    return blocked("invalid_json", 400);
   }
   const parsed = chatRequestSchema.safeParse(raw);
   if (!parsed.success) {
-    return NextResponse.json({ error: "invalid_input" }, { status: 422 });
+    // ★ Zod 이슈 메시지에는 입력값이 실릴 수 있어 코드만 남긴다(§6.5).
+    return blocked("invalid_input", 422);
   }
   const { tripId, messages } = parsed.data;
+  const tripHash = hashTripId(tripId);
 
   // ── ④ 멤버십: trip 단건 조회가 RLS(trip_select = is_trip_member)로 걸러진다.
   //    클라가 보낸 tripId 를 신뢰하지 않고 여기서 실제 접근 권한을 확인한다(§8.2).
@@ -157,33 +207,36 @@ export async function POST(request: Request) {
     .eq("id", tripId)
     .maybeSingle();
   if (tripError) {
-    return NextResponse.json({ error: "trip_lookup_failed" }, { status: 500 });
+    return blocked("trip_lookup_failed", 500, { tripHash });
   }
   const trip = tripRowSchema.safeParse(tripRow);
   if (!trip.success) {
     // 비멤버거나 없는 여행 — 존재 여부를 구분해 알려주지 않는다.
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+    return blocked("forbidden", 403, { tripHash });
   }
 
   // ── ⑤ rate limit: 원자적 소비(계약 C6). 한도 초과면 모델을 호출하지 않는다.
+  const limit = getAssistantDailyLimit();
   const { data: quotaRows, error: quotaError } = await supabase.rpc(
     "consume_assistant_quota",
-    { p_limit: getAssistantDailyLimit() },
+    { p_limit: limit },
   );
   if (quotaError) {
-    return NextResponse.json({ error: "quota_failed" }, { status: 500 });
+    return blocked("quota_failed", 500, { tripHash });
   }
   const quota = z
     .array(z.object({ allowed: z.boolean(), remaining: z.number() }))
     .safeParse(quotaRows);
   if (!quota.success || !quota.data[0]) {
-    return NextResponse.json({ error: "quota_failed" }, { status: 500 });
+    return blocked("quota_failed", 500, { tripHash });
   }
+  const remaining = quota.data[0].remaining;
   if (!quota.data[0].allowed) {
-    return NextResponse.json(
-      { error: "rate_limited", remaining: 0 },
-      { status: 429 },
-    );
+    // 클라가 "N/N 다 썼어요 + 리셋 시각"을 그릴 수 있게 한도도 함께 준다(기획 §6).
+    return blocked("rate_limited", 429, {
+      tripHash,
+      body: { remaining: 0, limit },
+    });
   }
 
   // ── ⑥ 컨텍스트: 구조 데이터 + RAG. 모두 요청자 세션(RLS)으로 조회한다.
@@ -244,11 +297,28 @@ export async function POST(request: Request) {
       onError: () => {},
     });
 
-    return new Response(toFramedStream(result.fullStream, grounding, course), {
+    const stream = toFramedStream(result.fullStream, grounding, course, () => {
+      // 스트림이 끝난 뒤에야 지연·토큰이 확정된다(§6.5 허용 필드만).
+      void resolveTokens(result).then((tokens) => {
+        logAssistant({
+          event: "chat_completed",
+          tripHash,
+          model: getChatModel(),
+          latencyMs: Date.now() - startedAt,
+          tokens,
+          remaining,
+        });
+      });
+    });
+
+    return new Response(stream, {
       status: 200,
       headers: {
         "content-type": "text/plain; charset=utf-8",
         [EVIDENCE_HEADER]: encodeURIComponent(JSON.stringify(evidence)),
+        // 잔여 표시용(설계 §6.4) — 판정은 이미 서버에서 끝났다.
+        [REMAINING_HEADER]: String(remaining),
+        [LIMIT_HEADER]: String(limit),
         // 스트림이 프록시에 버퍼링되지 않게(첫 토큰 지연 방지).
         "cache-control": "no-store",
         "x-accel-buffering": "no",
@@ -256,6 +326,7 @@ export async function POST(request: Request) {
     });
   } catch {
     // ★ provider 원문은 키·프롬프트를 담을 수 있어 전파하지 않는다(§8.5).
-    return NextResponse.json({ error: "chat_failed" }, { status: 502 });
+    //   로그에도 원문 대신 코드만 남긴다.
+    return blocked("chat_failed", 502, { tripHash });
   }
 }

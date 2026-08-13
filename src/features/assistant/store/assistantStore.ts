@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 
+import type { AssistantUsage } from "../lib/usage";
 import type {
   ChatMessage,
   CourseApplyResult,
@@ -30,6 +31,11 @@ interface AssistantState {
    * 남지 않으면 이미 적용한 코스에 "코스 적용" 버튼이 다시 떠 **중복 생성**으로 이어진다.
    */
   courseResults: Record<string, CourseApplyResult>;
+  /**
+   * 일일 사용량 — **서버가 내려준 값을 그대로 표시만** 한다(설계 §6.4).
+   * 응답을 한 번도 못 받은 상태(null)에서는 아무것도 표시하지 않는다(추측 금지).
+   */
+  usage: AssistantUsage | null;
 
   openPanel: () => void;
   closePanel: () => void;
@@ -42,6 +48,7 @@ interface AssistantState {
   setCards: (id: string, cards: PlaceCard[]) => void;
   /** Zod 재검증을 통과한 코스 제안을 해당 답변에 붙인다(Phase 4). */
   setCourse: (id: string, course: CoursePlan) => void;
+  setUsage: (usage: AssistantUsage) => void;
   /** 코스 적용 결과를 기록한다(되돌리기·중복 적용 방지의 근거). */
   setCourseResult: (id: string, result: CourseApplyResult) => void;
   /** 되돌리기 완료 — 다시 적용할 수 있는 상태로 되돌린다. */
@@ -59,6 +66,7 @@ export const useAssistantStore = create<AssistantState>((set) => ({
   streaming: false,
   error: null,
   courseResults: {},
+  usage: null,
 
   openPanel: () => set({ open: true }),
   closePanel: () => set({ open: false }),
@@ -96,6 +104,8 @@ export const useAssistantStore = create<AssistantState>((set) => ({
       return { courseResults: next };
     }),
 
+  setUsage: (usage) => set({ usage }),
+
   setEvidence: (evidence) => set({ evidence }),
   setStreaming: (streaming) => set({ streaming }),
   setError: (error) => set({ error, streaming: false }),
@@ -107,5 +117,6 @@ export const useAssistantStore = create<AssistantState>((set) => ({
       streaming: false,
       error: null,
       courseResults: {},
+      // ★ usage 는 지우지 않는다 — 대화를 비워도 서버 카운터는 그대로다(표시가 되살아나면 거짓말).
     }),
 }));
