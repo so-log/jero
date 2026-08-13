@@ -65,6 +65,7 @@
 - **예산·정산** — 카테고리 도넛·일별 추이 차트 + 지출 테이블. 지출 추가·편집, 분담(split) 관리, 멤버별 정산 **라이브 재계산**.
 - **여행 통계** — 총 이동거리(Haversine)·일자별 이동·카테고리 분포를 차트로 요약(`?view=stats`).
 - **팜플렛 내보내기** — 완성한 일정을 **A4 3단 접이 팜플렛**으로. 테마 프리셋(패턴 + 일러스트 씬)·섹션 체크 선택·QR(읽기 전용 공유 링크 재사용)·인쇄/PDF.
+- **AI 여행 어시스턴트** — 워크스페이스에서 대화로 장소를 추천받고 **그대로 일정에 반영**합니다. 답변은 **스트리밍**, 근거는 여행 데이터(**RAG** — pgvector 768차원)에서 뽑고, 추천 장소는 **Google Places로 실존·좌표를 확인한 것만** 카드가 됩니다(환각 차단). 카드에서 `저장`/`일정에`, Day별 코스 제안은 `코스 적용`으로 일괄 반영 → **되돌리기** → **동선 최적화 연계**까지 이어집니다. **모델에는 쓰기 도구를 주지 않고**(제안까지만) 실제 DB 변경은 사용자가 승인한 기존 뮤테이션이 수행합니다. 가드레일: 서버 전용 키, 프롬프트 인젝션 가드(여행 데이터는 데이터 블록으로 격리), 일일 사용량 한도(원자적 RPC)·잔여 표시, 도구 호출·스텝 상한, PII/키를 남기지 않는 화이트리스트 로깅. LLM 키가 없으면 **기능 자체가 비활성**되고 기존 화면은 100% 그대로입니다(회귀 0).
 - **공유·초대·권한** — `owner` / `editor` / `viewer`. 읽기 전용 공개 링크(토큰 스코프·민감 필드 제외), 편집 초대 링크 수락. 권한은 UI가 아니라 서버/RLS에서 강제.
 - **인증·계정** — 이메일/비번 + **구글 OAuth** 로그인, **비밀번호 재설정**(복구 메일 → 새 비밀번호 설정). 프로필·기본 통화 설정, **프로필 사진 업로드**(Supabase Storage, 없으면 색·이니셜 폴백), 계정 탈퇴(소유 여행 owner 승계 또는 cascade 삭제).
 
@@ -89,11 +90,11 @@
 
 ## 아키텍처
 
-**의존 방향** — 단방향(`app → features → components·lib·types`). 도메인 간 직접참조를 금지하고, 공유가 필요하면 `lib`/`components`로 승격합니다. 지도는 도메인 로직이 없는 **표현 전용** 레이어라 `components/map`으로 승격해 여러 도메인이 공유합니다. `app/`은 라우팅 전용, 비즈니스 로직은 도메인별 `features/`(account·auth·budget·invite·itinerary·place·share·trip·workspace·system)로 응집합니다.
+**의존 방향** — 단방향(`app → features → components·lib·types`). 도메인 간 직접참조를 금지하고, 공유가 필요하면 `lib`/`components`로 승격합니다. 지도는 도메인 로직이 없는 **표현 전용** 레이어라 `components/map`으로 승격해 여러 도메인이 공유합니다. `app/`은 라우팅 전용, 비즈니스 로직은 도메인별 `features/`(account·assistant·auth·budget·invite·itinerary·place·share·trip·workspace·system)로 응집합니다.
 
 ```mermaid
 flowchart TD
-  app["app/ · 라우팅·페이지·api 라우트"] --> features["features/도메인 · trip·itinerary·place·budget·share·account·workspace"]
+  app["app/ · 라우팅·페이지·api 라우트"] --> features["features/도메인 · trip·itinerary·place·budget·share·account·assistant·workspace"]
   features --> ui["components/ui + components/map · 표현 전용"]
   features --> lib["lib/ · supabase 클라이언트·상수·유틸·queryClient"]
   features --> types["types/ · 도메인 타입"]
@@ -173,11 +174,11 @@ yarn 1.x에서 `yarn check`는 **의존성 무결성 검사(내장 명령)**라 
 
 ## 테스트
 
-- **단위·통합**: Vitest + Testing Library — 295 tests. "데이터 응답 → 화면 렌더링" 통합 검증을 유닛 테스트보다 우선.
-- **e2e**: Playwright — 21 tests, **실 Supabase** 대상. service_role 부트스트랩으로 실인증, 생성 데이터 티어다운. 2계정 2컨텍스트로 실시간 협업(데이터 동기화·presence·커서)까지 검증(account·budget·flows·home·realtime·folder·stats·pamphlet 등).
+- **단위·통합**: Vitest + Testing Library — 541 tests. "데이터 응답 → 화면 렌더링" 통합 검증을 유닛 테스트보다 우선.
+- **e2e**: Playwright — 30 tests, **실 Supabase** 대상. service_role 부트스트랩으로 실인증, 생성 데이터 티어다운. 2계정 2컨텍스트로 실시간 협업(데이터 동기화·presence·커서)까지 검증(account·budget·flows·home·realtime·folder·stats·pamphlet·assistant 등).
 
 ```bash
-yarn run check      # typecheck + lint + Vitest(295 tests) — 커밋/PR 전 게이트
+yarn run check      # typecheck + lint + Vitest(541 tests) — 커밋/PR 전 게이트
 yarn test           # Vitest 단위·통합 (1회)
 yarn test:e2e       # Playwright e2e (실 Supabase)
 ```
@@ -196,14 +197,23 @@ yarn install
 #   SUPABASE_SERVICE_ROLE_KEY=...          (서버 전용 — 계정 삭제 라우트. NEXT_PUBLIC_ 아님)
 #   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...    (지도 렌더 + 장소 검색·지오코딩)
 #   NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID=...     (선택 — 벡터 맵 + AdvancedMarker)
+#
+#   # AI 어시스턴트 — 전부 서버 전용(NEXT_PUBLIC_ 금지). 없으면 기능만 비활성, 나머지는 정상.
+#   GOOGLE_GENERATIVE_AI_API_KEY=...       (Gemini — 채팅·임베딩 공용)
+#   GOOGLE_PLACES_SERVER_KEY=...           (장소 grounding — 클라 지도 키와 별도 발급)
+#   ASSISTANT_ENABLED=false                (선택 — 키가 있어도 강제로 끌 때)
 
 yarn dev                    # http://localhost:3000
 yarn build && yarn start    # 프로덕션
 ```
 
-Supabase 스키마는 `supabase/migrations/`를 순서대로 적용합니다: `0001_auth`(인증·profile 프로비저닝) · `0002_data`(trips/places/budget·RLS·RPC) · `0003_share`(공유·초대) · `0004_realtime`(퍼블리케이션·realtime.messages RLS) · `0005_templates`(여행 템플릿 카탈로그·시드 + `create_trip` 복제) · `0006_multicity`(`trip_city` + `place.city_id` + 백필·하위호환) · `0007_city_transfer`(`trip_city.arrival_*` 도시 간 이동). 아바타 업로드에는 public `avatars` 스토리지 버킷(본인 경로 쓰기 RLS)이 필요합니다.
+전체 변수 목록과 주석은 [`.env.example`](./.env.example) 을 참고하세요(`AI_MODEL`·`EMBEDDING_MODEL`·`ASSISTANT_DAILY_LIMIT` 등 선택 변수 포함).
+
+Supabase 스키마는 `supabase/migrations/`를 순서대로 적용합니다: `0001_auth`(인증·profile 프로비저닝) · `0002_data`(trips/places/budget·RLS·RPC) · `0003_share`(공유·초대) · `0004_realtime`(퍼블리케이션·realtime.messages RLS) · `0005_templates`(여행 템플릿 카탈로그·시드 + `create_trip` 복제) · `0006_multicity`(`trip_city` + `place.city_id` + 백필·하위호환) · `0007_city_transfer`(`trip_city.arrival_*` 도시 간 이동) · `0008_assistant`(AI 어시스턴트 — `vector` 확장 + `place_embedding` + RPC·RLS + `assistant_usage`). 아바타 업로드에는 public `avatars` 스토리지 버킷(본인 경로 쓰기 RLS)이 필요합니다.
 
 > Google Maps API 키는 클라이언트 노출 전제입니다. 콘솔에서 **HTTP referrer(도메인) 제한 + 사용 API 범위 제한**을 걸어 두세요. 장소 기능에는 **Maps JavaScript · Places · Geocoding API**를 사용 설정해야 합니다. 구글 소셜 로그인은 Google OAuth 클라이언트의 리디렉션 URI를 **Supabase 콜백**(`https://<ref>.supabase.co/auth/v1/callback`)으로 등록합니다. `SUPABASE_SERVICE_ROLE_KEY`는 서버 전용이며 절대 클라이언트에 노출하지 않습니다.
+
+> **AI 어시스턴트 (선택)** — `0008_assistant`는 **pgvector**를 씁니다. Supabase 프로젝트에서 `vector` 확장이 필요하며, 마이그레이션이 `create extension if not exists vector`로 켭니다(임베딩은 **768차원** 고정 — 모델을 바꾸면 전체 재인덱싱). 키는 **전부 서버 전용**입니다: `GOOGLE_GENERATIVE_AI_API_KEY`(Gemini — 채팅·임베딩 공용), `GOOGLE_PLACES_SERVER_KEY`(장소 grounding). 서버 Places 키는 클라 지도 키와 **별도로 발급**하세요 — 클라 키는 referrer 제한이 걸려 서버에서 호출하면 거부되며, 서버 키는 노출되지 않으므로 **"API 제한 = Places API"**로 잠급니다. Gemini 키가 없으면 어시스턴트가 비활성(FAB 미노출·엔드포인트 503)되고 나머지 화면은 그대로 동작합니다. Places 키만 없으면 카드 없이 텍스트로만 답합니다.
 
 ## 문서 지도
 
@@ -215,7 +225,7 @@ Supabase 스키마는 `supabase/migrations/`를 순서대로 적용합니다: `0
 | 설계문서 · 계약 | [`docs/architecture/`](./docs/architecture) | 데이터 모델·상태관리·API 계약·RLS·Realtime·2차 구현·팜플렛 설계 |
 | 동선 최적화 설계 | [`docs/architecture/동선_최적화_설계.md`](./docs/architecture/동선_최적화_설계.md) | NN+2-opt·비용 매트릭스·실이동시간·앵커 |
 | 다중 도시 설계 | [`docs/architecture/다중_도시_설계.md`](./docs/architecture/다중_도시_설계.md) | 도시 정규화·날짜 파생·하위호환·Phase 1~5(이동 세그먼트) |
-| AI 어시스턴트 설계 | [`docs/architecture/AI_어시스턴트_설계.md`](./docs/architecture/AI_어시스턴트_설계.md) | RAG(pgvector)·Places grounding·툴콜·가드레일·비용 — 계약은 `데이터모델_계약.md` **Part C**. **설계 승인 대기, 미구현** |
+| AI 어시스턴트 설계 | [`docs/architecture/AI_어시스턴트_설계.md`](./docs/architecture/AI_어시스턴트_설계.md) | RAG(pgvector)·Places grounding·툴콜·가드레일·비용 — 계약은 `데이터모델_계약.md` **Part C**. phase 1~5 구현 완료(§13) + **설계와 달라진 점·남은 갭**(§13.1·GATE 상태) |
 | QA 수정 트래킹 | [`docs/qa/fix-requests.md`](./docs/qa/fix-requests.md) | 테스트·피드백 수정 요청과 상태 |
 | 미구현 기능 갭 | [`docs/remaining-features.md`](./docs/remaining-features.md) | 설계 대비 구현 갭·후속 목록 |
 | 디자인 시안 | [`docs/design/prototype/`](./docs/design/prototype) | 시각 참고(HTML) |
