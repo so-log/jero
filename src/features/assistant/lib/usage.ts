@@ -15,7 +15,7 @@ export interface AssistantUsage {
 
 /**
  * 다음 리셋 시각 — 카운터는 **UTC 날짜(`usage_date`) 기준**이라 UTC 자정에 초기화된다(계약 C6).
- * 사용자에게는 자기 시간대로 보여야 하므로 Date 로 변환만 하고 표기는 호출부에서 로케일에 맡긴다.
+ * 여기서는 절대 시각(UTC)만 계산하고, 사용자 시간대로 바꿔 적는 일은 `formatResetTime` 이 한다.
  */
 export function nextResetAt(now: Date): Date {
   return new Date(
@@ -24,23 +24,68 @@ export function nextResetAt(now: Date): Date {
 }
 
 /**
+ * 실행 환경의 IANA 타임존. 못 구하면 UTC 로 떨어진다(표시가 깨지는 것보다 낫다).
+ */
+function runtimeTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
+/**
+ * 주어진 시각을 **대상 타임존의 시·분**으로 환산한다.
+ *
+ * ★ 로케일은 `en-US` 로 고정한다 — 여기서 뽑는 것은 **숫자뿐**이고, `en-US` 는 축소 ICU
+ *   빌드(`small-icu`)에도 항상 들어 있다. 표시 언어와는 무관하다.
+ *   (`ko-KR` 을 쓰면 로케일 데이터가 없는 환경에서 조용히 en-US 로 폴백한다.)
+ */
+function hourMinuteIn(date: Date, timeZone: string): { hour: number; minute: number } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+  }).formatToParts(date);
+
+  const value = (type: "hour" | "minute"): number =>
+    Number(parts.find((p) => p.type === type)?.value ?? "0");
+
+  // hour12:false 에서 자정을 '24' 로 내는 구현이 있어 정규화한다.
+  return { hour: value("hour") % 24, minute: value("minute") };
+}
+
+/** 유효하지 않은 타임존이면 `Intl` 이 RangeError 를 던진다 — 표시 때문에 화면이 죽지 않게 막는다. */
+function safeTimeZone(timeZone: string): string {
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone });
+    return timeZone;
+  } catch {
+    return "UTC";
+  }
+}
+
+/**
  * "오전 9:00" 처럼 **사용자의 시간대**로 리셋 시각을 적는다.
  * 한국(UTC+9)에서는 UTC 자정 = 오전 9시라 "왜 자정이 아닌가"가 자연스럽게 설명된다.
  *
- * 로케일은 앱 표기 언어(`<html lang="ko">`)에 맞춰 `ko-KR` 로 고정한다 — 브라우저 로케일에
- * 맡기면 한국어 문장 안에 "9:00 AM" 이 섞인다(코드베이스 통화·숫자 표기와 같은 관례).
- * 시간대는 고정하지 않는다: 실행 환경의 시간대가 그대로 반영돼야 사용자에게 맞는 시각이 된다.
+ * ★ 문구는 런타임 로케일 데이터에 맡기지 않고 **직접 조립**한다.
+ *   `toLocaleTimeString("ko-KR")` 은 ko 데이터가 없는 환경(CI 의 축소 ICU)에서 말없이
+ *   영어로 폴백해 한국어 문장에 "AM" 이 섞였다. 같은 이유로 이 저장소의 다른 시각 포맷터
+ *   (`formatLastLogin`·`formatTransferTime`)도 전부 수동 조립이다 — 그 관례를 따른다.
+ *
+ * @param timeZone 표시 기준 **IANA 타임존**(예: `'Asia/Seoul'`). 로케일 문자열이 아니다.
+ *                 기본값은 실행 환경의 타임존이고, 테스트는 명시해 결정적으로 만든다.
  */
-export function formatResetTime(now: Date, locale = "ko-KR"): string {
-  return nextResetAt(now).toLocaleTimeString(locale, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
-}
-
-/** 한도 소진 안내 문구(기획 §6 — "오늘 사용량을 다 썼어요(N/N)" + 리셋 시각). */
-export function exhaustedMessage(usage: AssistantUsage, now: Date): string {
-  return `오늘 사용량을 다 썼어요(${usage.limit}/${usage.limit}). ${formatResetTime(now)}에 다시 채워져요.`;
+export function formatResetTime(
+  now: Date,
+  timeZone: string = runtimeTimeZone(),
+): string {
+  const { hour, minute } = hourMinuteIn(nextResetAt(now), safeTimeZone(timeZone));
+  const period = hour < 12 ? "오전" : "오후";
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${period} ${hour12}:${String(minute).padStart(2, "0")}`;
 }
 
 /** 남은 횟수 캡션. 다 썼으면 빈 문자열(소진 안내가 대신 뜬다). */
