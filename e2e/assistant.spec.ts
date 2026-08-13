@@ -1,6 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
 import {
+  adminClient,
   bootstrap,
   hasBackend,
   teardown,
@@ -227,6 +228,215 @@ test.describe("AI 어시스턴트 — 추천 카드", () => {
 
     await page.screenshot({
       path: "e2e/__screenshots__/assistant-cards.png",
+      fullPage: false,
+    });
+  });
+});
+
+/**
+ * 코스 적용(Phase 4) — 제안 → 확인 → **실제 일정 반영** → 되돌리기.
+ * 챗 응답만 가로채고, 그 뒤 쓰기는 **실제 뮤테이션·RLS** 를 그대로 탄다(설계 §5.2).
+ */
+test.describe("AI 어시스턴트 — 코스 적용", () => {
+  test.skip(!hasBackend, ".env.local 키 필요");
+  test.beforeAll(async () => {
+    data = await bootstrap(`assistant-course-${RUN}`);
+  });
+  test.afterAll(async () => {
+    if (data) await teardown(data);
+  });
+
+  const COURSE = {
+    summary: "아오야마 도보 코스",
+    places: [
+      {
+        name: "코스 카페 하나",
+        category: "cafe",
+        lat: 35.6672,
+        lng: 139.7118,
+        googlePlaceId: "ChIJ_course_1",
+        address: "도쿄도 미나토구 1",
+        day: 1,
+        order: 1,
+        reason: "오전에 들르기 좋아요",
+      },
+      {
+        name: "코스 미술관 둘",
+        category: "museum",
+        lat: 35.6647,
+        lng: 139.7166,
+        googlePlaceId: "ChIJ_course_2",
+        address: "도쿄도 미나토구 2",
+        day: 1,
+        order: 2,
+        reason: "카페에서 도보 5분",
+      },
+      {
+        name: "코스 식당 셋",
+        category: "food",
+        lat: 35.6702,
+        lng: 139.7026,
+        googlePlaceId: "ChIJ_course_3",
+        address: "도쿄도 미나토구 3",
+        day: 2,
+        order: 1,
+        reason: "둘째 날 저녁",
+      },
+    ],
+  };
+
+  async function stubCourse(page: Page): Promise<void> {
+    await page.route("**/api/assistant/chat", async (route) => {
+      const frame = "" + JSON.stringify({ course: COURSE }) + "";
+      await route.fulfill({
+        status: 200,
+        headers: { "content-type": "text/plain; charset=utf-8" },
+        body: "이런 코스는 어떠세요?" + frame,
+      });
+    });
+  }
+
+  test("코스 제안 → 적용 → 일정 반영 → 되돌리기", async ({ page }) => {
+    test.setTimeout(120000);
+    await stubCourse(page);
+    await login(page, data.a);
+    await page.goto(`/trips/${data.tripId}?view=plan`);
+
+    const enabled = await fab(page)
+      .waitFor({ state: "visible", timeout: 15000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!enabled, "LLM 키 없음");
+
+    await fab(page).click();
+    const panel = page.getByRole("dialog", { name: "AI 여행 어시스턴트" });
+    await panel.getByRole("button", { name: /2일 코스 짜줘/ }).click();
+
+    // Day 타임라인이 시안대로 렌더된다.
+    const log = panel.getByRole("log", { name: "대화 내용" });
+    await expect(log.getByText("2일 코스 제안")).toBeVisible({ timeout: 20000 });
+    await expect(log.getByText("Day 1")).toBeVisible();
+    await expect(log.getByText("코스 카페 하나")).toBeVisible();
+    await expect(log.getByText("오전에 들르기 좋아요")).toBeVisible();
+
+    await page.screenshot({
+      path: "e2e/__screenshots__/assistant-course.png",
+      fullPage: false,
+    });
+
+    // 적용 — 확인 다이얼로그를 거친다(설계 §5.2-1).
+    await panel.getByRole("button", { name: "코스 적용" }).click();
+    const confirm = page.getByRole("alertdialog", {
+      name: "코스를 일정에 적용할까요?",
+    });
+    await expect(confirm).toBeVisible();
+    await confirm.getByRole("button", { name: "적용" }).click();
+
+    await expect(panel.getByText("3곳을 일정에 추가했어요")).toBeVisible({
+      timeout: 30000,
+    });
+
+    // 적용 후: 결과 안내 + 되돌리기 + 동선 최적화 연계(설계 §5.2-7).
+    // 대화 영역으로 좁힌다 — 빠른 질문 칩에도 같은 이름이 있다.
+    await expect(log.getByRole("button", { name: "되돌리기" })).toBeVisible();
+    await expect(log.getByRole("button", { name: "동선 최적화" })).toBeVisible();
+    await page.screenshot({
+      path: "e2e/__screenshots__/assistant-course-applied.png",
+      fullPage: false,
+    });
+
+    /*
+     * ★ 실제 일정에 반영됐다 — 패널을 닫고 플랜 뷰에서 확인한다.
+     * 일정 카드는 **버튼**이라 패널 안 코스 텍스트와 구분된다(같은 이름이 양쪽에 있다).
+     */
+    const planCard = (name: string) =>
+      page.getByRole("button", { name: new RegExp(name) });
+
+    await panel.getByRole("button", { name: "어시스턴트 닫기" }).click();
+    await expect(planCard("코스 카페 하나")).toBeVisible({ timeout: 20000 });
+    await expect(planCard("코스 미술관 둘")).toBeVisible();
+
+    // 패널을 다시 열어도 "코스 적용"이 아니라 결과·되돌리기가 보인다(중복 적용 방지).
+    await fab(page).click();
+    await expect(panel.getByText("3곳을 일정에 추가했어요")).toBeVisible();
+    await expect(panel.getByRole("button", { name: "코스 적용" })).toBeHidden();
+
+    // 되돌리기 — 이번에 만든 3곳이 일정에서 사라진다.
+    await log.getByRole("button", { name: "되돌리기" }).click();
+    await expect(planCard("코스 카페 하나")).toBeHidden({ timeout: 30000 });
+    await expect(planCard("코스 미술관 둘")).toBeHidden();
+  });
+
+  test("★ viewer 는 코스를 보되 적용 버튼이 없다(기획 §7.1)", async ({ page }) => {
+    test.setTimeout(120000);
+    // B 를 viewer 로 낮춘다 — 읽기 전용 경계를 실제 역할로 검증한다.
+    const admin = adminClient();
+    const { error } = await admin
+      .from("trip_member")
+      .update({ role: "viewer" })
+      .eq("trip_id", data.tripId)
+      .eq("user_id", data.b.id);
+    expect(error).toBeNull();
+
+    await stubCourse(page);
+    await login(page, data.b);
+    await page.goto(`/trips/${data.tripId}?view=plan`);
+
+    const enabled = await fab(page)
+      .waitFor({ state: "visible", timeout: 15000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!enabled, "LLM 키 없음");
+
+    await fab(page).click();
+    const panel = page.getByRole("dialog", { name: "AI 여행 어시스턴트" });
+    await panel.getByRole("button", { name: /카페 추천/ }).click();
+
+    // 코스 내용은 보인다.
+    await expect(panel.getByText("코스 카페 하나")).toBeVisible({ timeout: 20000 });
+    // 실행 버튼 대신 읽기 전용 안내.
+    await expect(
+      panel.getByText("읽기 전용 — 코스를 적용하려면 편집 권한이 필요해요"),
+    ).toBeVisible();
+    await expect(panel.getByRole("button", { name: "코스 적용" })).toBeHidden();
+
+    // 역할 원복(뒤 테스트 격리).
+    await admin
+      .from("trip_member")
+      .update({ role: "editor" })
+      .eq("trip_id", data.tripId)
+      .eq("user_id", data.b.id);
+  });
+
+  test("모바일 375 — 코스 블록이 시트 안에서 잘리지 않는다", async ({ page }) => {
+    test.setTimeout(120000);
+    await page.setViewportSize({ width: 375, height: 760 });
+    await stubCourse(page);
+    await login(page, data.a);
+    await page.goto(`/trips/${data.tripId}?view=plan`);
+
+    const enabled = await fab(page)
+      .waitFor({ state: "visible", timeout: 15000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!enabled, "LLM 키 없음");
+
+    await fab(page).click();
+    const panel = page.getByRole("dialog", { name: "AI 여행 어시스턴트" });
+    await panel.getByRole("button", { name: /2일 코스 짜줘/ }).click();
+
+    const block = panel.getByText("2일 코스 제안");
+    await expect(block).toBeVisible({ timeout: 20000 });
+
+    // 코스 블록이 시트 너비 안에 들어온다(가로 스크롤 없음).
+    const box = await panel
+      .getByRole("button", { name: "코스 적용" })
+      .boundingBox();
+    expect(box).not.toBeNull();
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(375);
+
+    await page.screenshot({
+      path: "e2e/__screenshots__/assistant-course-mobile.png",
       fullPage: false,
     });
   });

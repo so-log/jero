@@ -7,6 +7,12 @@ export { CalendarView } from "./components/CalendarView";
 export { ItineraryPanel } from "./components/ItineraryPanel";
 export { usePlacesQuery, useMembersQuery } from "./api/usePlacesQuery";
 export { useReorderPlaces, type ReorderInput } from "./api/useReorderPlaces";
+// 동선 최적화(16) — 어시스턴트 코스 적용 후 연계가 재사용(설계 §5.2-7. 신규 알고리즘 없음).
+export {
+  useRouteOptimize,
+  type OptimizeMode,
+  type RoutePreview,
+} from "./hooks/useRouteOptimize";
 export { usePlanStore } from "./store/planStore";
 export { PLAN_FIXTURE, MEMBERS_FIXTURE } from "./api/fixtures";
 // 다중 도시(Phase 3·4) — 도시 스케줄 훅 + 셀렉터 뷰모델(장소 도시 축이 재사용).

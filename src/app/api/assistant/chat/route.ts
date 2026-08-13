@@ -17,6 +17,7 @@ import {
 } from "@/lib/ai/env";
 import { chatModel } from "@/lib/ai/provider";
 import { searchSimilarPlaces } from "@/lib/ai/retrieve";
+import { createProposeScheduleTool } from "@/lib/ai/tools/proposeSchedule";
 import {
   createSearchPlacesTool,
   MAX_TOOL_CALLS,
@@ -59,16 +60,29 @@ const placeRowsSchema = z.array(
 
 type FullStream = AsyncIterable<{ type: string; text?: string }>;
 type Grounding = ReturnType<typeof createSearchPlacesTool> | null;
+type Course = ReturnType<typeof createProposeScheduleTool> | null;
+
+/** 여행 일수(1-based Day 상한). 기간을 벗어난 Day 제안을 도구 단계에서 걸러내는 데 쓴다. */
+function countDays(startDate: string, endDate: string): number {
+  const start = Date.parse(`${startDate}T00:00:00Z`);
+  const end = Date.parse(`${endDate}T00:00:00Z`);
+  if (Number.isNaN(start) || Number.isNaN(end) || end < start) return 1;
+  return Math.floor((end - start) / 86_400_000) + 1;
+}
 
 /**
  * 모델 스트림 → 클라 와이어 포맷 변환 (`streamProtocol.ts`).
  *
  * 텍스트 델타는 그대로 흘리고, 스트림이 끝나면 **Places 가 확인해준 장소만** 카드 프레임으로 덧붙인다.
  *
- * ★ grounding 2중 방어의 서버측: 카드 목록의 출처는 모델 출력이 아니라 **도구가 수집한 `collected`** 다.
- *   모델이 본문에 어떤 이름을 지어내든 이 배열에 없으면 카드가 되지 않는다.
+ * ★ grounding 2중 방어의 서버측: 카드·코스의 출처는 모델 출력이 아니라 **도구가 수집한 `collected`** 다.
+ *   모델이 본문에 어떤 이름을 지어내든 이 배열에 없으면 카드도 코스 항목도 되지 않는다.
  */
-function toFramedStream(fullStream: FullStream, grounding: Grounding): ReadableStream<Uint8Array> {
+function toFramedStream(
+  fullStream: FullStream,
+  grounding: Grounding,
+  course: Course,
+): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
 
   return new ReadableStream<Uint8Array>({
@@ -91,8 +105,16 @@ function toFramedStream(fullStream: FullStream, grounding: Grounding): ReadableS
         googlePlaceId: p.googlePlaceId,
         category: p.category,
       }));
-      if (cards.length > 0) {
-        controller.enqueue(encoder.encode(encodeFrame({ cards })));
+      const proposal = course?.proposal ?? null;
+      if (cards.length > 0 || proposal) {
+        controller.enqueue(
+          encoder.encode(
+            encodeFrame({
+              ...(cards.length > 0 ? { cards } : {}),
+              ...(proposal ? { course: proposal } : {}),
+            }),
+          ),
+        );
       }
       controller.close();
     },
@@ -190,10 +212,17 @@ export async function POST(request: Request) {
   });
   const evidence = buildEvidenceChips(contextInput);
 
-  // ── ⑦ 스트리밍 + grounding 도구(Phase 3).
+  // ── ⑦ 스트리밍 + grounding 도구(Phase 3) + 코스 제안 도구(Phase 4).
   //    Places 키가 없으면 도구를 **등록하지 않는다** → 모델은 텍스트로만 답한다(폴백, 설계 §7).
+  //    코스 도구도 같은 조건이다 — 좌표의 출처가 Places 뿐이라 grounding 없이는 성립하지 않는다.
   const grounding = groundingAvailable
     ? createSearchPlacesTool(request.signal)
+    : null;
+  const course = grounding
+    ? createProposeScheduleTool(
+        grounding.collected,
+        countDays(trip.data.start_date, trip.data.end_date),
+      )
     : null;
 
   try {
@@ -202,11 +231,11 @@ export async function POST(request: Request) {
       system,
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
       abortSignal: request.signal,
-      ...(grounding
+      ...(grounding && course
         ? {
-            tools: grounding.tools,
-            // 무한 툴콜 루프 차단 — 도구 호출 상한(3) + 마무리 답변 1스텝.
-            stopWhen: stepCountIs(MAX_TOOL_CALLS + 1),
+            tools: { ...grounding.tools, ...course.tools },
+            // 무한 툴콜 루프 차단 — 검색 상한(3) + 코스 제안 1 + 마무리 답변 1스텝.
+            stopWhen: stepCountIs(MAX_TOOL_CALLS + 2),
           }
         : {}),
       // ★ 모델 오류는 응답 헤더가 나간 **뒤** 스트림 도중에 터진다 — 아래 try/catch 로는 못 잡는다.
@@ -215,7 +244,7 @@ export async function POST(request: Request) {
       onError: () => {},
     });
 
-    return new Response(toFramedStream(result.fullStream, grounding), {
+    return new Response(toFramedStream(result.fullStream, grounding, course), {
       status: 200,
       headers: {
         "content-type": "text/plain; charset=utf-8",

@@ -35,6 +35,10 @@ const state = vi.hoisted(() => ({
     googlePlaceId: string;
     category: string;
   }[],
+  /** proposeSchedule 이 확정한 코스(Phase 4) — null 이면 코스 프레임이 나가지 않는다. */
+  proposal: null as unknown,
+  /** 코스 도구에 넘어간 여행 일수(기간 밖 Day 방어의 입력). */
+  dayCounts: [] as number[],
 }));
 
 vi.mock("@/lib/supabase/env", () => ({
@@ -80,6 +84,8 @@ vi.mock("@/lib/ai/retrieve", () => ({
 
 vi.mock("ai", () => ({
   stepCountIs: (n: number) => ({ kind: "stepCount", n }),
+  // 도구 정의는 그대로 통과시킨다 — 라우트가 proposeSchedule 도구를 만들 때 필요하다(Phase 4).
+  tool: (definition: Record<string, unknown>) => definition,
   streamText: (args: Record<string, unknown>) => {
     state.streamCalls.push(args);
     if (state.streamThrows) throw new Error("provider exploded");
@@ -104,6 +110,29 @@ vi.mock("@/lib/ai/tools/searchPlaces", async () => {
       collected: state.collected,
       callCount: 0,
     }),
+  };
+});
+
+// 코스 도구 — 모델 루프 없이 "확정된 제안"을 주입한다(프레임 방출 계약만 검증).
+vi.mock("@/lib/ai/tools/proposeSchedule", async () => {
+  const actual = await vi.importActual<
+    typeof import("@/lib/ai/tools/proposeSchedule")
+  >("@/lib/ai/tools/proposeSchedule");
+  return {
+    ...actual,
+    createProposeScheduleTool: (
+      grounded: unknown,
+      dayCount: number,
+    ): {
+      tools: Record<string, unknown>;
+      proposal: unknown;
+    } => {
+      state.dayCounts.push(dayCount);
+      return {
+        tools: { proposeSchedule: { description: "stub" } },
+        proposal: state.proposal,
+      };
+    },
   };
 });
 
@@ -145,6 +174,8 @@ beforeEach(() => {
   state.streamThrows = false;
   state.modelText = ["안녕하세요"];
   state.collected = [];
+  state.proposal = null;
+  state.dayCounts = [];
   delete process.env.GOOGLE_PLACES_SERVER_KEY;
 });
 
@@ -308,15 +339,20 @@ describe("grounding (Phase 3, 설계 §4)", () => {
     const parts = body.split("\u001E");
     return parts
       .filter((_, i) => i % 2 === 1)
-      .map((raw) => JSON.parse(raw) as { cards?: unknown[] });
+      .map((raw) => JSON.parse(raw) as { cards?: unknown[]; course?: unknown });
   }
 
   it("Places 키가 있으면 도구와 스텝 상한을 등록한다", async () => {
     withPlacesKey();
     await POST(ask());
 
-    expect(state.streamCalls[0].tools).toBeDefined();
-    expect(state.streamCalls[0].stopWhen).toEqual({ kind: "stepCount", n: 4 });
+    // 화이트리스트는 읽기 전용 2종뿐 — **쓰기 도구는 없다**(설계 §5.1).
+    expect(Object.keys(state.streamCalls[0].tools as object).sort()).toEqual([
+      "proposeSchedule",
+      "searchPlaces",
+    ]);
+    // 검색 3회 + 코스 제안 1 + 마무리 답변 1 = 5스텝에서 멈춘다(무한 툴콜 차단).
+    expect(state.streamCalls[0].stopWhen).toEqual({ kind: "stepCount", n: 5 });
   });
 
   it("확인된 장소를 카드 프레임으로 덧붙인다", async () => {
@@ -369,5 +405,64 @@ describe("grounding (Phase 3, 설계 §4)", () => {
     expect(String(state.streamCalls[0].system)).toContain(
       "반드시 searchPlaces 도구로 먼저 확인",
     );
+  });
+});
+
+describe("코스 제안 (Phase 4, 설계 §5.2)", () => {
+  const COURSE = {
+    summary: "도보 위주 2일 코스",
+    places: [
+      {
+        name: "블루보틀 아오야마",
+        category: "cafe",
+        lat: 35.6672,
+        lng: 139.7118,
+        googlePlaceId: "ChIJ_blue",
+        address: "도쿄도 미나토구",
+        day: 1,
+        order: 1,
+        reason: "오전에 좋아요",
+      },
+    ],
+  };
+
+  async function readCourseFrames(res: Response) {
+    const body = await res.text();
+    return body
+      .split("")
+      .filter((_, i) => i % 2 === 1)
+      .map((raw) => JSON.parse(raw) as { cards?: unknown[]; course?: unknown });
+  }
+
+  it("확정된 코스를 프레임으로 덧붙인다", async () => {
+    process.env.GOOGLE_PLACES_SERVER_KEY = "places-key";
+    state.proposal = COURSE;
+
+    expect(await readCourseFrames(await POST(ask()))).toEqual([
+      { course: COURSE },
+    ]);
+  });
+
+  it("★ 코스 제안이 없으면 코스 프레임도 없다", async () => {
+    process.env.GOOGLE_PLACES_SERVER_KEY = "places-key";
+    state.proposal = null;
+
+    expect(await readCourseFrames(await POST(ask()))).toEqual([]);
+  });
+
+  it("★ Places 키가 없으면 코스 도구를 아예 등록하지 않는다(좌표 출처가 없다)", async () => {
+    state.proposal = COURSE;
+    await POST(ask());
+
+    expect(state.streamCalls[0].tools).toBeUndefined();
+    expect(state.dayCounts).toEqual([]);
+  });
+
+  it("여행 일수를 도구에 넘겨 기간 밖 Day 를 막게 한다", async () => {
+    process.env.GOOGLE_PLACES_SERVER_KEY = "places-key";
+    await POST(ask());
+
+    // fixture 2026-04-18 ~ 04-21 = 4일
+    expect(state.dayCounts).toEqual([4]);
   });
 });

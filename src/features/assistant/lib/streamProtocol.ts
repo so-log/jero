@@ -1,4 +1,4 @@
-import type { PlaceCard } from "../types";
+import type { CoursePlan, PlaceCard } from "../types";
 
 /**
  * 어시스턴트 스트림 와이어 포맷 — **서버·클라 공유 단일 출처**.
@@ -18,9 +18,14 @@ import type { PlaceCard } from "../types";
 /** 프레임 구분자. */
 export const FRAME = "";
 
-/** 프레임 payload — 지금은 카드뿐이고, Phase 4 에서 코스 제안이 추가된다. */
+/** 프레임 payload — 추천 카드(Phase 3) + 코스 제안(Phase 4). */
 export interface StreamFrame {
   cards?: PlaceCard[];
+  /**
+   * 코스 제안. 클라는 **받은 그대로 믿지 않고** `coursePlanSchema` 로 재검증한 뒤 렌더한다
+   * (설계 §6.3 — 스키마 불일치면 코스 블록을 생략하고 텍스트 답변만 남긴다).
+   */
+  course?: CoursePlan;
 }
 
 /** 서버: payload 를 프레임 문자열로 만든다. */
