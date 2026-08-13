@@ -12,6 +12,20 @@ import { AssistantPanel } from "./AssistantPanel";
 
 const TRIP = "11111111-1111-4111-8111-111111111111";
 
+/** 카드 프레임을 스트림 끝에 덧붙인다(서버 와이어 포맷과 동일). */
+function withCards(text: string, cards: unknown[]) {
+  return text + "" + JSON.stringify({ cards }) + "";
+}
+
+const CARD = {
+  name: "블루보틀 아오야마",
+  address: "도쿄도 미나토구 미나미아오야마",
+  lat: 35.6672,
+  lng: 139.7118,
+  googlePlaceId: "ChIJ_blue",
+  category: "cafe",
+};
+
 function streamResponse(chunks: string[], headers: Record<string, string> = {}) {
   const encoder = new TextEncoder();
   return new Response(
@@ -180,5 +194,93 @@ describe("AssistantPanel — 권한 (기획 §7.1)", () => {
     expect(screen.getByRole("button", { name: /2일 코스 짜줘/ })).toBeVisible();
     expect(screen.getByRole("button", { name: /동선 최적화/ })).toBeVisible();
     expect(screen.getByText("도쿄, 우리끼리 4일 · 편집 가능")).toBeVisible();
+  });
+});
+
+describe("AssistantPanel — 추천 카드 (Phase 3 grounding)", () => {
+  it("카드 프레임이 오면 실존 장소 카드를 렌더한다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(streamResponse([withCards("두 곳 찾았어요.", [CARD])])),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+
+    const log = screen.getByRole("log", { name: "대화 내용" });
+    expect(await within(log).findByText("블루보틀 아오야마")).toBeVisible();
+    expect(within(log).getByText("도쿄도 미나토구 미나미아오야마")).toBeVisible();
+    // 카테고리 pill
+    expect(within(log).getByText("카페")).toBeVisible();
+    // 답변 본문도 함께 남는다
+    expect(within(log).getByText("두 곳 찾았어요.")).toBeVisible();
+  });
+
+  it("★ 카드 프레임이 없으면 본문에 상호명이 있어도 카드가 없다(환각 차단)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(streamResponse(["'가상의 카페 ABC' 어때요?"])),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+
+    const log = screen.getByRole("log", { name: "대화 내용" });
+    expect(await within(log).findByText(/가상의 카페 ABC/)).toBeVisible();
+    // 카드에만 있는 액션 버튼이 없다 = 카드가 렌더되지 않았다.
+    expect(screen.queryByRole("button", { name: "저장" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "일정에" })).toBeNull();
+  });
+
+  it("editor 는 카드에 저장·일정에 버튼이 보인다", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(streamResponse([withCards("추천", [CARD])]))),
+    );
+    const user = userEvent.setup();
+    renderPanel(true);
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+
+    expect(await screen.findByRole("button", { name: "저장" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "일정에" })).toBeVisible();
+  });
+
+  it("★ viewer 는 카드는 보되 액션 버튼이 없다(기획 §7.1)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(streamResponse([withCards("추천", [CARD])]))),
+    );
+    const user = userEvent.setup();
+    renderPanel(false);
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+
+    expect(await screen.findByText("블루보틀 아오야마")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "저장" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "일정에" })).toBeNull();
+  });
+
+  it("카드가 여러 청크에 걸쳐 와도 렌더된다", async () => {
+    const whole = withCards("추천이에요", [CARD]);
+    const cut = Math.floor(whole.length / 2);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() =>
+        Promise.resolve(streamResponse([whole.slice(0, cut), whole.slice(cut)])),
+      ),
+    );
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+
+    expect(await screen.findByText("블루보틀 아오야마")).toBeVisible();
   });
 });

@@ -82,6 +82,7 @@ export function AssistantPanel({
           streaming={streaming}
           evidence={evidence}
           error={error}
+          canEdit={canEdit}
         />
         <AssistantComposer
           streaming={streaming}

@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 
-import type { ChatMessage, EvidenceChip } from "../types";
+import type { ChatMessage, EvidenceChip, PlaceCard } from "../types";
 
 /**
  * 어시스턴트 UI 상태 (설계 §10). **비영속** — 패널을 닫거나 새로고침하면 대화가 사라진다.
@@ -27,6 +27,8 @@ interface AssistantState {
   appendDelta: (id: string, delta: string) => void;
   /** 내용 없이 끝난 답변 자리표시자를 걷어낸다(스트림 도중 실패). */
   dropMessage: (id: string) => void;
+  /** grounding 을 통과한 추천 카드를 해당 답변에 붙인다(Phase 3). */
+  setCards: (id: string, cards: PlaceCard[]) => void;
   setEvidence: (evidence: EvidenceChip[]) => void;
   setStreaming: (streaming: boolean) => void;
   setError: (error: string | null) => void;
@@ -55,6 +57,11 @@ export const useAssistantStore = create<AssistantState>((set) => ({
 
   dropMessage: (id) =>
     set((s) => ({ messages: s.messages.filter((m) => m.id !== id) })),
+
+  setCards: (id, cards) =>
+    set((s) => ({
+      messages: s.messages.map((m) => (m.id === id ? { ...m, cards } : m)),
+    })),
 
   setEvidence: (evidence) => set({ evidence }),
   setStreaming: (streaming) => set({ streaming }),
