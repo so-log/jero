@@ -1,6 +1,7 @@
 "use client";
 
 import { useAssistantStatus } from "../api/useAssistantStatus";
+import { useIndexPlaces } from "../api/useIndexPlaces";
 import { useAssistantStore } from "../store/assistantStore";
 import { AssistantFab } from "./AssistantFab";
 import { AssistantPanel } from "./AssistantPanel";
@@ -29,6 +30,15 @@ export function AssistantLauncher({
   const open = useAssistantStore((s) => s.open);
   const openPanel = useAssistantStore((s) => s.openPanel);
   const closePanel = useAssistantStore((s) => s.closePanel);
+
+  /*
+   * RAG 인덱싱 — 워크스페이스 진입 1회(설계 §3.3). 아래 early return 보다 **위**에 둔다:
+   *  ① 훅은 조건부로 호출할 수 없고
+   *  ② 인덱싱은 패널을 열지 않아도, 범위 밖 뷰(캘린더 등)에 있어도 해두는 편이 낫다
+   *     — 나중에 어시스턴트를 열었을 때 이미 근거가 준비돼 있다.
+   * 플래그가 꺼져 있으면 훅 내부에서 요청 자체를 보내지 않는다(회귀 0).
+   */
+  useIndexPlaces(tripId, enabled);
 
   const inScope = view === "plan" || view === "places";
   if (!enabled || !inScope) return null;
