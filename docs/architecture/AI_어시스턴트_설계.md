@@ -77,14 +77,13 @@ app/api/assistant/chat/route.ts   (서버)
 
 ### 3.3 인덱싱 시점
 
-> ⚠ **구현 상태 (2026-08-13)**: `POST /api/assistant/index` 라우트와 RPC 3종은 구현·테스트 완료지만
-> **아직 어디서도 호출하지 않는다**(`useIndexPlaces` 미구현). 따라서 실제 앱에서는 `place_embedding` 이
-> 비어 있고 `match_place_embeddings` 는 항상 0행을 돌려준다 → 어시스턴트는 **구조 컨텍스트만으로 동작**한다.
-> 이는 §7 폴백 매트릭스의 "pgvector 테이블 없음 → RAG 없이 구조 컨텍스트만(품질만 하락)" 경로와 같아
-> 기능은 정상 동작하지만, **RAG 유사 검색은 실사용에서 아직 근거로 쓰이지 않는다.**
-> 후속: 아래 트리거 중 하나를 배선해야 한다(`docs/remaining-features.md` 에 갭으로 기록).
+> ✅ **구현 상태**: 배선 완료(`feat/assistant-index-wiring`). `AssistantLauncher` 가 **워크스페이스 진입 1회**
+> `POST /api/assistant/index` 를 호출한다(`api/useIndexPlaces`, `hasMore` 면 상한 3회까지 이어받기).
+> fire-and-forget 이라 실패해도 화면은 무영향이고, 플래그 off 면 요청 자체가 나가지 않는다(회귀 0).
+> 실 Supabase e2e 로 "진입만으로 `place_embedding` 채워짐 → 답변이 그 장소를 근거로 사용"까지 확인했다.
 
-- **트리거**: `place` insert/update 후 **서버 경로에서 비동기 upsert**(`POST /api/assistant/index`).
+- **트리거**: **워크스페이스 진입 시 1회**(채택) — `AssistantLauncher` → `useIndexPlaces` → `POST /api/assistant/index`.
+  `place` insert/update 직후 호출은 채택하지 않았다(후속): 진입 트리거만으로도 다음 진입에 반영되고, 저장 경로마다 훅을 심는 비용이 더 크다.
 - **변경 시에만**: `stale_place_embeddings` RPC 가 `content_hash` 불일치 행만 돌려준다 → **장소 편집이 잦아도 임베딩 비용은 실제 텍스트 변경 시에만** 발생.
 - **배치**: 여행 최초 진입 시 미인덱싱 place 를 한 번에 배치 임베딩(1 요청 다건).
 - **비용 감각**: 장소 1건 ≈ 30~60 토큰. 여행당 30곳 → 약 2K 토큰. Gemini 임베딩 무료 티어 내에서 사실상 0.
@@ -256,7 +255,7 @@ src/features/assistant/
 │   └─ useAssistantActions.ts     # 저장/배정/코스적용/되돌리기/최적화 연계
 ├─ api/
 │   ├─ useAssistantStatus.ts      # feature flag(서버 판정 boolean) — 설계의 useAssistantEnabled
-│   └─ useIndexPlaces.ts          # 임베딩 인덱싱 트리거(mutation)       ❌ 미구현 — §3.3 참고
+│   └─ useIndexPlaces.ts          # 임베딩 인덱싱 트리거(진입 1회·배치 이어받기)
 ├─ lib/
 │   ├─ assistantSchema.ts         # Zod (요청·도구·구조화 출력) — 서버·클라 공유 단일 출처
 │   ├─ buildTripContext.ts        # 순수: 여행 → 컨텍스트 요약
@@ -279,7 +278,7 @@ src/lib/ai/
 src/app/api/assistant/
 ├─ chat/route.ts                  # POST 스트리밍(세션·멤버십·rate limit·도구·잔여 헤더)
 ├─ status/route.ts                # GET feature flag boolean — 구현에서 추가
-└─ index/route.ts                 # POST 임베딩 인덱싱  ⚠ 구현됐으나 **호출부 없음**(§3.3)
+└─ index/route.ts                 # POST 임베딩 인덱싱(진입 시 useIndexPlaces 가 호출)
 
 supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·RLS·assistant_usage
 ```
@@ -320,7 +319,7 @@ supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·
 
 | Phase | 브랜치 | 산출 | 완료 조건 | 상태 |
 |---|---|---|---|---|
-| 1 | `feat/assistant-rag` | 마이그레이션·`lib/ai/embed`·인덱싱 라우트·유사검색 | 유사 검색 유닛/통합 green, 기존 회귀 0 | ✅ #31 (⚠ 인덱싱 트리거 미배선 — §3.3) |
+| 1 | `feat/assistant-rag` | 마이그레이션·`lib/ai/embed`·인덱싱 라우트·유사검색 | 유사 검색 유닛/통합 green, 기존 회귀 0 | ✅ #31 · 트리거 배선 `feat/assistant-index-wiring` |
 | 2 | `feat/assistant-chat` | 챗 라우트(스트리밍) + 패널 UI(텍스트만) | 스트리밍 렌더 테스트, 플래그 off 시 무영향 | ✅ #32 |
 | 3 | `feat/assistant-grounding` | `searchPlaces` 도구 + 추천 카드 | 좌표 없는 후보 제외 테스트 | ✅ #33 |
 | 4 | `feat/assistant-actions` | 카드 액션·코스 적용·되돌리기·동선 최적화 연계 | 뮤테이션 payload·권한 테스트 | ✅ #34 |
@@ -378,7 +377,6 @@ supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·
 
 | 항목 | 상태 | 영향 |
 |---|---|---|
-| 임베딩 인덱싱 트리거(`useIndexPlaces` 또는 서버 훅) | ❌ 미배선 | `place_embedding` 이 비어 RAG 유사 검색이 실사용에서 근거로 쓰이지 않는다. 어시스턴트는 구조 컨텍스트로 정상 동작(§7 폴백) — §3.3 |
 | `MessageActions`(다시 제안·복사) | ❌ 미구현 | 실패 시 **재시도 버튼 없음**(안내 문구만). 기획 §6 부분 미충족 |
 | `getTripSnapshot` 도구 | ❌ 미구현(의도) | 없음 — 컨텍스트 주입으로 대체(§5.1) |
 | 코스 푸터 2버튼 병치(시안) | ⚠ 의도적 이탈 | 기획 §11 "시안 일치" 1항목과 다름(§13.1-4) |

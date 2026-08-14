@@ -150,12 +150,12 @@
 > 근거: `docs/architecture/AI_어시스턴트_설계.md` **GATE 상태 · §13.1**, 기획 `docs/planning/18_…` §11.
 > 구현은 `#31`~`#35`(phase 1~5)로 완료됐고, 아래는 **끝나지 않은 것만** 남긴 목록이다.
 
-### I. 임베딩 인덱싱 트리거 배선 (RAG 실사용) — 최우선
+### I. 임베딩 인덱싱 트리거 배선 (RAG 실사용) — ✅ 완료(`feat/assistant-index-wiring`)
 
-- **증상**: `place_embedding` 이 비어 있어 `match_place_embeddings` 가 항상 0행 → 어시스턴트가 **구조 컨텍스트만**으로 답한다(설계 §7 폴백 경로라 기능은 정상, 답변 근거만 얕다).
-- **원인**: `POST /api/assistant/index` 라우트와 RPC(`upsert_place_embedding`·`stale_place_embeddings`)는 구현·테스트 완료지만 **호출부가 없다**(설계 §9 의 `api/useIndexPlaces.ts` 미구현).
-- **할 일**: 설계 §3.3 의 트리거 중 하나 — ① 여행 최초 진입 시 미인덱싱 place 배치 인덱싱 ② `place` 저장·편집 후 비동기 호출. `stale_place_embeddings` 가 `content_hash` 불일치 행만 돌려주므로 **변경 시에만** 비용이 든다.
-- **검증**: 인덱싱 후 유사 검색이 행을 돌려주고 근거 칩에 반영되는지 + 임베딩 `content` 에 `memo` 가 없는지(계약 C2-b 회귀).
+- **증상(해결됨)**: `place_embedding` 이 비어 `match_place_embeddings` 가 항상 0행 → 어시스턴트가 구조 컨텍스트만으로 답했다(설계 §7 폴백이라 기능은 정상, 근거만 얕음).
+- **원인**: 라우트·RPC 는 완성돼 있었고 **호출부만 없었다**.
+- **해결**: `features/assistant/api/useIndexPlaces` 신설 → `AssistantLauncher` 가 **워크스페이스 진입 1회** 호출(`hasMore` 면 상한 3회까지 이어받기). fire-and-forget 이라 실패해도 화면 무영향, 플래그 off 면 요청 자체가 없다(회귀 0). 라우트·RPC·계약은 무변경.
+- **검증**: 실 Supabase e2e — 진입만으로 `place_embedding` 0→3, 재진입 시 `updated_at` 무변화(`content_hash` 변경분만), 답변이 시드 장소명을 근거로 사용하고 근거 칩에 **"관련 장소 N건"** 노출. 단위 14건(진입 1회·재렌더 무호출·상한 정지·비활성 무호출·실패 미전파).
 
 ### J. 실패 시 재시도 — `MessageActions`(다시 제안 · 복사)
 
