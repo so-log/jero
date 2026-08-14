@@ -519,3 +519,133 @@ test.describe("AI 어시스턴트 — 가드레일", () => {
     });
   });
 });
+
+/**
+ * RAG 인덱싱 배선 — **실제로 임베딩이 쌓이는지**를 DB 로 확인한다(설계 §3.3).
+ *
+ * 이 스위트는 스텁 없이 실 경로를 탄다: 워크스페이스 진입 → `POST /api/assistant/index`
+ * → Gemini 임베딩 → `place_embedding` upsert. 그래서 **Gemini 키가 없으면 건너뛴다**.
+ */
+test.describe("AI 어시스턴트 — RAG 인덱싱", () => {
+  test.skip(!hasBackend, ".env.local 키 필요");
+  test.beforeAll(async () => {
+    data = await bootstrap(`assistant-index-${RUN}`);
+  });
+  test.afterAll(async () => {
+    if (data) await teardown(data);
+  });
+
+  /** 이 여행의 임베딩 행 수(service_role — RLS 우회 관찰). */
+  async function embeddingCount(tripId: string): Promise<number> {
+    const { count, error } = await adminClient()
+      .from("place_embedding")
+      .select("place_id", { count: "exact", head: true })
+      .eq("trip_id", tripId);
+    if (error) throw new Error(`place_embedding 조회 실패: ${error.message}`);
+    return count ?? 0;
+  }
+
+  test("★ 워크스페이스 진입만으로 place_embedding 이 채워진다", async ({ page }) => {
+    test.setTimeout(150000);
+
+    // 시드 장소 3곳이 아직 인덱싱되지 않은 상태에서 시작한다.
+    expect(await embeddingCount(data.tripId)).toBe(0);
+
+    await login(page, data.a);
+    await page.goto(`/trips/${data.tripId}?view=plan`);
+
+    // 어시스턴트가 비활성(키 없음)이면 인덱싱도 걸리지 않는 게 정상 — 그때는 건너뛴다.
+    const enabled = await fab(page)
+      .waitFor({ state: "visible", timeout: 15000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!enabled, "LLM 키 없음 — 인덱싱 트리거도 비활성(회귀 0)");
+
+    // 임베딩 API 왕복이 있어 여유를 준다.
+    await expect
+      .poll(() => embeddingCount(data.tripId), { timeout: 60000, intervals: [1000] })
+      .toBeGreaterThan(0);
+
+    // 시드 장소 3곳이 모두 인덱싱된다(배치 1회로 충분한 규모).
+    expect(await embeddingCount(data.tripId)).toBe(3);
+  });
+
+  test("재진입해도 다시 임베딩하지 않는다(content_hash 변경분만)", async ({ page }) => {
+    test.setTimeout(150000);
+
+    await login(page, data.a);
+    await page.goto(`/trips/${data.tripId}?view=plan`);
+    const enabled = await fab(page)
+      .waitFor({ state: "visible", timeout: 15000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!enabled, "LLM 키 없음");
+
+    await expect
+      .poll(() => embeddingCount(data.tripId), { timeout: 60000, intervals: [1000] })
+      .toBe(3);
+
+    // 인덱싱 시각을 기억해 두고 재진입 — 변경이 없으면 행이 갱신되지 않아야 한다.
+    const admin = adminClient();
+    const { data: before } = await admin
+      .from("place_embedding")
+      .select("place_id, updated_at")
+      .eq("trip_id", data.tripId)
+      .order("place_id");
+
+    await page.goto(`/trips/${data.tripId}?view=places`);
+    await page.waitForTimeout(6000);
+
+    const { data: after } = await admin
+      .from("place_embedding")
+      .select("place_id, updated_at")
+      .eq("trip_id", data.tripId)
+      .order("place_id");
+
+    expect(after).toEqual(before);
+  });
+
+  test("★ 인덱싱된 장소가 어시스턴트 답변의 근거로 쓰인다", async ({ page }) => {
+    test.setTimeout(180000);
+
+    await login(page, data.a);
+    await page.goto(`/trips/${data.tripId}?view=plan`);
+    const enabled = await fab(page)
+      .waitFor({ state: "visible", timeout: 15000 })
+      .then(() => true)
+      .catch(() => false);
+    test.skip(!enabled, "LLM 키 없음");
+
+    await expect
+      .poll(() => embeddingCount(data.tripId), { timeout: 60000, intervals: [1000] })
+      .toBeGreaterThan(0);
+
+    await fab(page).click();
+    const panel = page.getByRole("dialog", { name: "AI 여행 어시스턴트" });
+    const log = panel.getByRole("log", { name: "대화 내용" });
+
+    await panel
+      .getByPlaceholder("여행에 대해 무엇이든 물어보세요")
+      .fill("내가 담아둔 장소 중에 카페가 있어? 이름을 알려줘");
+    await panel.getByRole("button", { name: "전송" }).click();
+
+    /*
+     * 실 LLM 이라 무료 티어 쿼터에 걸리면 안내 문구가 뜬다 — 그건 실패가 아니다.
+     * 이 테스트가 지키는 계약: **정상 답변이면 시드 장소명이 근거로 등장한다**.
+     */
+    await expect
+      .poll(async () => (await log.innerText()).length, { timeout: 90000 })
+      .toBeGreaterThan(60);
+
+    const text = await log.innerText();
+    const quotaNotice = /지금은 답할 수 없어요|사용량을 다 썼어요/.test(text);
+    if (!quotaNotice) {
+      expect(text).toContain("가장소 카페");
+    }
+
+    await page.screenshot({
+      path: "e2e/__screenshots__/assistant-rag.png",
+      fullPage: false,
+    });
+  });
+});
