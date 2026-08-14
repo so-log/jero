@@ -77,7 +77,13 @@ app/api/assistant/chat/route.ts   (서버)
 
 ### 3.3 인덱싱 시점
 
-- **트리거**: `place` insert/update 후 **서버 경로에서 비동기 upsert**(`POST /api/assistant/index`).
+> ✅ **구현 상태**: 배선 완료(`feat/assistant-index-wiring`). `AssistantLauncher` 가 **워크스페이스 진입 1회**
+> `POST /api/assistant/index` 를 호출한다(`api/useIndexPlaces`, `hasMore` 면 상한 3회까지 이어받기).
+> fire-and-forget 이라 실패해도 화면은 무영향이고, 플래그 off 면 요청 자체가 나가지 않는다(회귀 0).
+> 실 Supabase e2e 로 "진입만으로 `place_embedding` 채워짐 → 답변이 그 장소를 근거로 사용"까지 확인했다.
+
+- **트리거**: **워크스페이스 진입 시 1회**(채택) — `AssistantLauncher` → `useIndexPlaces` → `POST /api/assistant/index`.
+  `place` insert/update 직후 호출은 채택하지 않았다(후속): 진입 트리거만으로도 다음 진입에 반영되고, 저장 경로마다 훅을 심는 비용이 더 크다.
 - **변경 시에만**: `stale_place_embeddings` RPC 가 `content_hash` 불일치 행만 돌려준다 → **장소 편집이 잦아도 임베딩 비용은 실제 텍스트 변경 시에만** 발생.
 - **배치**: 여행 최초 진입 시 미인덱싱 place 를 한 번에 배치 임베딩(1 요청 다건).
 - **비용 감각**: 장소 1건 ≈ 30~60 토큰. 여행당 30곳 → 약 2K 토큰. Gemini 임베딩 무료 티어 내에서 사실상 0.
@@ -111,11 +117,16 @@ app/api/assistant/chat/route.ts   (서버)
 
 ### 5.1 도구 목록 (화이트리스트, 이외 없음)
 
-| 도구 | 위치 | 부작용 | 설명 |
-|---|---|---|---|
-| `searchPlaces(query, near?, category?)` | 서버 | 없음(읽기) | Places 검색 → 실존 장소 후보(좌표 포함) |
-| `getTripSnapshot()` | 서버 | 없음(읽기) | Day별 일정·저장 장소 요약(RLS 준수 조회) |
-| `proposeSchedule(items[])` | 서버 | **없음(제안만)** | Day + 순서가 있는 코스 **제안**을 구조화 출력으로 반환 |
+| 도구 | 위치 | 부작용 | 설명 | 구현 |
+|---|---|---|---|---|
+| `searchPlaces(query, near?, category?)` | 서버 | 없음(읽기) | Places 검색 → 실존 장소 후보(좌표 포함) | ✅ phase 3 |
+| `getTripSnapshot()` | 서버 | 없음(읽기) | Day별 일정·저장 장소 요약(RLS 준수 조회) | ❌ **미구현** |
+| `proposeSchedule(items[])` | 서버 | **없음(제안만)** | Day + 순서가 있는 코스 **제안**을 구조화 출력으로 반환 | ✅ phase 4 |
+
+> **`getTripSnapshot` 미구현 사유**: 여행 요약은 이미 **시스템 프롬프트의 컨텍스트 블록**으로 매 요청 주입된다
+> (`buildTripContext` — 여행 메타·Day별 장소 수·카테고리 분포). 모델이 같은 정보를 도구로 다시 조회할 이유가
+> 없어 스텝·토큰만 늘어난다. 대화 중 최신 상태를 다시 읽어야 하는 요구가 생기면 그때 추가한다.
+> 결과적으로 등록된 도구는 **2종**이며, 둘 다 읽기 전용이라 §5.1의 "쓰기 도구 없음" 원칙은 그대로다.
 
 **핵심 결정: 쓰기 도구를 모델에게 주지 않는다.** 모델은 **제안까지만** 하고, **실제 DB 변경은 사용자가 버튼을 눌렀을 때 클라이언트의 기존 뮤테이션**이 수행한다.
 
@@ -232,33 +243,42 @@ src/features/assistant/
 │   ├─ AssistantPanel.tsx         # 패널 셸 392px · 모바일 바텀시트(dialog·포커스 트랩·Esc)
 │   ├─ AssistantHeader.tsx        # 아바타·제목·서브텍스트·viewer 배지·닫기
 │   ├─ MessageList.tsx            # 말풍선·스트리밍·타이핑 점·aria-live
-│   ├─ MessageActions.tsx         # 다시 제안 · 복사
+│   ├─ MessageActions.tsx         # 다시 제안 · 복사                      ❌ 미구현(후속)
 │   ├─ EvidenceChips.tsx          # "참고" 근거 칩
 │   ├─ RecommendationCard.tsx     # 미니맵 썸네일 + 장소 정보 + 저장/일정에
 │   ├─ CoursePlanBlock.tsx        # Day 타임라인 + 코스 적용/동선 최적화 · viewer 안내
-│   └─ AssistantComposer.tsx      # 빠른 질문 칩 + 입력창 + 전송
+│   ├─ AssistantLauncher.tsx      # FAB+패널 진입점(플래그·뷰 범위 판정) — 구현에서 추가
+│   ├─ PlaceThumbnail.tsx         # 카드 미니맵 썸네일 — 구현에서 분리
+│   └─ AssistantComposer.tsx      # 빠른 질문 칩 + 입력창 + 전송 + 잔여 사용량(phase 5)
 ├─ hooks/
-│   ├─ useAssistantChat.ts        # AI SDK useChat 래핑(스트리밍·중지)
-│   ├─ useAssistantActions.ts     # 저장/배정/코스적용/되돌리기/최적화 연계
-│   └─ useAssistantEnabled.ts     # feature flag(서버 판정 boolean)
+│   ├─ useAssistantChat.ts        # 스트리밍·중지 (fetch + 자체 프레임 프로토콜)
+│   └─ useAssistantActions.ts     # 저장/배정/코스적용/되돌리기/최적화 연계
 ├─ api/
-│   └─ useIndexPlaces.ts          # 임베딩 인덱싱 트리거(mutation)
+│   ├─ useAssistantStatus.ts      # feature flag(서버 판정 boolean) — 설계의 useAssistantEnabled
+│   └─ useIndexPlaces.ts          # 임베딩 인덱싱 트리거(진입 1회·배치 이어받기)
 ├─ lib/
 │   ├─ assistantSchema.ts         # Zod (요청·도구·구조화 출력) — 서버·클라 공유 단일 출처
 │   ├─ buildTripContext.ts        # 순수: 여행 → 컨텍스트 요약
+│   ├─ streamProtocol.ts          # 서버·클라 공유 와이어 포맷(텍스트 + 카드·코스 프레임)
+│   ├─ usage.ts                   # 순수: 잔여 표시·UTC 자정 리셋 시각(phase 5)
 │   └─ systemPrompt.ts            # 순수: 시스템 프롬프트 조립(인젝션 가드 포함)
-├─ store/assistantStore.ts        # 열림·대화·선택 카드(zustand, 비영속)
+├─ store/assistantStore.ts        # 열림·대화·카드/코스·적용결과·사용량(zustand, 비영속)
 ├─ types.ts
 └─ index.ts                       # 공개 배럴
 
 src/lib/ai/
 ├─ provider.ts                    # LLM·임베딩 클라이언트(서버 전용)
 ├─ embed.ts                       # 임베딩 생성·해시
-└─ tools/                         # searchPlaces / getTripSnapshot / proposeSchedule
+├─ env.ts                         # 서버 전용 env 접근 + 브라우저 import 가드
+├─ retrieve.ts                    # pgvector 유사 검색(match_place_embeddings)
+├─ places.ts                      # Places(New) searchText + 카테고리 추정·캐시
+├─ logging.ts                     # 허용 필드 화이트리스트 로거(phase 5, §6.5)
+└─ tools/                         # searchPlaces / proposeSchedule (getTripSnapshot 미구현)
 
 src/app/api/assistant/
-├─ chat/route.ts                  # POST 스트리밍(세션·멤버십·rate limit·도구)
-└─ index/route.ts                 # POST 임베딩 인덱싱
+├─ chat/route.ts                  # POST 스트리밍(세션·멤버십·rate limit·도구·잔여 헤더)
+├─ status/route.ts                # GET feature flag boolean — 구현에서 추가
+└─ index/route.ts                 # POST 임베딩 인덱싱(진입 시 useIndexPlaces 가 호출)
 
 supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·RLS·assistant_usage
 ```
@@ -293,19 +313,33 @@ supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·
 - **C4** `place_embedding` 테이블 + RLS · **C5** RPC 3종(`upsert_place_embedding`·`stale_place_embeddings`·`match_place_embeddings`) + `place_embed_content` 헬퍼
 - **C6** `assistant_usage` + `consume_assistant_quota`(원자적 소비) · **C7** 응답 예시(fixture 4종) · **C8** `0008_assistant.sql` 초안 · **C9** 열린질문 확정 · **C10** GATE 2
 
-> 실제 `supabase/migrations/0008_assistant.sql` 파일 생성과 생성 타입 재생성(B1)은 **구현 phase 1** 에서 한다(기획·설계 단계는 `docs/` 만 수정).
+> ✅ `supabase/migrations/0008_assistant.sql` 은 **phase 1(#31)에서 생성·적용 완료**. 계약(Part C)과 실제 마이그레이션이 어긋나면 **`supabase/migrations/*.sql` 이 기준**이다(Part C10 주석과 동일 원칙).
 
 ## 13. 구현 순서 (phase = 독립 PR)
 
-| Phase | 브랜치(예) | 산출 | 완료 조건 |
-|---|---|---|---|
-| 1 | `feat/assistant-rag` | 마이그레이션·`lib/ai/embed`·인덱싱 라우트·유사검색 | 유사 검색 유닛/통합 green, 기존 회귀 0 |
-| 2 | `feat/assistant-chat` | 챗 라우트(스트리밍) + 패널 UI(텍스트만) | 스트리밍 렌더 테스트, 플래그 off 시 무영향 |
-| 3 | `feat/assistant-grounding` | `searchPlaces` 도구 + 추천 카드 | 좌표 없는 후보 제외 테스트 |
-| 4 | `feat/assistant-actions` | 카드 액션·코스 적용·되돌리기·동선 최적화 연계 | 뮤테이션 payload·권한 테스트 |
-| 5 | `feat/assistant-guardrails` | rate limit·인젝션 가드·사용량 표시·로깅 정리 | 429·인젝션·키 없음 폴백 테스트 |
+| Phase | 브랜치 | 산출 | 완료 조건 | 상태 |
+|---|---|---|---|---|
+| 1 | `feat/assistant-rag` | 마이그레이션·`lib/ai/embed`·인덱싱 라우트·유사검색 | 유사 검색 유닛/통합 green, 기존 회귀 0 | ✅ #31 · 트리거 배선 `feat/assistant-index-wiring` |
+| 2 | `feat/assistant-chat` | 챗 라우트(스트리밍) + 패널 UI(텍스트만) | 스트리밍 렌더 테스트, 플래그 off 시 무영향 | ✅ #32 |
+| 3 | `feat/assistant-grounding` | `searchPlaces` 도구 + 추천 카드 | 좌표 없는 후보 제외 테스트 | ✅ #33 |
+| 4 | `feat/assistant-actions` | 카드 액션·코스 적용·되돌리기·동선 최적화 연계 | 뮤테이션 payload·권한 테스트 | ✅ #34 |
+| 5 | `feat/assistant-guardrails` | rate limit·인젝션 가드·사용량 표시·로깅 정리 | 429·인젝션·키 없음 폴백 테스트 | ✅ #35 |
 
 각 단계 후 `yarn run check` + `yarn build` 그린 유지. **main 직행 금지**(CLAUDE.md §7).
+
+### 13.1 구현 결과 — 설계와 달라진 점
+
+설계를 그대로 따르지 않은 지점만 모았다(나머지는 문서대로).
+
+| # | 설계 | 구현 | 사유 |
+|---|---|---|---|
+| 1 | 오케스트레이션에 AI SDK `useChat` | **자체 프레임 프로토콜**(`streamProtocol.ts`) + `fetch` | `useChat` 은 별도 패키지(`@ai-sdk/react`)가 필요하고, 카드·코스를 텍스트 스트림에 실어야 해 양쪽 포맷을 직접 정의하는 편이 단순·검증 용이. 서버측 `streamText`(`ai`)는 설계대로 사용 |
+| 2 | 도구 3종(`getTripSnapshot` 포함) | **2종**(`searchPlaces`·`proposeSchedule`) | 여행 요약은 이미 시스템 프롬프트 컨텍스트로 주입돼 중복 — §5.1 주석 |
+| 3 | `proposeSchedule` 스키마에 모델이 `lat`/`lng` 제공 | 모델은 **이름·Day·순서·이유만**, 좌표·주소·place_id 는 **도구가 grounding 화이트리스트에서 채움** | 모델이 좌표를 지어낼 여지를 없애는 편이 §4 철칙에 더 충실 |
+| 4 | 코스 블록 푸터에 `코스 적용` + `동선 최적화` **병치**(시안) | `코스 적용` → **적용 후** `되돌리기` + `동선 최적화` 순차 노출 | 적용 전에는 최적화할 대상이 없어 비활성 버튼이 된다. 기획 §11 "시안 일치" 항목과 어긋나는 의도적 이탈 |
+| 5 | 되돌리기 = `useDeletePlace` **또는** `unassign` | 이번 적용으로 **생성된 place 삭제** | 적용이 행을 새로 만들었으므로 삭제가 정확한 역연산. 배정만 해제하면 저장 목록에 잔여물이 남는다 |
+| 6 | 적용 결과·되돌리기 스냅샷을 **로컬** 보관 | **대화 스토어(답변 id별)** 보관 | 로컬이면 패널을 닫았다 열 때 "코스 적용" 이 다시 떠 **중복 생성**된다 |
+| 7 | 대화 영속화 없음 · `MessageActions`(다시 제안·복사) | 영속화 없음(설계대로) · `MessageActions` **미구현** | 기획 §6 "LLM 실패 시 안내 + 재시도" 중 **재시도 버튼이 없다**(안내만). 후속 |
 
 ## 14. 열린 질문 — **전부 확정** (계약 C9)
 
@@ -334,5 +368,19 @@ supabase/migrations/0008_assistant.sql   # vector 확장·place_embedding·RPC·
 ## GATE 상태
 
 - **GATE 1 (기획 승인)**: ✅ 승인 (2026-07-31) — `docs/planning/18_AI_여행_어시스턴트.md`
-- **GATE 2 (설계 승인)**: ⏳ 대기 — 이 문서 + `데이터모델_계약.md` **Part C**(작성 완료)
-- 승인 전 **구현 착수 금지**. 현재 `src/`·`supabase/` **무변경**.
+- **GATE 2 (설계 승인)**: ✅ 승인 — 이 문서 + `데이터모델_계약.md` **Part C**. 승인 후 phase 1(#31)로 구현 착수.
+- **구현**: ✅ **phase 1~5 완료** (#31·#32·#33·#34·#35 — §13 표). `supabase/migrations/0008_assistant.sql` 적용됨.
+
+### 구현 후 남은 것
+
+문서와 코드가 어긋나지 않게, **끝나지 않은 것만** 남긴다(§13.1 은 "달라진 점", 아래는 "안 된 것").
+
+| 항목 | 상태 | 영향 |
+|---|---|---|
+| `MessageActions`(다시 제안·복사) | ❌ 미구현 | 실패 시 **재시도 버튼 없음**(안내 문구만). 기획 §6 부분 미충족 |
+| `getTripSnapshot` 도구 | ❌ 미구현(의도) | 없음 — 컨텍스트 주입으로 대체(§5.1) |
+| 코스 푸터 2버튼 병치(시안) | ⚠ 의도적 이탈 | 기획 §11 "시안 일치" 1항목과 다름(§13.1-4) |
+| viewer 강제 호출 서버 거부 | ⚠ 구조적 보장, 전용 회귀 테스트 없음 | `place` RLS(`editor+`)가 강제. 어시스턴트 경로 전용 DB 테스트는 없다 |
+| 대화 영속화 | 해당 없음(설계대로 비영속) | 계약 C9 #2 |
+
+> 후속 갭은 `docs/remaining-features.md` 에도 함께 기록한다(단일 목록 유지).
