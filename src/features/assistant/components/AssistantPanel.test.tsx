@@ -550,3 +550,76 @@ describe("AssistantPanel — 사용량 가드레일 (Phase 5)", () => {
     expect(screen.queryByText(/some_new_internal_code_v2/)).toBeNull();
   });
 });
+
+describe("AssistantPanel — 메시지 액션 (다시 제안·복사, 기획 §3 I)", () => {
+  it("실패한 답변엔 '다시 제안'만 뜨고, 클릭하면 같은 질문을 그대로 재전송한다(기존 send 재사용)", async () => {
+    const fetchMock = vi.fn();
+    fetchMock
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: "chat_failed" }), {
+          status: 502,
+          headers: { "content-type": "application/json" },
+        }),
+      )
+      .mockResolvedValueOnce(streamResponse(["다시 답변드릴게요."]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+    renderPanel();
+
+    await user.type(
+      screen.getByPlaceholderText("여행에 대해 무엇이든 물어보세요"),
+      "시부야 카페 알려줘",
+    );
+    await user.click(screen.getByRole("button", { name: "전송" }));
+
+    const retryButton = await screen.findByRole("button", {
+      name: "같은 질문으로 다시 제안받기",
+    });
+    // 실패 상태엔 복사가 없다 — 두 액션은 상호 배타.
+    expect(screen.queryByRole("button", { name: "답변 복사" })).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await user.click(retryButton);
+
+    expect(await screen.findByText("다시 답변드릴게요.")).toBeVisible();
+    // ★ 소비 1회 — 재전송이 새 경로를 타지 않고 기존 send 를 그대로 한 번 더 부른 것뿐이다.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const secondBody = JSON.parse(
+      (fetchMock.mock.calls[1][1] as RequestInit).body as string,
+    );
+    expect(secondBody.messages.at(-1)).toEqual({
+      role: "user",
+      content: "시부야 카페 알려줘",
+    });
+    // 재전송이라 같은 질문 말풍선이 하나 더 쌓인다(첫 시도 + 재시도).
+    expect(screen.getAllByText("시부야 카페 알려줘")).toHaveLength(2);
+  });
+
+  it("정상 답변엔 '복사'만 뜨고, 클릭하면 클립보드에 담고 성공 피드백을 보여준다", async () => {
+    // ★ user-event.setup() 이 자체 클립보드 스텁을 navigator.clipboard 에 붙인다 —
+    //   그래서 defineProperty 는 setup() **다음에** 해야 살아남는다.
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+    renderPanel();
+
+    await user.click(screen.getByRole("button", { name: /카페 추천/ }));
+    await screen.findByText("시부야 카페 두 곳이에요.");
+
+    // 정상 답변엔 다시 제안이 없다 — 두 액션은 상호 배타.
+    expect(
+      screen.queryByRole("button", { name: "같은 질문으로 다시 제안받기" }),
+    ).toBeNull();
+
+    await user.click(screen.getByRole("button", { name: "답변 복사" }));
+
+    expect(writeText).toHaveBeenCalledWith("시부야 카페 두 곳이에요.");
+    expect(
+      await screen.findByRole("button", { name: "답변이 복사됐어요" }),
+    ).toBeVisible();
+  });
+});

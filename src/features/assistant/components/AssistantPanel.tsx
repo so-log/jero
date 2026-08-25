@@ -88,6 +88,7 @@ export function AssistantPanel({
           error={error}
           canEdit={canEdit}
           actions={actions}
+          onRetry={(text) => void send(text)}
         />
         <AssistantComposer
           streaming={streaming}

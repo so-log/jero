@@ -8,6 +8,7 @@ import type { AssistantActions } from "../hooks/useAssistantActions";
 import type { ChatMessage, EvidenceChip } from "../types";
 import { CoursePlanBlock } from "./CoursePlanBlock";
 import { EvidenceChips } from "./EvidenceChips";
+import { MessageActions } from "./MessageActions";
 import { RecommendationCard } from "./RecommendationCard";
 
 /**
@@ -60,6 +61,7 @@ export function MessageList({
   error,
   canEdit,
   actions,
+  onRetry,
 }: {
   tripId: string;
   messages: ChatMessage[];
@@ -68,10 +70,13 @@ export function MessageList({
   error: string | null;
   canEdit: boolean;
   actions: AssistantActions;
+  /** "다시 제안" — 마지막 사용자 메시지를 그대로 재전송(기존 `send` 재사용). */
+  onRetry: (text: string) => void;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
   const lastId = messages[messages.length - 1]?.id;
   const lastContent = messages[messages.length - 1]?.content;
+  const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
 
   // 새 메시지·델타마다 하단으로 따라간다.
   useEffect(() => {
@@ -119,14 +124,19 @@ export function MessageList({
         if (message.content.length === 0 && cards.length === 0 && !course) {
           return null;
         }
+        // 스트리밍 중인 마지막 답변엔 아직 "복사"를 보여주지 않는다(내용이 계속 바뀐다).
+        const showCopy = message.content.length > 0 && (!isLast || !streaming);
 
         return (
           <div key={message.id} className="flex items-start gap-2.5">
             <AiAvatar />
             <div className="flex min-w-0 flex-1 flex-col gap-2">
               {message.content.length > 0 ? (
-                <div className="rounded-[16px] rounded-bl-[5px] bg-secondary px-3.5 py-[11px] text-[13.5px] leading-relaxed font-medium whitespace-pre-wrap text-body">
-                  {message.content}
+                <div className="flex flex-col items-start gap-1">
+                  <div className="rounded-[16px] rounded-bl-[5px] bg-secondary px-3.5 py-[11px] text-[13.5px] leading-relaxed font-medium whitespace-pre-wrap text-body">
+                    {message.content}
+                  </div>
+                  {showCopy ? <MessageActions variant="copy" text={message.content} /> : null}
                 </div>
               ) : null}
 
@@ -166,8 +176,17 @@ export function MessageList({
       {error ? (
         <div className="flex items-start gap-2.5">
           <AiAvatar />
-          <div className="rounded-[16px] rounded-bl-[5px] bg-danger-tint px-3.5 py-[11px] text-[13.5px] leading-relaxed font-medium text-danger">
-            {error}
+          <div className="flex flex-col items-start gap-1">
+            <div className="rounded-[16px] rounded-bl-[5px] bg-danger-tint px-3.5 py-[11px] text-[13.5px] leading-relaxed font-medium text-danger">
+              {error}
+            </div>
+            {lastUserMessage ? (
+              <MessageActions
+                variant="retry"
+                disabled={streaming}
+                onRetry={() => onRetry(lastUserMessage.content)}
+              />
+            ) : null}
           </div>
         </div>
       ) : null}
