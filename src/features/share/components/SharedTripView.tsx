@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { TripMap } from "@/components/map";
 import { Presence } from "@/components/ui/avatar";
-import { Icon } from "@/components/ui/icon";
+import { Icon, type IconName } from "@/components/ui/icon";
 import {
   ItineraryPanel,
   deriveDays,
@@ -15,9 +15,18 @@ import {
 } from "@/features/itinerary";
 import { SystemPage } from "@/features/system";
 import { formatPeriod, nightsDays } from "@/lib/tripDate";
+import { cn } from "@/lib/utils";
 
 import { useSharedTripQuery } from "../api/useSharedTripQuery";
 import { SharePublicBar } from "./SharePublicBar";
+
+/** 모바일 전용 일정/지도 세그먼트(반응형 3-B 와 동일 패턴) — md+ 에선 항상 좌우 배치라 무관. */
+type SharePane = "itinerary" | "map";
+
+const PANES: { value: SharePane; label: string; icon: IconName }[] = [
+  { value: "itinerary", label: "일정", icon: "list" },
+  { value: "map", label: "지도", icon: "map-pin" },
+];
 
 /**
  * 08 뷰어 공유 — 공개 읽기 전용 뷰. 04의 ItineraryPanel + TripMap 을 **canEdit=false** 로 재사용(중복 구현 금지).
@@ -27,6 +36,8 @@ export function SharedTripView({ token }: { token: string }) {
   const { data: result, isLoading } = useSharedTripQuery(token);
   const { activeDay, filterToday, activeCategory, selectedId, select } =
     usePlanStore();
+  // 모바일 전용: 일정 ↔ 지도 토글(데스크톱은 2단이라 무관). 기본 일정.
+  const [pane, setPane] = useState<SharePane>("itinerary");
 
   const snapshot = result?.ok ? result.snapshot : undefined;
 
@@ -65,7 +76,7 @@ export function SharedTripView({ token }: { token: string }) {
       <SharePublicBar />
 
       {/* 읽기 전용 안내 배너 */}
-      <div className="flex flex-none items-center justify-between gap-4 border-b border-primary-tint bg-primary-wash px-5 py-2.5">
+      <div className="flex flex-none flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-primary-tint bg-primary-wash px-5 py-2.5">
         <div className="flex min-w-0 items-center gap-2.5">
           <span className="flex size-[30px] flex-none items-center justify-center rounded-md bg-primary-tint text-primary-hover">
             <Icon name="eye" size={16} strokeWidth={2} />
@@ -106,21 +117,66 @@ export function SharedTripView({ token }: { token: string }) {
         )}
         {snapshot && (
           <div className="ml-auto flex items-center gap-2.5">
-            <span className="text-xs font-semibold text-faint">함께하는 사람</span>
+            <span className="hidden text-xs font-semibold text-faint sm:inline">
+              함께하는 사람
+            </span>
             <Presence members={snapshot.members} size={30} />
           </div>
         )}
       </div>
 
-      {/* 본문: 일정(읽기 전용) + 지도 */}
-      <main className="flex min-h-0 flex-1">
-        <ItineraryPanel
-          days={days}
-          dayPlaces={dayPlaces}
-          isLoading={panelLoading}
-          canEdit={false}
-        />
-        <div className="relative min-w-0 flex-1 bg-canvas">
+      {/* 본문: 일정(읽기 전용) + 지도 — 데스크톱(md+) 좌우 배치 유지, 모바일은 세그먼트로 하나씩 */}
+      <main className="flex min-h-0 flex-1 flex-col md:flex-row">
+        {/* 모바일 전용 일정/지도 세그먼트 — md+ 에선 숨김(항상 좌우 배치라 무관) */}
+        <div
+          role="tablist"
+          aria-label="공유 보기 전환"
+          className="flex flex-none gap-0.5 border-b border-line bg-background p-2 md:hidden"
+        >
+          {PANES.map((p) => {
+            const on = pane === p.value;
+            return (
+              <button
+                key={p.value}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setPane(p.value)}
+                className={cn(
+                  "flex h-10 flex-1 items-center justify-center gap-1.5 rounded-md text-[13.5px] transition-colors",
+                  on
+                    ? "bg-secondary font-bold text-primary-strong"
+                    : "font-semibold text-faint hover:bg-secondary/60",
+                )}
+              >
+                <Icon name={p.icon} size={16} strokeWidth={2} />
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          className={cn(
+            "min-h-0",
+            pane === "itinerary" ? "flex flex-1" : "hidden",
+            "md:contents",
+          )}
+        >
+          <ItineraryPanel
+            days={days}
+            dayPlaces={dayPlaces}
+            isLoading={panelLoading}
+            canEdit={false}
+          />
+        </div>
+        <div
+          className={cn(
+            "relative min-w-0 flex-1 bg-canvas",
+            pane === "map" ? "block" : "hidden",
+            "md:block",
+          )}
+        >
           <TripMap
             scheduled={scheduledMarkers}
             saved={[]}
